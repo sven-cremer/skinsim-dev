@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(foo_core)
+project(spring_array)
 
 find_package(catkin REQUIRED COMPONENTS 
   gazebo_ros
