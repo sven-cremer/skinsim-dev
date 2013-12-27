@@ -2,6 +2,8 @@
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
 
+#include "yaml-cpp/yaml.h"
+
 namespace gazebo
 {
   class Spring_Joint : public ModelPlugin
