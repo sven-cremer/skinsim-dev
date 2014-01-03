@@ -1,16 +1,49 @@
-#include "gazebo/physics/physics.hh"
-#include "gazebo/common/Events.hh"
-#include "gazebo/gazebo.hh"
+#include <gazebo/physics/physics.hh>
+#include <gazebo/common/Events.hh>
+#include <gazebo/gazebo.hh>
 
-#include "yaml-cpp/yaml.h"
+#include <yaml-cpp/yaml.h>
+
+#include <fstream>
+#include <string>
+
+//std::ifstream fin;
+//YAML::Parser parser;
+//YAML::Node doc;
 
 namespace gazebo
 {
   class Spring_Joint : public ModelPlugin
   {
+
+
     public: void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
     {
-      
+
+//        fin.open("/home/isura/joint_name.yaml");
+//
+//        if(fin)
+//        {
+//         std::cout<<"\nLoad Success!\n";
+//        }else
+//        {
+//         std::cout<<"\nLoad Fail!\n";
+//        }
+//
+//        parser.Load(fin);
+//        parser.GetNextDocument(doc);
+
+//        std::string scalar;
+//        for(unsigned i=0;i<doc.size();i++)
+//        {
+//         doc[i]["Joint"] >> scalar;
+//         this->jointNames.push_back(scalar);
+//         std::cout << "Here's the output YAML:\n---" << scalar << "---\n";
+//        }
+//
+//        fin.close();
+
+
       // init joints, hardcoded for robot
 	  this->jointNames.push_back("joint_1" );
 	  this->jointNames.push_back("joint_2" );
