@@ -1,7 +1,20 @@
 <launch>
+
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="load_jointfile_path" default="true"/>
+
+<!-- 
+  <rosparam file="$(find spring_array)/config/config.yaml" command="load" />
+ -->
+ 
+   <!-- set load_jointfile_path flag -->
+  <group if="$(arg load_jointfile_path)">
+    <param name="file_name"  value="$(find spring_array)/config/joint_names.yaml" />
+  </group>
+ 
   <!-- Launch empty world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find spring_array)/worlds/spring_array.world"/>
-
+    <arg   name="world_name" value="$(find spring_array)/worlds/spring_array.world"/>
   </include>
+  
 </launch>
