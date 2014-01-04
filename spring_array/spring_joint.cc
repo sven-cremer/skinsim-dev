@@ -7,10 +7,6 @@
 #include <fstream>
 #include <string>
 
-//std::ifstream fin;
-//YAML::Parser parser;
-//YAML::Node doc;
-
 namespace gazebo
 {
 class Spring_Joint : public ModelPlugin
@@ -20,79 +16,84 @@ public:
   void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
   {
 
-//        fin.open("/home/isura/joint_name.yaml");
-//
-//        if(fin)
-//        {
-//         std::cout<<"\nLoad Success!\n";
-//        }else
-//        {
-//         std::cout<<"\nLoad Fail!\n";
-//        }
-//
-//        parser.Load(fin);
-//        parser.GetNextDocument(doc);
+    YAML::Parser parser;
+    YAML::Node doc;
+    std::ifstream fin;
 
-//        std::string scalar;
-//        for(unsigned i=0;i<doc.size();i++)
-//        {
-//         doc[i]["Joint"] >> scalar;
-//         this->jointNames.push_back(scalar);
-//         std::cout << "Here's the output YAML:\n---" << scalar << "---\n";
-//        }
-//
-//        fin.close();
+    fin.open("/home/isura/joint_name.yaml");
 
-// init joints, hardcoded for robot
-    this->jointNames.push_back("joint_1");
-    this->jointNames.push_back("joint_2");
-    this->jointNames.push_back("joint_3");
-    this->jointNames.push_back("joint_4");
-    this->jointNames.push_back("joint_5");
-    this->jointNames.push_back("joint_6");
-    this->jointNames.push_back("joint_7");
-    this->jointNames.push_back("joint_8");
-    this->jointNames.push_back("joint_9");
-    this->jointNames.push_back("joint_10");
-    this->jointNames.push_back("joint_11");
-    this->jointNames.push_back("joint_12");
-    this->jointNames.push_back("joint_13");
-    this->jointNames.push_back("joint_14");
-    this->jointNames.push_back("joint_15");
-    this->jointNames.push_back("joint_16");
-    this->jointNames.push_back("joint_17");
-    this->jointNames.push_back("joint_18");
-    this->jointNames.push_back("joint_19");
-    this->jointNames.push_back("joint_20");
-    this->jointNames.push_back("joint_21");
-    this->jointNames.push_back("joint_22");
-    this->jointNames.push_back("joint_23");
-    this->jointNames.push_back("joint_24");
-    this->jointNames.push_back("joint_25");
-    this->jointNames.push_back("joint_26");
-    this->jointNames.push_back("joint_27");
-    this->jointNames.push_back("joint_28");
-    this->jointNames.push_back("joint_29");
-    this->jointNames.push_back("joint_30");
-    this->jointNames.push_back("joint_31");
-    this->jointNames.push_back("joint_32");
-    this->jointNames.push_back("joint_33");
-    this->jointNames.push_back("joint_34");
-    this->jointNames.push_back("joint_35");
-    this->jointNames.push_back("joint_36");
-    this->jointNames.push_back("joint_37");
-    this->jointNames.push_back("joint_38");
-    this->jointNames.push_back("joint_39");
-    this->jointNames.push_back("joint_40");
-    this->jointNames.push_back("joint_41");
-    this->jointNames.push_back("joint_42");
-    this->jointNames.push_back("joint_43");
-    this->jointNames.push_back("joint_44");
-    this->jointNames.push_back("joint_45");
-    this->jointNames.push_back("joint_46");
-    this->jointNames.push_back("joint_47");
-    this->jointNames.push_back("joint_48");
-    this->jointNames.push_back("joint_49");
+    if (fin)
+    {
+      std::cout << "\nLoad Success!\n";
+    }
+    else
+    {
+      std::cout << "\nLoad Fail!\n";
+    }
+
+    parser.Load(fin);
+    parser.GetNextDocument(doc);
+
+    std::string scalar;
+    for (unsigned i = 0; i < doc.size(); i++)
+    {
+      doc[i]["Joint"] >> scalar;
+      this->jointNames.push_back(scalar);
+      std::cout << "Here's the output YAML:\n---" << scalar << "---\n";
+    }
+
+    fin.close();
+
+//// init joints, hardcoded for robot
+//    this->jointNames.push_back("joint_1");
+//    this->jointNames.push_back("joint_2");
+//    this->jointNames.push_back("joint_3");
+//    this->jointNames.push_back("joint_4");
+//    this->jointNames.push_back("joint_5");
+//    this->jointNames.push_back("joint_6");
+//    this->jointNames.push_back("joint_7");
+//    this->jointNames.push_back("joint_8");
+//    this->jointNames.push_back("joint_9");
+//    this->jointNames.push_back("joint_10");
+//    this->jointNames.push_back("joint_11");
+//    this->jointNames.push_back("joint_12");
+//    this->jointNames.push_back("joint_13");
+//    this->jointNames.push_back("joint_14");
+//    this->jointNames.push_back("joint_15");
+//    this->jointNames.push_back("joint_16");
+//    this->jointNames.push_back("joint_17");
+//    this->jointNames.push_back("joint_18");
+//    this->jointNames.push_back("joint_19");
+//    this->jointNames.push_back("joint_20");
+//    this->jointNames.push_back("joint_21");
+//    this->jointNames.push_back("joint_22");
+//    this->jointNames.push_back("joint_23");
+//    this->jointNames.push_back("joint_24");
+//    this->jointNames.push_back("joint_25");
+//    this->jointNames.push_back("joint_26");
+//    this->jointNames.push_back("joint_27");
+//    this->jointNames.push_back("joint_28");
+//    this->jointNames.push_back("joint_29");
+//    this->jointNames.push_back("joint_30");
+//    this->jointNames.push_back("joint_31");
+//    this->jointNames.push_back("joint_32");
+//    this->jointNames.push_back("joint_33");
+//    this->jointNames.push_back("joint_34");
+//    this->jointNames.push_back("joint_35");
+//    this->jointNames.push_back("joint_36");
+//    this->jointNames.push_back("joint_37");
+//    this->jointNames.push_back("joint_38");
+//    this->jointNames.push_back("joint_39");
+//    this->jointNames.push_back("joint_40");
+//    this->jointNames.push_back("joint_41");
+//    this->jointNames.push_back("joint_42");
+//    this->jointNames.push_back("joint_43");
+//    this->jointNames.push_back("joint_44");
+//    this->jointNames.push_back("joint_45");
+//    this->jointNames.push_back("joint_46");
+//    this->jointNames.push_back("joint_47");
+//    this->jointNames.push_back("joint_48");
+//    this->jointNames.push_back("joint_49");
 
     this->model_ = _model;
 

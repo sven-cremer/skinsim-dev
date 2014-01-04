@@ -12,7 +12,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS} ${SDFo
 
 # Build whatever you need here
 add_library(spring_joint SHARED spring_joint.cc)
-target_link_libraries(spring_joint ${GAZEBO_LIBRARIES})
+target_link_libraries(spring_joint ${GAZEBO_LIBRARIES} yaml-cpp)
 
 add_library(mass_joint SHARED mass_joint.cc)
 target_link_libraries(mass_joint ${GAZEBO_LIBRARIES})
