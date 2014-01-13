@@ -8,6 +8,8 @@
 #include <string>
 
 #include "ros/ros.h"
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
 
 namespace gazebo
 {
@@ -26,19 +28,27 @@ public:
 
   ~Spring_Joint()
   {
-    delete this->node;
+    delete this->ros_node;
   }
 
   void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
   {
 
+    // Make sure the ROS node for Gazebo has already been initalized
+    if (!ros::isInitialized())
+    {
+      ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialized, unable to load plugin. "
+        << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)");
+      return;
+    }
+
     // ROS Nodehandle
-    this->node = new ros::NodeHandle("~");
+    this->ros_node = new ros::NodeHandle("~");
 
     std::string para_file_name = "/file_name";
 
     std::string file_name; // = "/home/isura/joint_name.yaml";
-    if (!this->node->getParam(para_file_name, file_name))
+    if (!this->ros_node->getParam(para_file_name, file_name))
     {
       ROS_ERROR("Value not loaded from parameter: %s !)", para_file_name.c_str());
     }
@@ -62,7 +72,7 @@ public:
     {
       doc[i]["Joint"] >> scalar;
       this->jointNames.push_back(scalar);
-      std::cout << "Here's the output YAML:\n---" << scalar << "---\n";
+      //std::cout << "Here's the output YAML:\n---" << scalar << "---\n";
     }
 
     fin.close();
@@ -86,6 +96,9 @@ public:
 
     // Create a publisher on the ~/factory topic
     pub = node->Advertise<msgs::Vector3d>("~/force_sensor_info");
+
+    this->image_pub = this->ros_node->advertise<sensor_msgs::Image>("tactile_image", 1);
+    this->frame_name = "map";
 
     // Initialize the node with the Model name
     node->Init(model_->GetName());
@@ -112,6 +125,17 @@ public:
 
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
     math::Vector3 vect;
+
+    sensor_msgs::Image image_msg;
+
+    image_msg.header.frame_id = this->frame_name;
+    image_msg.header.stamp.sec  = ros::Time::now().sec;
+    image_msg.header.stamp.nsec = ros::Time::now().nsec;
+    image_msg.encoding = sensor_msgs::image_encodings::MONO8;
+    image_msg.height = 7;
+    image_msg.width  = 7;
+    image_msg.step = 7;
+
     for (unsigned int i = 0; i < this->joints.size(); ++i)
     {
       current_angle = this->joints[i]->GetAngle(0).Radian();
@@ -123,12 +147,21 @@ public:
       vect.x = current_time;
       vect.y = i;
       vect.z = current_force;
-      msgs::Set(&msg, vect);
-      pub->Publish(msg);
+
+//      msgs::Set(&msg, vect);
+//      pub->Publish(msg);
+
+      image_msg.data.push_back(current_force*255/20); //this->joints[i]->GetForce(0)
+
     }
 
+      image_pub.publish(image_msg);
   }
 
+
+  // ROS Nodehandle
+private:
+  ros::NodeHandle* ros_node;
   /// \brief keep a list of hard coded joint names.
   std::vector<std::string> jointNames;
   //physics::JointPtr joint_;
@@ -138,15 +171,17 @@ public:
 
   physics::ModelPtr model_;
   event::ConnectionPtr update_connection_;
+
   msgs::Vector3d msg;
   transport::PublisherPtr pub;
 
-  // ROS Nodehandle
-private:
-  ros::NodeHandle* node;
-
   // ROS Subscriber
   ros::Subscriber sub;
+
+  std::string frame_name;
+
+  // ROS Publisher
+  ros::Publisher image_pub;
 
   YAML::Parser parser;
   YAML::Node doc;
@@ -156,4 +191,5 @@ private:
 
 // Register this plugin with the simulator
 GZ_REGISTER_MODEL_PLUGIN(Spring_Joint)
+
 }

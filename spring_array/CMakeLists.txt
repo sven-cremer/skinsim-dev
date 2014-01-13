@@ -3,16 +3,19 @@ project(spring_array)
 
 find_package(catkin REQUIRED COMPONENTS 
   gazebo_ros
+  roscpp
 )
 
 # Depend on system install of Gazebo
 find_package(gazebo REQUIRED)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS} ${SDFormat_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS}
+							${GAZEBO_INCLUDE_DIRS}
+							${SDFormat_INCLUDE_DIRS} )
 
 # Build whatever you need here
 add_library(spring_joint SHARED spring_joint.cc)
-target_link_libraries(spring_joint ${GAZEBO_LIBRARIES} yaml-cpp)
+target_link_libraries(spring_joint  ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
 
 add_library(mass_joint SHARED mass_joint.cc)
 target_link_libraries(mass_joint ${GAZEBO_LIBRARIES})
@@ -30,6 +33,7 @@ target_link_libraries(central ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES} ${PROTOBUF_
 catkin_package(
     DEPENDS 
       gazebo_ros
+      roscpp
     CATKIN_DEPENDS
     INCLUDE_DIRS 
     LIBRARIES 
