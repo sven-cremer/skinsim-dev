@@ -151,7 +151,7 @@ public:
 //      msgs::Set(&msg, vect);
 //      pub->Publish(msg);
 
-      image_msg.data.push_back(current_force*255/20); //this->joints[i]->GetForce(0)
+      image_msg.data.push_back(current_force*255); //this->joints[i]->GetForce(0)
 
     }
 
