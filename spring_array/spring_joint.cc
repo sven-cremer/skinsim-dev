@@ -98,7 +98,7 @@ public:
     pub = node->Advertise<msgs::Vector3d>("~/force_sensor_info");
 
     this->image_pub = this->ros_node->advertise<sensor_msgs::Image>("tactile_image", 1);
-    this->frame_name = "map";
+    this->frame_name = "base_link";
 
     // Initialize the node with the Model name
     node->Init(model_->GetName());
@@ -136,6 +136,8 @@ public:
     image_msg.width  = 7;
     image_msg.step = 7;
 
+    double tactile_data;
+
     for (unsigned int i = 0; i < this->joints.size(); ++i)
     {
       current_angle = this->joints[i]->GetAngle(0).Radian();
@@ -151,7 +153,20 @@ public:
 //      msgs::Set(&msg, vect);
 //      pub->Publish(msg);
 
-      image_msg.data.push_back(current_force*255); //this->joints[i]->GetForce(0)
+      tactile_data = current_force*255;
+      tactile_data = tactile_data/2;
+
+      if( tactile_data > 255 )
+      {
+        tactile_data = 255;
+      }
+
+      if( tactile_data < 0 )
+      {
+        tactile_data = 0;
+      }
+
+      image_msg.data.push_back( tactile_data ); //this->joints[i]->GetForce(0)
 
     }
 
