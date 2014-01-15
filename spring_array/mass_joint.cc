@@ -28,7 +28,9 @@ namespace gazebo
       double current_time = this->model->GetWorld()->GetSimTime().Double();
       this->joint->SetForce(0, force);
       double current_force = this->joint->GetForce(0);
-      std::cout<< "current force: "<<current_force<<"\n";
+
+      //std::cout<< "current force: "<<current_force<<"\n";
+
       if(current_time > action_t)
       {
         force = force - 0.25;
