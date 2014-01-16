@@ -1,0 +1,20 @@
+<package>
+  <name>spring_array</name>
+  <version>1.2.4</version>
+  <description>
+    This package provides foo capability.
+  </description>
+  <maintainer email="ivana@willowgarage.com">Ivana Bildbotz</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>gazebo_ros</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+
+  <run_depend>gazebo_ros</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>roscpp</run_depend>
+
+</package>
