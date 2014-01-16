@@ -27,7 +27,7 @@ catkin_package(
 # Build whatever you need here
 add_executable(skinmodel_sdf_generator src/skinmodel_sdf_generator.cpp)
 
-target_link_libraries( skinmodel_sdf_generator ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} )
+target_link_libraries( skinmodel_sdf_generator ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
 
 
 

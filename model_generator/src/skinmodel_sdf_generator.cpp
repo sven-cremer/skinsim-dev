@@ -45,6 +45,8 @@
 #include <fstream>
 #include <string>
 
+#include <yaml-cpp/yaml.h>
+
 #include <Eigen/Core>
 
 class SkinSimModelBuilder
@@ -244,12 +246,17 @@ public:
 
 };
 
+
 int main(int argc, char** argv)
 {
 
   SkinSimModelBuilder test;
 
   std::string sdf_filename = "model.sdf";
+
+  YAML::Emitter out;
+  std::string joint_config_file_name = "joint_names.yaml";
+  std::ofstream fout(joint_config_file_name.c_str());
 
 //  sdf::SDFPtr robot(new sdf::SDF());
 //  sdf::init(robot);
@@ -288,10 +295,12 @@ int main(int argc, char** argv)
   double pos_y = 1.5;
   double d_pos = 0.25;
 
-  double sensor_no = (pos_y - pos_x)/0.5 + 1;
+  double sensor_no = (double)(pos_y - pos_x)/d_pos + 1;
   sensor_no = sensor_no*sensor_no;
 
-  for( int i = 1; i<= sensor_no; i++ )
+  out << YAML::BeginSeq;
+
+  for( int i = 1; i <= sensor_no; i++ )
   {
 
     std::ostringstream convert;
@@ -345,8 +354,17 @@ int main(int argc, char** argv)
 //      std::cout << " ------ \n";
     }
 
+   out << YAML::BeginMap;
+   out << YAML::Key << "Joint" << YAML::Value << "joint_" + convert.str();
+   out << YAML::EndMap;
 
   }
+
+  out << YAML::EndSeq;
+
+  // Write YAML file and close
+  fout << out.c_str();
+  fout.close();
 
   ////////////////////
 
