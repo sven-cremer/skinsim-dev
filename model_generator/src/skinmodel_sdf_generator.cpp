@@ -286,15 +286,19 @@ int main(int argc, char** argv)
 
   double pos_x = -1.5;
   double pos_y = 1.5;
+  double d_pos = 0.25;
 
-  for( int i = 1; i<50; i++ )
+  double sensor_no = (pos_y - pos_x)/0.5 + 1;
+  sensor_no = sensor_no*sensor_no;
+
+  for( int i = 1; i<= sensor_no; i++ )
   {
 
     std::ostringstream convert;
     convert << i;
 
     pose << pos_x, pos_y, 1.3, 0, 0, 0;
-    radius = 0.25;
+    radius = d_pos/2;
 
     test.addLink( "spring_" + convert.str(),
                   0.001,
@@ -305,7 +309,7 @@ int main(int argc, char** argv)
 
     axis << 0, 0, 1;
 
-    test.addJoint( "joint_" + convert.str(),
+    test.addJoint( "spring_joint_" + convert.str(),
                    "prismatic",
                    "tactile_" + convert.str(),
                    "spring_" + convert.str(),
@@ -313,7 +317,7 @@ int main(int argc, char** argv)
 
     ////////////////////
     pose << pos_x, pos_y, 0.4, 0, 0, 0;
-    box_size << 0.5, 0.5, 0.01;
+    box_size << d_pos, d_pos, 0.01;
 
     test.addLink( "tactile_" + convert.str(),
                   0.001,
@@ -332,12 +336,12 @@ int main(int argc, char** argv)
 
 //    std::cout << pos_x << " " << pos_y << "\n";
 
-    pos_x = pos_x + 0.5;
+    pos_x = pos_x + d_pos;
 
     if( pos_x > 1.5 )
     {
       pos_x = -1.5;
-      pos_y = pos_y - 0.5;
+      pos_y = pos_y - d_pos;
 //      std::cout << " ------ \n";
     }
 
@@ -351,29 +355,6 @@ int main(int argc, char** argv)
   test.addPlugin( "plane_joint"  , "libplane_joint.so" );
 
   test.saveSDFFile( sdf_filename );
-
-//  /*
-//   * Add define robot model
-//   */
-//
-//  sdf::ElementPtr element_desc;
-//  element_desc.reset(new sdf::Element);
-//
-//  robot->root->AddElement("model");
-//
-//  element_desc->SetName("spring_joint");
-////  robot->root->GetElement("model")->SetDescription("test description");
-//
-////  sdf::Pose pose_test;
-//
-//  robot->root->GetElement("model")->AddAttribute("name", "string", "spring_board", 0, "000009");
-////  robot->root->GetElement("model")->AddAttribute("name", "string", "spring_board", 0, "000009");
-//
-//  /*
-//   * Write to sdf file
-//   * TODO make this a class member function
-//   */
-//  robot->Write(sdf_filename);
 
   return 0;
 
