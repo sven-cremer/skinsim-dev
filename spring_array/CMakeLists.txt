@@ -23,6 +23,9 @@ target_link_libraries(mass_joint ${GAZEBO_LIBRARIES})
 add_library(plane_joint SHARED plane_joint.cc)
 target_link_libraries(plane_joint ${GAZEBO_LIBRARIES})
 
+add_library(tactile_joint SHARED tactile_joint.cc)
+target_link_libraries(tactile_joint ${GAZEBO_LIBRARIES})
+
 include(FindBoost)
 find_package(Boost ${MIN_BOOST_VERSION} REQUIRED system filesystem regex)
 

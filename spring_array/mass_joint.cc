@@ -13,9 +13,9 @@ namespace gazebo
       this->model = _model;
       this->joint = this->model->GetJoint("my_mass_joint");
       
-      action_t = 2;
+      action_t = 3.0;
       a = 1;
-      force = -0.25;
+      force = 0.0;
       this->updateConnection = event::Events::ConnectWorldUpdateBegin(
           boost::bind(&Mass_Joint::OnUpdate, this));
       
@@ -33,9 +33,26 @@ namespace gazebo
 
       if(current_time > action_t)
       {
-        force = force - 0.25;
+        switch(a){
+          case 1:
+            force = -2.00;
+            break;
+          case 2:
+            force = -1.22;
+            break;
+          case 3:
+            force = -0.50;
+            break;
+          case 4:
+            force = -2.00;
+            break;
+          default:
+            force = -1.50;
+            a = 1;
+            
+          }
         a++;
-        action_t = action_t + 2;
+        action_t = action_t + 5;
       }
     }
     physics::JointPtr joint;

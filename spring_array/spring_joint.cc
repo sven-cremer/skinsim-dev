@@ -118,9 +118,9 @@ public:
   {
     double rest_angle = 0;
     double stiffness = 2;
-    double damp_coefficient = 0.45;
-    double current_angle = 0;
-    double current_force = 0;
+    double damp_coefficient = 0.25;
+    double current_angle    = 0;
+    double current_force    = 0;
     double current_velocity = 0;
 
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
