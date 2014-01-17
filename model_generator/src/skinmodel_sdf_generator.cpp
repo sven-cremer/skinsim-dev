@@ -39,15 +39,13 @@
  */
 
 #include "sdf/sdf.hh"
-//#include "sdf/parser_urdf.hh"
-//#include "urdf/model.h"
 
 #include <fstream>
 #include <string>
-
 #include <yaml-cpp/yaml.h>
-
 #include <Eigen/Core>
+
+#include <ros/ros.h>
 
 class SkinSimModelBuilder
 {
@@ -250,13 +248,23 @@ public:
 int main(int argc, char** argv)
 {
 
+  // Initialize ROS
+  ros::init (argc, argv, "skinmodel_sdf_generator");
+  ros::NodeHandle nh;
+
   SkinSimModelBuilder test;
 
-  std::string sdf_filename = "model.sdf";
+  std::string para_sdf_filename = "/sdf_filename";
+  std::string para_jcf_filename = "/joint_config_filename";
+
+  std::string sdf_filename          ; // = "model.sdf";
+  std::string joint_config_filename ; // = "joint_names.yaml";
+
+  if (!nh.getParam(para_sdf_filename , sdf_filename           )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
+  if (!nh.getParam(para_jcf_filename , joint_config_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_jcf_filename.c_str()); }
 
   YAML::Emitter out;
-  std::string joint_config_file_name = "joint_names.yaml";
-  std::ofstream fout(joint_config_file_name.c_str());
+  std::ofstream fout(joint_config_filename.c_str());
 
 //  sdf::SDFPtr robot(new sdf::SDF());
 //  sdf::init(robot);
@@ -291,9 +299,27 @@ int main(int argc, char** argv)
 
   ////////////////////
 
-  double pos_x = -1.5;
-  double pos_y = 1.5;
-  double d_pos = 0.25;
+  std::string para_density = "density";
+  std::string para_size_x  = "size_x" ;
+  std::string para_size_y  = "size_y" ;
+  std::string para_d_pos   = "d_pos"  ;
+
+  double density     ;
+  double size_x = 1.5;
+  double size_y = 1.5;
+  double d_pos  = 0.5;
+
+
+  if (!nh.getParam(para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
+  if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
+  if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
+  if (!nh.getParam(para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
+
+  double tactile_size_x = d_pos;
+  double tactile_size_y = d_pos;
+
+  double pos_x = -size_x;
+  double pos_y =  size_y;
 
   double sensor_no = (double)(pos_y - pos_x)/d_pos + 1;
   sensor_no = sensor_no*sensor_no;
@@ -326,7 +352,7 @@ int main(int argc, char** argv)
 
     ////////////////////
     pose << pos_x, pos_y, 0.4, 0, 0, 0;
-    box_size << d_pos, d_pos, 0.01;
+    box_size << tactile_size_x, tactile_size_y, 0.01;
 
     test.addLink( "tactile_" + convert.str(),
                   0.001,
@@ -347,9 +373,9 @@ int main(int argc, char** argv)
 
     pos_x = pos_x + d_pos;
 
-    if( pos_x > 1.5 )
+    if( pos_x > size_x )
     {
-      pos_x = -1.5;
+      pos_x = -size_x;
       pos_y = pos_y - d_pos;
 //      std::cout << " ------ \n";
     }
