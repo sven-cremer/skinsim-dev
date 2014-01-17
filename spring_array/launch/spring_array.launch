@@ -3,9 +3,7 @@
   <!-- these are the arguments you can pass this launch file, for example paused:=true -->
   <arg name="load_jointfile_path" default="true"/>
 
-<!-- 
   <rosparam file="$(find spring_array)/config/config.yaml" command="load" />
- -->
  
    <!-- set load_jointfile_path flag -->
   <group if="$(arg load_jointfile_path)">

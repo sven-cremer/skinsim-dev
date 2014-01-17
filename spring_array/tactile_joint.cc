@@ -47,11 +47,23 @@ public:
 
     std::string para_file_name = "/file_name";
 
+    std::string para_tactile_spring          = "/tactile_spring";
+    std::string para_tactile_damper          = "/tactile_damper";
+    std::string para_tactile_capacitor_area  = "/tactile_capacitor_area";
+    std::string para_tactile_capacitor_depth = "/tactile_capacitor_depth";
+    std::string para_tactile_permittivity    = "/tactile_permittivity";
+
     std::string file_name; // = "/home/isura/joint_name.yaml";
-    if (!this->ros_node->getParam(para_file_name, file_name))
-    {
-      ROS_ERROR("Value not loaded from parameter: %s !)", para_file_name.c_str());
-    }
+
+    if (!this->ros_node->getParam(para_file_name, file_name)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_file_name.c_str()); }
+
+    if (!this->ros_node->getParam(para_tactile_spring         , tactile_spring         )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_spring         .c_str()); }
+    if (!this->ros_node->getParam(para_tactile_damper         , tactile_damper         )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_damper         .c_str()); }
+    if (!this->ros_node->getParam(para_tactile_capacitor_area , tactile_capacitor_area )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_capacitor_area .c_str()); }
+    if (!this->ros_node->getParam(para_tactile_capacitor_depth, tactile_capacitor_depth)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_capacitor_depth.c_str()); }
+    if (!this->ros_node->getParam(para_tactile_permittivity   , tactile_permittivity   )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_permittivity   .c_str()); }
+
+
 
     fin.open(file_name.c_str());
 
@@ -118,15 +130,12 @@ public:
   {
 
     double rest_angle = 0;
-    double stiffness = 4;
-    double permittivity = 1;
-    double damp_coefficient = 0.35;
+
     double current_angle    = 0;
     double current_force    = 0;
     double current_velocity = 0;
-    double current_voltage = 0;
-    double capacitor_area = 0.25;
-    double capacitor_depth = 0.4;
+    double current_voltage  = 0;
+
 
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
     math::Vector3 vect;
@@ -150,10 +159,10 @@ public:
       current_force = this->joints[i]->GetForce(0);
       current_velocity = this->joints[i]->GetVelocity(0);
 
-      current_voltage = sqrt(2*current_force*pow((capacitor_depth + current_angle),2)/(permittivity*capacitor_area));
+      current_voltage = sqrt(2*current_force*pow((tactile_capacitor_depth + current_angle),2)/(tactile_permittivity*tactile_capacitor_area));
 
       // This sets the mass-spring-damper dynamics, currently only spring and damper
-      this->joints[i]->SetForce(0, (rest_angle - current_angle) * stiffness - damp_coefficient * current_velocity);
+      this->joints[i]->SetForce(0, (rest_angle - current_angle) * tactile_spring - tactile_damper * current_velocity);
       vect.x = current_time;
       vect.y = i;
       vect.z = current_force;
@@ -209,6 +218,13 @@ private:
   YAML::Parser parser;
   YAML::Node doc;
   std::ifstream fin;
+
+  // Parameters
+  double tactile_spring          ;
+  double tactile_damper          ;
+  double tactile_capacitor_area  ;
+  double tactile_capacitor_depth ;
+  double tactile_permittivity    ;
 
 };
 
