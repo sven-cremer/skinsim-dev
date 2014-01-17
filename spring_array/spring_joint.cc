@@ -71,7 +71,7 @@ public:
     for (unsigned i = 0; i < doc.size(); i++)
     {
       doc[i]["Joint"] >> scalar;
-      this->jointNames.push_back(scalar);
+      this->jointNames.push_back("spring_" + scalar);
       //std::cout << "Here's the output YAML:\n---" << scalar << "---\n";
     }
 
@@ -97,7 +97,7 @@ public:
     // Create a publisher on the ~/factory topic
     pub = node->Advertise<msgs::Vector3d>("~/force_sensor_info");
 
-    this->image_pub = this->ros_node->advertise<sensor_msgs::Image>("tactile_image", 1);
+    this->image_pub = this->ros_node->advertise<sensor_msgs::Image>("skin_image", 1);
     this->frame_name = "base_link";
 
     // Initialize the node with the Model name
