@@ -45,13 +45,18 @@ public:
     // ROS Nodehandle
     this->ros_node = new ros::NodeHandle("~");
 
-    std::string para_file_name = "/file_name";
+    std::string para_file_name   = "/file_name";
+
+    std::string para_skin_spring = "/skin_spring";
+    std::string para_skin_damper = "/skin_damper";
 
     std::string file_name; // = "/home/isura/joint_name.yaml";
-    if (!this->ros_node->getParam(para_file_name, file_name))
-    {
-      ROS_ERROR("Value not loaded from parameter: %s !)", para_file_name.c_str());
-    }
+
+    if (!this->ros_node->getParam(para_file_name, file_name)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_file_name.c_str()); }
+
+    if (!this->ros_node->getParam(para_skin_spring, skin_spring)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_spring.c_str()); }
+    if (!this->ros_node->getParam(para_skin_damper, skin_damper)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_damper.c_str()); }
+
 
     fin.open(file_name.c_str());
 
@@ -117,8 +122,7 @@ public:
   void UpdateJoint()
   {
     double rest_angle = 0;
-    double stiffness = 2;
-    double damp_coefficient = 0.25;
+
     double current_angle    = 0;
     double current_force    = 0;
     double current_velocity = 0;
@@ -145,7 +149,7 @@ public:
       current_velocity = this->joints[i]->GetVelocity(0);
 
       // This sets the mass-spring-damper dynamics, currently only spring and damper
-      this->joints[i]->SetForce(0, (rest_angle - current_angle) * stiffness - damp_coefficient * current_velocity);
+      this->joints[i]->SetForce(0, (rest_angle - current_angle) * skin_spring - skin_damper * current_velocity);
       vect.x = current_time;
       vect.y = i;
       vect.z = current_force;
@@ -174,11 +178,14 @@ public:
   }
 
 
-  // ROS Nodehandle
 private:
+
+  // ROS Nodehandle
   ros::NodeHandle* ros_node;
+
   /// \brief keep a list of hard coded joint names.
   std::vector<std::string> jointNames;
+
   //physics::JointPtr joint_;
 
   /// \brief Internal list of pointers to Joints
@@ -201,6 +208,10 @@ private:
   YAML::Parser parser;
   YAML::Node doc;
   std::ifstream fin;
+
+  // Parameters
+  double skin_spring ;
+  double skin_damper ;
 
 };
 

@@ -3,6 +3,8 @@
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
 
+#include "ros/ros.h"
+
 namespace gazebo
 {
   class Plane_Joint : public ModelPlugin
@@ -10,6 +12,15 @@ namespace gazebo
     public: void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
     {
       
+      // ROS Nodehandle
+      this->ros_node = new ros::NodeHandle("~");
+
+      std::string para_plane_spring = "/plane_spring";
+      std::string para_plane_damper = "/plane_damper";
+
+      if (!this->ros_node->getParam(para_plane_spring, plane_spring)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_plane_spring.c_str()); }
+      if (!this->ros_node->getParam(para_plane_damper, plane_damper)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_plane_damper.c_str()); }
+
       this->model_ = _model;
       this->joint_ = this->model_->GetJoint("plane_joint");
 
@@ -29,9 +40,17 @@ namespace gazebo
       //std::cout << name<<" Current force: "<<current_force<<"\n";
 
     }
+
     physics::JointPtr joint_;
     physics::ModelPtr model_;  
     event::ConnectionPtr update_connection_;
+
+    // ROS
+    ros::NodeHandle* ros_node;
+
+    // Parameters
+    double plane_spring ;
+    double plane_damper ;
 
   };
 

@@ -1,0 +1,11 @@
+skin_spring             : 2
+skin_damper             : 0.25
+
+tactile_spring          : 4
+tactile_damper          : 0.35
+tactile_capacitor_area  : 0.25
+tactile_capacitor_depth : 0.4
+tactile_permittivity    : 1
+
+plane_spring            : 24
+plane_damper            : 10

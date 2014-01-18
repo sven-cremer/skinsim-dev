@@ -28,8 +28,8 @@
           </box>
         </geometry>
         <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
           <specular>0.1 0.1 0.1 1</specular>
           <emissive>0 0 0 0</emissive>
         </material>
@@ -76,6 +76,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -168,6 +174,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -260,6 +272,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -352,6 +370,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -444,6 +468,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -536,6 +566,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -628,6 +664,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -720,6 +762,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -812,6 +860,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -904,6 +958,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -996,6 +1056,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -1088,6 +1154,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -1180,6 +1252,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -1272,6 +1350,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -1364,6 +1448,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -1456,6 +1546,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -1548,6 +1644,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -1640,6 +1742,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -1732,6 +1840,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -1824,6 +1938,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -1916,6 +2036,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2008,6 +2134,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2100,6 +2232,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2192,6 +2330,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2284,6 +2428,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2376,6 +2526,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2468,6 +2624,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2560,6 +2722,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2652,6 +2820,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2744,6 +2918,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2836,6 +3016,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -2928,6 +3114,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3020,6 +3212,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3112,6 +3310,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3204,6 +3408,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3296,6 +3506,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3388,6 +3604,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3480,6 +3702,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3572,6 +3800,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3664,6 +3898,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3756,6 +3996,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3848,6 +4094,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -3940,6 +4192,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -4032,6 +4290,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -4124,6 +4388,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -4216,6 +4486,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -4308,6 +4584,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -4400,6 +4682,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
@@ -4492,6 +4780,12 @@
             <radius>0.25</radius>
           </sphere>
         </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <velocity_decay>
         <linear>0</linear>
