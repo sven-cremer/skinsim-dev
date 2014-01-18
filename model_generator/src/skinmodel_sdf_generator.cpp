@@ -120,18 +120,16 @@ public:
                 << "        </surface>";
   }
 
-  void addMaterial( double radius )
-  {
-
-  }
-
-  void addMaterial(  )
+  void addMaterial( Eigen::Vector4d & ambient ,
+                    Eigen::Vector4d & diffuse ,
+                    Eigen::Vector4d & specular,
+                    Eigen::Vector4d & emissive  )
   {
     sdf_stream_ << "  <material>"
-                << "    <ambient>1 0 0 1</ambient>"
-                << "    <diffuse>1 0 0 1</diffuse>"
-                << "    <specular>0.1 0.1 0.1 1</specular>"
-                << "    <emissive>0 0 0 0</emissive>"
+                << "    <ambient>"  << ambient  << "</ambient>"
+                << "    <diffuse>"  << diffuse  << "</diffuse>"
+                << "    <specular>" << specular << "</specular>"
+                << "    <emissive>" << emissive << "</emissive>"
                 << "  </material>";
   }
 
@@ -151,19 +149,35 @@ public:
     sdf_stream_ << "    </collision>";
   }
 
-  void addVisual( std::string visual_name, double radius )
+  void addVisual( std::string visual_name,
+                  double radius,
+                  Eigen::Vector4d & ambient ,
+                  Eigen::Vector4d & diffuse ,
+                  Eigen::Vector4d & specular,
+                  Eigen::Vector4d & emissive  )
   {
     sdf_stream_ << "    <visual name='" + visual_name + "'>";
                 addGeometry( radius );
-                addMaterial( radius );
+                addMaterial( ambient ,
+                             diffuse ,
+                             specular,
+                             emissive );
     sdf_stream_ << "    </visual>";
   }
 
-  void addVisual( std::string visual_name, Eigen::Vector3d & box_size )
+  void addVisual( std::string visual_name,
+                  Eigen::Vector3d & box_size,
+                  Eigen::Vector4d & ambient ,
+                  Eigen::Vector4d & diffuse ,
+                  Eigen::Vector4d & specular,
+                  Eigen::Vector4d & emissive  )
   {
     sdf_stream_ << "    <visual name='" + visual_name + "'>";
                 addGeometry( box_size );
-                addMaterial( );
+                addMaterial( ambient ,
+                             diffuse ,
+                             specular,
+                             emissive );
     sdf_stream_ << "    </visual>";
   }
 
@@ -179,14 +193,23 @@ public:
                 std::string collision_name,
                 std::string visual_name,
                 double radius,
-                Eigen::VectorXd & pose )
+                Eigen::VectorXd & pose,
+                Eigen::Vector4d & ambient ,
+                Eigen::Vector4d & diffuse ,
+                Eigen::Vector4d & specular,
+                Eigen::Vector4d & emissive  )
   {
     sdf_stream_ << "  <link name='" + link_name + "'>"
                 << "    <pose>"<< pose << "</pose>";
 
                 addInertia( mass );
                 addCollision( collision_name, radius );
-                addVisual( visual_name, radius );
+                addVisual( visual_name,
+                           radius,
+                           ambient ,
+                           diffuse ,
+                           specular,
+                           emissive );
 
     sdf_stream_ << "   </link>";
   }
@@ -196,14 +219,23 @@ public:
                 std::string collision_name,
                 std::string visual_name,
                 Eigen::Vector3d & box_size,
-                Eigen::VectorXd & pose )
+                Eigen::VectorXd & pose,
+                Eigen::Vector4d & ambient ,
+                Eigen::Vector4d & diffuse ,
+                Eigen::Vector4d & specular,
+                Eigen::Vector4d & emissive  )
   {
     sdf_stream_ << "  <link name='" + link_name + "'>"
                 << "    <pose>"<< pose << "</pose>";
 
                 addInertia( mass );
                 addCollision( collision_name, box_size );
-                addVisual( visual_name, box_size );
+                addVisual( visual_name,
+                           box_size,
+                           ambient ,
+                           diffuse ,
+                           specular,
+                           emissive );
 
     sdf_stream_ << "   </link>";
   }
@@ -260,6 +292,37 @@ int main(int argc, char** argv)
   std::string sdf_filename          ; // = "model.sdf";
   std::string joint_config_filename ; // = "joint_names.yaml";
 
+  Eigen::Vector4d skin_ambient ;
+  Eigen::Vector4d skin_diffuse ;
+  Eigen::Vector4d skin_specular;
+  Eigen::Vector4d skin_emissive;
+
+  Eigen::Vector4d tactile_ambient ;
+  Eigen::Vector4d tactile_diffuse ;
+  Eigen::Vector4d tactile_specular;
+  Eigen::Vector4d tactile_emissive;
+
+  Eigen::Vector4d base_ambient ;
+  Eigen::Vector4d base_diffuse ;
+  Eigen::Vector4d base_specular;
+  Eigen::Vector4d base_emissive;
+
+  //                 R    G    B
+  skin_ambient  << 1.0, 1.0, 1.0, 1.0 ;
+  skin_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
+  skin_specular << 0.1, 0.1, 0.1, 1.0 ;
+  skin_emissive = Eigen::Vector4d::Zero();
+
+  tactile_ambient  << 1.0, 0.0, 0.0, 1.0 ;
+  tactile_diffuse  << 1.0, 0.0, 0.0, 1.0 ;
+  tactile_specular << 0.1, 0.1, 0.1, 1.0 ;
+  tactile_emissive = Eigen::Vector4d::Zero();
+
+  base_ambient  << 1.0, 1.0, 1.0, 1.0 ;
+  base_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
+  base_specular << 0.1, 0.1, 0.1, 1.0 ;
+  base_emissive = Eigen::Vector4d::Zero();
+
   if (!nh.getParam(para_sdf_filename , sdf_filename           )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
   if (!nh.getParam(para_jcf_filename , joint_config_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_jcf_filename.c_str()); }
 
@@ -287,7 +350,11 @@ int main(int argc, char** argv)
                 "collision",
                 "visual",
                 box_size,
-                pose );
+                pose,
+                base_ambient ,
+                base_diffuse ,
+                base_specular,
+                base_emissive );
 
   axis << 0, 0, 1;
 
@@ -340,7 +407,11 @@ int main(int argc, char** argv)
                   "sphere_collision",
                   "visual",
                   radius,
-                  pose );
+                  pose,
+                  skin_ambient ,
+                  skin_diffuse ,
+                  skin_specular,
+                  skin_emissive );
 
     axis << 0, 0, 1;
 
@@ -359,7 +430,11 @@ int main(int argc, char** argv)
                   "square_collision",
                   "visual",
                   box_size,
-                  pose );
+                  pose,
+                  tactile_ambient ,
+                  tactile_diffuse ,
+                  tactile_specular,
+                  tactile_emissive );
 
     axis << 0, 0, 1;
 
