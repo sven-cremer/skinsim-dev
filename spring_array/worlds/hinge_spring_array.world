@@ -16,6 +16,11 @@
 
 <physics type="ode">
   <gravity>0.0 0.0 0.0</gravity>
+  <ode>
+    <solver>
+      <iters>150</iters>
+    </solver>
+  </ode>
 </physics>
 
 

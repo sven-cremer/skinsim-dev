@@ -9,3 +9,12 @@ tactile_permittivity    : 1
 
 plane_spring            : 24
 plane_damper            : 10
+
+x_size                  : 1
+y_size                  : 1
+
+x_dt                    : 0.2
+y_dt                    : 0.2
+
+tactile_max             : 8
+skin_max                : 8
