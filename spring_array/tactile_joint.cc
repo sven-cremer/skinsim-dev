@@ -53,6 +53,14 @@ public:
     std::string para_tactile_capacitor_depth = "/tactile_capacitor_depth";
     std::string para_tactile_permittivity    = "/tactile_permittivity";
 
+    std::string para_x_size = "/x_size";
+    std::string para_y_size = "/y_size";
+
+    std::string para_x_dt   = "/x_dt";
+    std::string para_y_dt   = "/y_dt";
+
+    std::string para_tactile_max = "/tactile_max";
+
     std::string file_name; // = "/home/isura/joint_name.yaml";
 
     if (!this->ros_node->getParam(para_file_name, file_name)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_file_name.c_str()); }
@@ -63,7 +71,13 @@ public:
     if (!this->ros_node->getParam(para_tactile_capacitor_depth, tactile_capacitor_depth)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_capacitor_depth.c_str()); }
     if (!this->ros_node->getParam(para_tactile_permittivity   , tactile_permittivity   )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_permittivity   .c_str()); }
 
+    if (!this->ros_node->getParam(para_x_size , x_size)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_x_size.c_str()); }
+    if (!this->ros_node->getParam(para_y_size , y_size)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_y_size.c_str()); }
 
+    if (!this->ros_node->getParam(para_x_dt   , x_dt  )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_x_dt  .c_str()); }
+    if (!this->ros_node->getParam(para_y_dt   , y_dt  )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_y_dt  .c_str()); }
+
+    if (!this->ros_node->getParam(para_tactile_max , tactile_max )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_max  .c_str()); }
 
     fin.open(file_name.c_str());
 
@@ -146,9 +160,9 @@ public:
     image_msg.header.stamp.sec  = ros::Time::now().sec;
     image_msg.header.stamp.nsec = ros::Time::now().nsec;
     image_msg.encoding = sensor_msgs::image_encodings::MONO8;
-    image_msg.height = 7;
-    image_msg.width  = 7;
-    image_msg.step = 7;
+    image_msg.height   = 2*y_size / y_dt + 1 ;
+    image_msg.width    = 2*x_size / x_dt + 1 ;
+    image_msg.step     = image_msg.width     ;
 
     double tactile_data;
 
@@ -170,18 +184,12 @@ public:
 //      msgs::Set(&msg, vect);
 //      pub->Publish(msg);
 
-      tactile_data = current_force*255;
-      tactile_data = tactile_data/2;
+      tactile_data = current_force*255 ;
+      tactile_data = tactile_data*tactile_max ;
 
-      if( tactile_data > 255 )
-      {
-        tactile_data = 255;
-      }
+      if( tactile_data > 255 ) { tactile_data = 255; }
 
-      if( tactile_data < 0 )
-      {
-        tactile_data = 0;
-      }
+      if( tactile_data < 0   ) { tactile_data = 0  ; }
 
       image_msg.data.push_back( tactile_data ); //this->joints[i]->GetForce(0)
 
@@ -225,6 +233,14 @@ private:
   double tactile_capacitor_area  ;
   double tactile_capacitor_depth ;
   double tactile_permittivity    ;
+
+  double x_size ;
+  double y_size ;
+
+  double x_dt   ;
+  double y_dt   ;
+
+  double tactile_max ;
 
 };
 
