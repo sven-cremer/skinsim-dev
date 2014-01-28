@@ -11,6 +11,16 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
+#include <fstream>
+#include <string>
+
+uint64_t GetTimeStamp()
+{
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    return tv.tv_sec*(uint64_t)1000000+tv.tv_usec;
+}
+
 namespace gazebo
 {
 class Tactile_Joint : public ModelPlugin
@@ -28,6 +38,9 @@ public:
 
   ~Tactile_Joint()
   {
+    /* Temporary data collection code
+    myfile.close();
+    */
     delete this->ros_node;
   }
 
@@ -45,7 +58,8 @@ public:
     // ROS Nodehandle
     this->ros_node = new ros::NodeHandle("~");
 
-    std::string para_file_name = "/file_name";
+    std::string para_file_name     = "/file_name";
+    std::string para_datafile_name = "/datafile_name";
 
     std::string para_tactile_spring          = "/tactile_spring";
     std::string para_tactile_damper          = "/tactile_damper";
@@ -62,8 +76,10 @@ public:
     std::string para_tactile_max = "/tactile_max";
 
     std::string file_name; // = "/home/isura/joint_name.yaml";
+    std::string datafile_name;
 
-    if (!this->ros_node->getParam(para_file_name, file_name)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_file_name.c_str()); }
+    if (!this->ros_node->getParam(para_file_name    , file_name)){ ROS_ERROR("Value not loaded from parameter: %s !)"    , para_file_name.c_str()    ); }
+    if (!this->ros_node->getParam(para_datafile_name, datafile_name)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_datafile_name.c_str()); }
 
     if (!this->ros_node->getParam(para_tactile_spring         , tactile_spring         )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_spring         .c_str()); }
     if (!this->ros_node->getParam(para_tactile_damper         , tactile_damper         )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_damper         .c_str()); }
@@ -130,6 +146,16 @@ public:
     node->Init(model_->GetName());
 
     this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&Tactile_Joint::UpdateJoint, this));
+
+    /* Temporary data collection code
+    // Cycle test
+    last_cycle = GetTimeStamp();
+    std::ostringstream convert;
+    convert << jointNames.size();
+    datafile_name = datafile_name + convert.str() + ".txt";
+    myfile.open ( datafile_name.c_str() );
+    */
+
   }
 
   // Called by the world update start event
@@ -153,6 +179,14 @@ public:
 
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
     math::Vector3 vect;
+
+    /* Temporary data collection code
+    cycle_time = GetTimeStamp() - last_cycle;
+    last_cycle = GetTimeStamp();
+//    std::cout << "Cycle time : " << cycle_time << " usec \n";;//cycle_time.sec << "s " << cycle_time.nsec << " nsec \n";
+    std::cout << cycle_time << "\n";//cycle_time.sec << "s " << cycle_time.nsec << " nsec \n";
+    myfile << cycle_time << "\n";
+    */
 
     sensor_msgs::Image image_msg;
 
@@ -241,6 +275,13 @@ private:
   double y_dt   ;
 
   double tactile_max ;
+
+  /* Temporary data collection code
+  // For testing time
+  uint64_t last_cycle;
+  uint64_t cycle_time;
+  std::ofstream myfile;
+  */
 
 };
 
