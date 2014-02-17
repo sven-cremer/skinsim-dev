@@ -14,6 +14,8 @@
 #include <fstream>
 #include <string>
 
+#include "spring_array/tactileData.h"
+
 uint64_t GetTimeStamp()
 {
     struct timeval tv;
@@ -139,8 +141,9 @@ public:
     // Create a publisher on the ~/factory topic
     pub = node->Advertise<msgs::Vector3d>("~/force_sensor_info");
 
-    this->image_pub = this->ros_node->advertise<sensor_msgs::Image>("tactile_image", 1);
-    this->frame_name = "base_link";
+    this->image_pub   = this->ros_node->advertise<sensor_msgs::Image>("tactile_image", 1);
+    this->tactile_pub = this->ros_node->advertise<spring_array::tactileData>("tactile_data", 1);
+    this->frame_name  = "base_link";
 
     // Initialize the node with the Model name
     node->Init(model_->GetName());
@@ -176,9 +179,16 @@ public:
     double current_velocity = 0;
     double current_voltage  = 0;
 
+    spring_array::tactileData tacData;
+
 
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
     math::Vector3 vect;
+
+//    ...=  this->model_->GetWorld()->GetSimTime();
+
+    tacData.time  = this->model_->GetWorld()->GetSimTime().Double();
+    tacData.patchID = 1;
 
     /* Temporary data collection code
     cycle_time = GetTimeStamp() - last_cycle;
@@ -215,8 +225,13 @@ public:
       vect.y = i;
       vect.z = current_force;
 
-//      msgs::Set(&msg, vect);
-//      pub->Publish(msg);
+//      msgs::Set( &msg, vect );
+//      pub->Publish( msg );
+
+      tacData.sensorID.push_back( i ) ;
+      tacData.force.push_back( current_force ) ;
+      tacData.force_noisy.push_back( current_force + ((float)rand() / (float)(RAND_MAX + 1)) ) ;
+
 
       tactile_data = current_force*255 ;
       tactile_data = tactile_data*tactile_max ;
@@ -229,6 +244,7 @@ public:
 
     }
 
+      tactile_pub.publish(tacData);
       image_pub.publish(image_msg);
   }
 
@@ -256,6 +272,7 @@ private:
 
   // ROS Publisher
   ros::Publisher image_pub;
+  ros::Publisher tactile_pub;
 
   YAML::Parser parser;
   YAML::Node doc;
