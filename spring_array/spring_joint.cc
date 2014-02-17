@@ -167,6 +167,7 @@ public:
 
       // This sets the mass-spring-damper dynamics, currently only spring and damper
       this->joints[i]->SetForce(0, (rest_angle - current_angle) * skin_spring - skin_damper * current_velocity);
+
       vect.x = current_time  ;
       vect.y = i             ;
       vect.z = current_force ;
