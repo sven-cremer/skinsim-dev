@@ -8,6 +8,7 @@
    <!-- set load_jointfile_path flag -->
   <group if="$(arg load_jointfile_path)">
     <param name="file_name"  value="$(find spring_array)/config/joint_names.yaml" />
+    <param name="datafile_name"  value="$(find spring_array)/data/data" />
   </group>
  
   <!-- Launch empty world -->

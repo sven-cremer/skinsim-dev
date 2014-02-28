@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   }
 
   // Start ROS Node
-  ros::init(argc, argv, "moveit_setup_assistant", ros::init_options::NoSigintHandler);
+  ros::init(argc, argv, "robot_tailor", ros::init_options::NoSigintHandler);
 
   // ROS Spin
   ros::AsyncSpinner spinner(1);
