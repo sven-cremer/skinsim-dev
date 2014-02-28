@@ -18,3 +18,7 @@ y_dt                    : 0.2
 
 tactile_max             : 8
 skin_max                : 8
+
+plane_explFctr_Kp       : 10
+plane_explFctr_Ki       : 0.005
+plane_explFctr_Kd       : 1
