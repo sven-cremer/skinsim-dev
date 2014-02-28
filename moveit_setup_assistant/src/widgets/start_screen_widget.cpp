@@ -119,8 +119,8 @@ StartScreenWidget::StartScreenWidget( QWidget* parent, moveit_setup_assistant::M
 
 
   // Top Label Area ---------------------------------------------------
-  HeaderWidget *header = new HeaderWidget( "SkinSim Setup Assistant",
-                                           "Welcome to the SkinSim Setup Assistant! These tools will assist you in creating a multi-modal robotic skin simulation package.",
+  HeaderWidget *header = new HeaderWidget( "Robot Tailor",
+                                           "Welcome to the Robot Tailor! These tools will assist you in creating a multi-modal robotic skin simulation package.",
                                            this);
   layout->addWidget( header );
 
@@ -823,7 +823,7 @@ bool StartScreenWidget::createFullPackagePath()
     if( !fs::is_directory( full_package_path ) )
     {
       // error
-      QMessageBox::critical( this, "Error Loading Files", "The specified path is not a directory or is not accessable" );
+      QMessageBox::critical( this, "Error Loading Files", "The specified path is not a directory or is not accessible" );
       return false;
     }
   }
@@ -873,7 +873,7 @@ SelectModeWidget::SelectModeWidget( QWidget* parent )
 
   // Widget Instructions
   QLabel * widget_instructions = new QLabel(this);
-  widget_instructions->setText( "All settings for MoveIt are stored in a Moveit configuration package. Here you have the option to create a new configuration package, or load an existing one. Note: any changes to a MoveIt configuration package outside this setup assistant will likely be overwritten by this tool." );
+  widget_instructions->setText( "All settings for SkinSim are stored in a SkinSim configuration package. Here you have the option to create a new configuration package, or load an existing one. Note: any changes to a SkinSim configuration package outside this setup assistant will likely be overwritten by this tool." );
   widget_instructions->setWordWrap(true);
   //widget_instructions->setMinimumWidth(1);
   widget_instructions->setSizePolicy( QSizePolicy::Preferred, QSizePolicy::Preferred );
