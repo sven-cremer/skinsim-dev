@@ -3,7 +3,7 @@
     <model name="box">
       <pose>0 0 0 0 0 0</pose>
       <link name="link">
-        <pose>0 0 0.1 0 0 0</pose>
+        <pose>0 0 0 0 0 0</pose>
         <inertial>
           <mass>0.25</mass>
         </inertial>
@@ -11,7 +11,7 @@
         <collision name="collision">
           <geometry>
             <box>
-              <size>1.7 1.1 0.2</size>
+              <size>0.009 0.009 0.01</size>
             </box>
           </geometry>
         </collision>
@@ -19,7 +19,7 @@
         <visual name="visual">
           <geometry>
             <box>
-              <size>1.7 1.1 0.2</size>
+              <size>0.009 0.009 0.01</size>
             </box>
           </geometry>
         </visual>

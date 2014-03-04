@@ -82,9 +82,9 @@ namespace gazebo
       if( this->model_->GetWorld()->GetSimTime().Double() > 1.0 )
       {
 
+        // Explicit force controller
         if( ctrType == 0 )
         {
-          // Explicit force controller
           double delT = this->model_->GetWorld()->GetSimTime().Double() - prev_time ;
 
           prev_time = this->model_->GetWorld()->GetSimTime().Double();
@@ -101,9 +101,9 @@ namespace gazebo
   //        this->joint_->SetForce( 0, a*explFctr_Kp + int_err*explFctr_Ki );
         }
 
+        // Impedance control
         if( ctrType == 1 )
         {
-          // Impedance control
           double rest_angle       = impCtr_Xnom ;
           double stiffness        = impCtr_K    ;
           double damp_coefficient = impCtr_D    ;
