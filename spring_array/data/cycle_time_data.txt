@@ -1,0 +1,9 @@
+150 iterations per step
+collected from tactile plugin
+
+in micro seconds
+
+9   : 1.0239e+03
+25  : 1.1245e+03
+81  : 3.2478e+03
+121 : 4.8053e+03

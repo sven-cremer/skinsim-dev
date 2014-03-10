@@ -13,7 +13,7 @@
  
   <!-- Launch empty world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg   name="world_name" value="$(find spring_array)/worlds/hand_spring_array.world"/>
+    <arg   name="world_name" value="$(find spring_array)/worlds/fixed_spring_array.world"/>
   </include>
   
 </launch>

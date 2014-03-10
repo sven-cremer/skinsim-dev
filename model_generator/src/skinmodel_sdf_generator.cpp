@@ -326,6 +326,40 @@ int main(int argc, char** argv)
   if (!nh.getParam(para_sdf_filename , sdf_filename           )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
   if (!nh.getParam(para_jcf_filename , joint_config_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_jcf_filename.c_str()); }
 
+  std::string para_density      = "density";
+  std::string para_size_x       = "size_x" ;
+  std::string para_size_y       = "size_y" ;
+
+  std::string para_skin_height  = "skin_height";
+  std::string para_tac_height   = "tac_height";
+
+  std::string para_plane_height = "plane_height";
+
+  std::string para_d_pos        = "d_pos"  ;
+
+  double density     ;
+  double size_x = 1.5;
+  double size_y = 1.5;
+
+  double skin_height = 1.3;
+  double tac_height  = 0.4;
+
+  double plane_height= 0.4;
+
+  double d_pos  = 0.5;
+
+
+  if (!nh.getParam(para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
+  if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
+  if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
+
+  if (!nh.getParam(para_skin_height, skin_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_height.c_str()); }
+  if (!nh.getParam(para_tac_height , tac_height  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tac_height .c_str()); }
+
+  if (!nh.getParam(para_plane_height, plane_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_plane_height .c_str()); }
+
+  if (!nh.getParam(para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
+
   YAML::Emitter out;
   std::ofstream fout(joint_config_filename.c_str());
 
@@ -338,12 +372,12 @@ int main(int argc, char** argv)
   double radius;
 
   pose.resize(6,1);
-  pose << 0.0, 0.0, 0.5, 0.0, 0.0, 0.0;
+  pose << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
 
   test.generateModelStart("spring_board", pose );
 
-  pose << 0, 0, 0.1, 0, 0, 0;
-  box_size << 4, 4, 0.2;
+  pose << 0, 0, plane_height, 0, 0, 0;
+  box_size << 2.5*size_x, 2.5*size_y, d_pos/10;
 
   test.addLink( "plane",
                 20,
@@ -366,24 +400,10 @@ int main(int argc, char** argv)
 
   ////////////////////
 
-  std::string para_density = "density";
-  std::string para_size_x  = "size_x" ;
-  std::string para_size_y  = "size_y" ;
-  std::string para_d_pos   = "d_pos"  ;
 
-  double density     ;
-  double size_x = 1.5;
-  double size_y = 1.5;
-  double d_pos  = 0.5;
-
-
-  if (!nh.getParam(para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
-  if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
-  if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
-  if (!nh.getParam(para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
-
-  double tactile_size_x = d_pos;
-  double tactile_size_y = d_pos;
+  double tactile_size_x = d_pos   ;
+  double tactile_size_y = d_pos   ;
+  double tactile_size_z = d_pos/10;
 
   double pos_x = -size_x;
   double pos_y =  size_y;
@@ -399,7 +419,8 @@ int main(int argc, char** argv)
     std::ostringstream convert;
     convert << i;
 
-    pose << pos_x, pos_y, 1.3, 0, 0, 0;
+
+    pose << pos_x, pos_y, skin_height, 0, 0, 0;
     radius = d_pos/2;
 
     test.addLink( "spring_" + convert.str(),
@@ -422,8 +443,8 @@ int main(int argc, char** argv)
                    axis );
 
     ////////////////////
-    pose << pos_x, pos_y, 0.4, 0, 0, 0;
-    box_size << tactile_size_x, tactile_size_y, 0.01;
+    pose << pos_x, pos_y, tac_height, 0, 0, 0;
+    box_size << tactile_size_x, tactile_size_y, tactile_size_z;
 
     test.addLink( "tactile_" + convert.str(),
                   0.001,

@@ -26,34 +26,42 @@ namespace gazebo
       // Apply a small force to the model.
       
       double current_time = this->model->GetWorld()->GetSimTime().Double();
-      this->joint->SetForce(0, force);
-      double current_force = this->joint->GetForce(0);
 
-      //std::cout<< "current force: "<<current_force<<"\n";
+      double dX = this->joint->GetAngle(0).Radian(); // (rest_angle - current_angle) - rest angle is 0
+      double s_force = -20*dX;
 
-      if(current_time > action_t)
-      {
-        switch(a){
-          case 1:
-            force = -2.00;
-            break;
-          case 2:
-            force = -1.22;
-            break;
-          case 3:
-            force = -0.50;
-            break;
-          case 4:
-            force = -2.00;
-            break;
-          default:
-            force = -1.50;
-            a = 1;
-            
-          }
-        a++;
-        action_t = action_t + 5;
-      }
+      this->joint->SetForce(0, s_force);
+
+//      this->joint->SetForce(0, force);
+//
+//      double current_force = this->joint->GetForce(0);
+//
+//      //std::cout<< "current force: "<<current_force<<"\n";
+//
+//      if(current_time > action_t)
+//      {
+//        switch(a)
+//        {
+//          case 1:
+//            force = -2.00;
+//            break;
+//          case 2:
+//            force = -1.22;
+//            break;
+//          case 3:
+//            force = -0.50;
+//            break;
+//          case 4:
+//            force = -2.00;
+//            break;
+//          default:
+//            force = -1.50;
+//            a = 1;
+//          }
+//        a++;
+//        action_t = action_t + 5;
+//      }
+
     }
     physics::JointPtr joint;
     physics::ModelPtr model;  

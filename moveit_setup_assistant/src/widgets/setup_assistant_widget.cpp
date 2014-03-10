@@ -147,7 +147,7 @@ SetupAssistantWidget::SetupAssistantWidget( QWidget *parent, boost::program_opti
   this->setLayout(layout);
 
   // Title
-  this->setWindowTitle("SkinSim Setup Assistant"); // title of window
+  this->setWindowTitle("Robot Tailor"); // title of window
 
   // Show screen before message
   QApplication::processEvents();

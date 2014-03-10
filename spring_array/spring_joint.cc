@@ -50,12 +50,29 @@ public:
     std::string para_skin_spring = "/skin_spring";
     std::string para_skin_damper = "/skin_damper";
 
+    std::string para_x_size = "/x_size";
+    std::string para_y_size = "/y_size";
+
+    std::string para_x_dt   = "/x_dt";
+    std::string para_y_dt   = "/y_dt";
+
+    std::string para_skin_max = "/skin_max";
+
     std::string file_name; // = "/home/isura/joint_name.yaml";
 
     if (!this->ros_node->getParam(para_file_name, file_name)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_file_name.c_str()); }
 
     if (!this->ros_node->getParam(para_skin_spring, skin_spring)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_spring.c_str()); }
     if (!this->ros_node->getParam(para_skin_damper, skin_damper)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_damper.c_str()); }
+
+
+    if (!this->ros_node->getParam(para_x_size , x_size)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_x_size.c_str()); }
+    if (!this->ros_node->getParam(para_y_size , y_size)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_y_size.c_str()); }
+
+    if (!this->ros_node->getParam(para_x_dt   , x_dt  )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_x_dt  .c_str()); }
+    if (!this->ros_node->getParam(para_y_dt   , y_dt  )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_y_dt  .c_str()); }
+
+    if (!this->ros_node->getParam(para_skin_max , skin_max )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_max  .c_str()); }
 
 
     fin.open(file_name.c_str());
@@ -136,11 +153,11 @@ public:
     image_msg.header.stamp.sec  = ros::Time::now().sec;
     image_msg.header.stamp.nsec = ros::Time::now().nsec;
     image_msg.encoding = sensor_msgs::image_encodings::MONO8;
-    image_msg.height = 7;
-    image_msg.width  = 7;
-    image_msg.step = 7;
+    image_msg.height   = 2*y_size / y_dt + 1 ;
+    image_msg.width    = 2*x_size / x_dt + 1 ;
+    image_msg.step     = image_msg.width     ;
 
-    double tactile_data;
+    double tactile_data ;
 
     for (unsigned int i = 0; i < this->joints.size(); ++i)
     {
@@ -150,25 +167,23 @@ public:
 
       // This sets the mass-spring-damper dynamics, currently only spring and damper
       this->joints[i]->SetForce(0, (rest_angle - current_angle) * skin_spring - skin_damper * current_velocity);
-      vect.x = current_time;
-      vect.y = i;
-      vect.z = current_force;
+
+      // TODO test if this is better
+//      this->joints[i]->SetStiffnessDamping(0, skin_spring, skin_damper, rest_angle );
+
+      vect.x = current_time  ;
+      vect.y = i             ;
+      vect.z = current_force ;
 
 //      msgs::Set(&msg, vect);
 //      pub->Publish(msg);
 
-      tactile_data = current_force*255;
-      tactile_data = tactile_data/2;
+      tactile_data = current_force*255 ;
+      tactile_data = tactile_data*skin_max ;
 
-      if( tactile_data > 255 )
-      {
-        tactile_data = 255;
-      }
+      if( tactile_data > 255 ) { tactile_data = 255; }
 
-      if( tactile_data < 0 )
-      {
-        tactile_data = 0;
-      }
+      if( tactile_data < 0   ) { tactile_data = 0  ; }
 
       image_msg.data.push_back( tactile_data ); //this->joints[i]->GetForce(0)
 
@@ -212,6 +227,14 @@ private:
   // Parameters
   double skin_spring ;
   double skin_damper ;
+
+  double x_size ;
+  double y_size ;
+
+  double x_dt   ;
+  double y_dt   ;
+
+  double skin_max ;
 
 };
 

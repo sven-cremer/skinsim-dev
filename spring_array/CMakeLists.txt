@@ -4,6 +4,8 @@ project(spring_array)
 find_package(catkin REQUIRED COMPONENTS 
   gazebo_ros
   roscpp
+  std_msgs
+  message_generation
 )
 
 # Depend on system install of Gazebo
@@ -12,6 +14,36 @@ find_package(gazebo REQUIRED)
 include_directories(include ${catkin_INCLUDE_DIRS}
 							${GAZEBO_INCLUDE_DIRS}
 							${SDFormat_INCLUDE_DIRS} )
+							
+################################################
+## Declare ROS messages, services and actions ##
+################################################
+
+# Generate messages in the 'msg' folder
+ add_message_files(
+   FILES
+   tactileData.msg
+   controllerData.msg
+ )
+ 
+
+## Generate services in the 'srv' folder
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
+
+## Generate actions in the 'action' folder
+# add_action_files(
+#   FILES
+#   Action1.action
+#   Action2.action
+# )
+
+generate_messages( DEPENDENCIES std_msgs )
+
+catkin_package( CATKIN_DEPENDS message_runtime )
 
 # Build whatever you need here
 add_library(spring_joint SHARED spring_joint.cc)
