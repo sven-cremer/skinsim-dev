@@ -166,10 +166,10 @@ public:
       current_velocity = this->joints[i]->GetVelocity(0);
 
       // This sets the mass-spring-damper dynamics, currently only spring and damper
-      this->joints[i]->SetForce(0, (rest_angle - current_angle) * skin_spring - skin_damper * current_velocity);
+//      this->joints[i]->SetForce(0, (rest_angle - current_angle) * skin_spring - skin_damper * current_velocity);
 
       // TODO test if this is better
-//      this->joints[i]->SetStiffnessDamping(0, skin_spring, skin_damper, rest_angle );
+      this->joints[i]->SetStiffnessDamping(0, skin_spring, skin_damper, rest_angle );
 
       vect.x = current_time  ;
       vect.y = i             ;
