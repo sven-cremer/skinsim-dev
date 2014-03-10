@@ -175,8 +175,8 @@ public:
       vect.y = i             ;
       vect.z = current_force ;
 
-//      msgs::Set(&msg, vect);
-//      pub->Publish(msg);
+      msgs::Set(&msg, vect);
+      pub->Publish(msg);
 
       tactile_data = current_force*255 ;
       tactile_data = tactile_data*skin_max ;
