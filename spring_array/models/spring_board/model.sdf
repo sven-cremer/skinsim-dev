@@ -45,15 +45,15 @@
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
+          <lower>0</lower>
+          <upper>0</upper>
         </limit>
       </axis>
     </joint>
     <link name='spring_1'>
       <pose>-0.01 0.01 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -89,57 +89,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_1' type='prismatic'>
-      <parent>tactile_1</parent>
-      <child>spring_1</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_1'>
-      <pose>-0.01 0.01 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_1' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_1</child>
+      <child>spring_1</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -151,7 +102,7 @@
     <link name='spring_2'>
       <pose>-0.005 0.01 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -187,57 +138,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_2' type='prismatic'>
-      <parent>tactile_2</parent>
-      <child>spring_2</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_2'>
-      <pose>-0.005 0.01 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_2' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_2</child>
+      <child>spring_2</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -249,7 +151,7 @@
     <link name='spring_3'>
       <pose>0 0.01 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -285,57 +187,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_3' type='prismatic'>
-      <parent>tactile_3</parent>
-      <child>spring_3</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_3'>
-      <pose>0 0.01 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_3' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_3</child>
+      <child>spring_3</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -347,7 +200,7 @@
     <link name='spring_4'>
       <pose>0.005 0.01 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -383,57 +236,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_4' type='prismatic'>
-      <parent>tactile_4</parent>
-      <child>spring_4</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_4'>
-      <pose>0.005 0.01 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_4' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_4</child>
+      <child>spring_4</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -445,7 +249,7 @@
     <link name='spring_5'>
       <pose>0.01 0.01 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -481,57 +285,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_5' type='prismatic'>
-      <parent>tactile_5</parent>
-      <child>spring_5</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_5'>
-      <pose>0.01 0.01 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_5' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_5</child>
+      <child>spring_5</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -543,7 +298,7 @@
     <link name='spring_6'>
       <pose>-0.01 0.005 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -579,57 +334,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_6' type='prismatic'>
-      <parent>tactile_6</parent>
-      <child>spring_6</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_6'>
-      <pose>-0.01 0.005 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_6' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_6</child>
+      <child>spring_6</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -641,7 +347,7 @@
     <link name='spring_7'>
       <pose>-0.005 0.005 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -677,57 +383,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_7' type='prismatic'>
-      <parent>tactile_7</parent>
-      <child>spring_7</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_7'>
-      <pose>-0.005 0.005 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_7' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_7</child>
+      <child>spring_7</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -739,7 +396,7 @@
     <link name='spring_8'>
       <pose>0 0.005 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -775,57 +432,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_8' type='prismatic'>
-      <parent>tactile_8</parent>
-      <child>spring_8</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_8'>
-      <pose>0 0.005 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_8' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_8</child>
+      <child>spring_8</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -837,7 +445,7 @@
     <link name='spring_9'>
       <pose>0.005 0.005 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -873,57 +481,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_9' type='prismatic'>
-      <parent>tactile_9</parent>
-      <child>spring_9</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_9'>
-      <pose>0.005 0.005 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_9' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_9</child>
+      <child>spring_9</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -935,7 +494,7 @@
     <link name='spring_10'>
       <pose>0.01 0.005 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -971,57 +530,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_10' type='prismatic'>
-      <parent>tactile_10</parent>
-      <child>spring_10</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_10'>
-      <pose>0.01 0.005 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_10' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_10</child>
+      <child>spring_10</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -1033,7 +543,7 @@
     <link name='spring_11'>
       <pose>-0.01 0 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -1069,57 +579,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_11' type='prismatic'>
-      <parent>tactile_11</parent>
-      <child>spring_11</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_11'>
-      <pose>-0.01 0 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_11' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_11</child>
+      <child>spring_11</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -1131,7 +592,7 @@
     <link name='spring_12'>
       <pose>-0.005 0 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -1167,57 +628,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_12' type='prismatic'>
-      <parent>tactile_12</parent>
-      <child>spring_12</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_12'>
-      <pose>-0.005 0 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_12' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_12</child>
+      <child>spring_12</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -1229,7 +641,7 @@
     <link name='spring_13'>
       <pose>0 0 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -1265,57 +677,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_13' type='prismatic'>
-      <parent>tactile_13</parent>
-      <child>spring_13</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_13'>
-      <pose>0 0 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_13' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_13</child>
+      <child>spring_13</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -1327,7 +690,7 @@
     <link name='spring_14'>
       <pose>0.005 0 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -1363,57 +726,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_14' type='prismatic'>
-      <parent>tactile_14</parent>
-      <child>spring_14</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_14'>
-      <pose>0.005 0 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_14' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_14</child>
+      <child>spring_14</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -1425,7 +739,7 @@
     <link name='spring_15'>
       <pose>0.01 0 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -1461,57 +775,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_15' type='prismatic'>
-      <parent>tactile_15</parent>
-      <child>spring_15</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_15'>
-      <pose>0.01 0 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_15' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_15</child>
+      <child>spring_15</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -1523,7 +788,7 @@
     <link name='spring_16'>
       <pose>-0.01 -0.005 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -1559,57 +824,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_16' type='prismatic'>
-      <parent>tactile_16</parent>
-      <child>spring_16</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_16'>
-      <pose>-0.01 -0.005 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_16' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_16</child>
+      <child>spring_16</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -1621,7 +837,7 @@
     <link name='spring_17'>
       <pose>-0.005 -0.005 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -1657,57 +873,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_17' type='prismatic'>
-      <parent>tactile_17</parent>
-      <child>spring_17</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_17'>
-      <pose>-0.005 -0.005 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_17' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_17</child>
+      <child>spring_17</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -1719,7 +886,7 @@
     <link name='spring_18'>
       <pose>0 -0.005 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -1755,57 +922,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_18' type='prismatic'>
-      <parent>tactile_18</parent>
-      <child>spring_18</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_18'>
-      <pose>0 -0.005 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_18' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_18</child>
+      <child>spring_18</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -1817,7 +935,7 @@
     <link name='spring_19'>
       <pose>0.005 -0.005 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -1853,57 +971,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_19' type='prismatic'>
-      <parent>tactile_19</parent>
-      <child>spring_19</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_19'>
-      <pose>0.005 -0.005 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_19' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_19</child>
+      <child>spring_19</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -1915,7 +984,7 @@
     <link name='spring_20'>
       <pose>0.01 -0.005 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -1951,57 +1020,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_20' type='prismatic'>
-      <parent>tactile_20</parent>
-      <child>spring_20</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_20'>
-      <pose>0.01 -0.005 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_20' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_20</child>
+      <child>spring_20</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -2013,7 +1033,7 @@
     <link name='spring_21'>
       <pose>-0.01 -0.01 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -2049,57 +1069,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_21' type='prismatic'>
-      <parent>tactile_21</parent>
-      <child>spring_21</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_21'>
-      <pose>-0.01 -0.01 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_21' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_21</child>
+      <child>spring_21</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -2111,7 +1082,7 @@
     <link name='spring_22'>
       <pose>-0.005 -0.01 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -2147,57 +1118,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_22' type='prismatic'>
-      <parent>tactile_22</parent>
-      <child>spring_22</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_22'>
-      <pose>-0.005 -0.01 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_22' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_22</child>
+      <child>spring_22</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -2209,7 +1131,7 @@
     <link name='spring_23'>
       <pose>0 -0.01 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -2245,57 +1167,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_23' type='prismatic'>
-      <parent>tactile_23</parent>
-      <child>spring_23</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_23'>
-      <pose>0 -0.01 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_23' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_23</child>
+      <child>spring_23</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -2307,7 +1180,7 @@
     <link name='spring_24'>
       <pose>0.005 -0.01 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -2343,57 +1216,8 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_24' type='prismatic'>
-      <parent>tactile_24</parent>
-      <child>spring_24</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
-    <link name='tactile_24'>
-      <pose>0.005 -0.01 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_24' type='prismatic'>
       <parent>plane</parent>
-      <child>tactile_24</child>
+      <child>spring_24</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
@@ -2405,7 +1229,7 @@
     <link name='spring_25'>
       <pose>0.01 -0.01 0.04 0 -0 0</pose>
       <inertial>
-        <mass>0.001</mass>
+        <mass>0.00235</mass>
       </inertial>
       <collision name='sphere_collision'>
         <geometry>
@@ -2441,7 +1265,7 @@
       </velocity_decay>
     </link>
     <joint name='spring_joint_25' type='prismatic'>
-      <parent>tactile_25</parent>
+      <parent>plane</parent>
       <child>spring_25</child>
       <axis>
         <xyz>0 0 1</xyz>
@@ -2451,57 +1275,6 @@
         </limit>
       </axis>
     </joint>
-    <link name='tactile_25'>
-      <pose>0.01 -0.01 0.03 0 -0 0</pose>
-      <inertial>
-        <mass>0.001</mass>
-      </inertial>
-      <collision name='square_collision'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <surface>
-          <friction>
-            <ode>
-              <mu>0</mu>
-              <mu2>0</mu2>
-            </ode>
-          </friction>
-        </surface>
-      </collision>
-      <visual name='visual'>
-        <geometry>
-          <box>
-            <size>0.005 0.005 0.0005</size>
-          </box>
-        </geometry>
-        <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
-          <specular>0.1 0.1 0.1 1</specular>
-          <emissive>0 0 0 0</emissive>
-        </material>
-      </visual>
-      <velocity_decay>
-        <linear>0</linear>
-        <angular>0</angular>
-      </velocity_decay>
-    </link>
-    <joint name='tactile_joint_25' type='prismatic'>
-      <parent>plane</parent>
-      <child>tactile_25</child>
-      <axis>
-        <xyz>0 0 1</xyz>
-        <limit>
-          <lower>-1e+16</lower>
-          <upper>1e+16</upper>
-        </limit>
-      </axis>
-    </joint>
     <plugin name='spring_joint' filename='libspring_joint.so'/>
-    <plugin name='tactile_joint' filename='libtactile_joint.so'/>
-    <plugin name='plane_joint' filename='libplane_joint.so'/>
   </model>
 </sdf>

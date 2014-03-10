@@ -26,8 +26,15 @@
 
 <include>
   <uri>model://box</uri>
-  <pose>0 0 2.4 0 0 0</pose>
+  <pose>0 0 0.055 0 0 0</pose>
 </include>
+
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>0.130675 -0.121126 0.095229 0 0.347643 2.35619</pose>
+        <view_controller>orbit</view_controller>
+      </camera>
+    </gui>
 
 </world>
 </gazebo>
