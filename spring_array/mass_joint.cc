@@ -32,35 +32,35 @@ namespace gazebo
 
       this->joint->SetForce(0, s_force);
 
-//      this->joint->SetForce(0, force);
-//
-//      double current_force = this->joint->GetForce(0);
-//
-//      //std::cout<< "current force: "<<current_force<<"\n";
-//
-//      if(current_time > action_t)
-//      {
-//        switch(a)
-//        {
-//          case 1:
-//            force = -2.00;
-//            break;
-//          case 2:
-//            force = -1.22;
-//            break;
-//          case 3:
-//            force = -0.50;
-//            break;
-//          case 4:
-//            force = -2.00;
-//            break;
-//          default:
-//            force = -1.50;
-//            a = 1;
-//          }
-//        a++;
-//        action_t = action_t + 5;
-//      }
+      this->joint->SetForce(0, force);
+
+     double current_force = this->joint->GetForce(0);
+
+      //std::cout<< "current force: "<<current_force<<"\n";
+
+      if(current_time > action_t)
+      {
+        switch(a)
+        {
+          case 1:
+            force = -0.74;
+            break;
+          case 2:
+            force = -1.80;
+            break;
+          case 3:
+            force = -3.0;
+            break;
+          case 4:
+            force = -4.25;
+            break;
+          default:
+            force = -5.50;
+            a = 1;
+          }
+        a++;
+        action_t = action_t + 5;
+      }
 
     }
     physics::JointPtr joint;
