@@ -1,0 +1,86 @@
+http://gazebosim.org/wiki/2.0/install
+--------------------
+
+sudo apt-get remove gazebo gazebo-prerelease gazebo-nightly sdformat sdformat-prerelease sdformat-nightly
+
+sudo apt-get remove ros-fuerte-simulator-gazebo ros-groovy-simulator-gazebo
+
+   sudo apt-get install build-essential libtinyxml-dev libboost-all-dev cmake mercurial pkg-config \
+                 libprotoc-dev libprotobuf-dev protobuf-compiler libqt4-dev libtar-dev \
+                 libcurl4-openssl-dev libcegui-mk2-dev libopenal-dev libtbb-dev \
+                 libswscale-dev libavformat-dev libavcodec-dev libogre-dev libgts-dev libltdl3-dev \
+                 playerc++ libxml2-dev libfreeimage-dev freeglut3-dev
+
+
+ sudo apt-get update
+sudo apt-get install libbullet2.82-dev
+
+ sudo apt-get update
+    sudo apt-get install libsimbody-dev
+
+sudo apt-add-repository ppa:libccd-debs
+sudo apt-add-repository ppa:fcl-debs
+sudo apt-add-repository ppa:dartsim
+sudo apt-get update
+sudo apt-get install libdart-core3-dev
+
+sudo apt-get install xsltproc
+
+  sudo apt-get install ruby-ronn
+
+# SDFormat
+
+mkdir ~/gazebo_source
+cd ~/gazebo_source/
+hg clone https://bitbucket.org/osrf/sdformat
+
+cd sdformat
+hg up sdf_1.4
+
+mkdir build
+cd build
+
+cmake ../
+make -j4
+sudo make install
+
+# Gazebo
+cd ~/gazebo_source/
+hg clone https://bitbucket.org/osrf/gazebo
+
+cd gazebo
+
+mkdir build
+cd build
+
+cmake ../
+
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/home/$USER/local ../
+
+make -j4
+
+sudo make install
+
+echo "export LD_LIBRARY_PATH=/home/$USER/local/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
+echo "export PATH=/home/$USER/local/bin:$PATH" >> ~/.bashrc
+echo "export PKG_CONFIG_PATH=/home/$USER/local/lib/pkgconfig:$PKG_CONFIG_PATH" >> ~/.bashrc
+source ~/.bashrc
+
+
+============================
+
+cd ~/catkin_ws/src
+git clone https://github.com/ros-simulation/gazebo_ros_pkgs.git
+
+rosdep update
+rosdep check --from-paths . --ignore-src --rosdistro hydro
+
+git clone https://github.com/ros/cmake_modules.git
+
+cd ~/catkin_ws/
+catkin_make
+
+sudo apt-get install ros-hydro-control-toolbox ros-hydro-joint-limits-interface
+
+
+
