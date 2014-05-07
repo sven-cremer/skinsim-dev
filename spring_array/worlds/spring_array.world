@@ -14,7 +14,7 @@
   <uri>model://spring_board</uri>
 </include>
 
-<physics type="simbody">
+<physics type="ode">
   <gravity>0.0 0.0 0.0</gravity>
   <ode>
     <solver>

@@ -467,7 +467,7 @@ int main(int argc, char** argv)
 
   ////////////////////
 
-  test.addPlugin( "spring_joint" , "libspring_joint.so" );
+  test.addPlugin( "skin_joint" , "libskin_joint.so" );
   //test.addPlugin( "plane_joint"  , "libplane_joint.so" );
 
   test.saveSDFFile( sdf_filename );

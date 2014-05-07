@@ -11,22 +11,35 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
+#include "spring_array/tactileData.h"
+
+#include "spring_array/conciseData.h"
+#include <sstream>
+
+/*uint64_t GetTimeStamp()
+{
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    return tv.tv_sec*(uint64_t)1000000+tv.tv_usec;
+}*/
+
 namespace gazebo
 {
-class Spring_Joint : public ModelPlugin
+class Skin_Joint : public ModelPlugin
 {
 
 public:
 
-  Spring_Joint()
+  Skin_Joint()
   {
     // Start up ROS
-    std::string name = "spring_joint_plugin_node";
+    std::string name = "skin_joint_plugin_node";
     int argc = 0;
+    //Initialize ROS. This allows ROS to do name remapping through the command line -- not important for now. This is also where we specify the name of our node. Node names must be unique in a running system. 
     ros::init(argc, NULL, name);
   }
 
-  ~Spring_Joint()
+  ~Skin_Joint()
   {
     delete this->ros_node;
   }
@@ -48,6 +61,7 @@ public:
     std::string para_file_name   = "/file_name";
 
     std::string para_skin_spring = "/skin_spring";
+    std::string para_skin_dir_spring = "/skin_dir_spring";
     std::string para_skin_damper = "/skin_damper";
 
     std::string para_x_size = "/x_size";
@@ -63,6 +77,7 @@ public:
     if (!this->ros_node->getParam(para_file_name, file_name)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_file_name.c_str()); }
 
     if (!this->ros_node->getParam(para_skin_spring, skin_spring)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_spring.c_str()); }
+    if (!this->ros_node->getParam(para_skin_dir_spring, skin_dir_spring)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_dir_spring.c_str()); }
     if (!this->ros_node->getParam(para_skin_damper, skin_damper)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_damper.c_str()); }
 
 
@@ -116,16 +131,15 @@ public:
     // Create a new transport node
     transport::NodePtr node(new transport::Node());
 
-    // Create a publisher on the ~/factory topic
-    //pub = node->Advertise<msgs::Vector3d>("~/force_sensor_info");
-
     this->image_pub = this->ros_node->advertise<sensor_msgs::Image>("skin_image", 1);
+    this->tacData_pub = this->ros_node->advertise<spring_array::tactileData>("tacData",1);
+    this->conc_pub = this->ros_node->advertise<spring_array::conciseData>("concData",1);
     this->frame_name = "base_link";
 
     // Initialize the node with the Model name
     node->Init(model_->GetName());
 
-    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&Spring_Joint::UpdateJoint, this));
+    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&Skin_Joint::UpdateJoint, this));
   }
 
   // Called by the world update start event
@@ -143,12 +157,19 @@ public:
     double current_angle    = 0;
     double current_force    = 0;
     double current_velocity = 0;
+    double sens_force = 0;
 
+    spring_array::tactileData tacData;
+    spring_array::conciseData concData;
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
     math::Vector3 vect;
 
-    sensor_msgs::Image image_msg;
+    tacData.time  = this->model_->GetWorld()->GetSimTime().Double();
+    tacData.patchID = 1;
 
+    concData.time = this->model_->GetWorld()->GetSimTime().Double();
+
+    sensor_msgs::Image image_msg;
     image_msg.header.frame_id = this->frame_name;
     image_msg.header.stamp.sec  = ros::Time::now().sec;
     image_msg.header.stamp.nsec = ros::Time::now().nsec;
@@ -158,25 +179,25 @@ public:
     image_msg.step     = image_msg.width     ;
 
     double tactile_data ;
-
+    double tact_sum = 0;
+    double tact_displacement = 0;
     for (unsigned int i = 0; i < this->joints.size(); ++i)
     {
       current_angle = this->joints[i]->GetAngle(0).Radian();
-      current_force = this->joints[i]->GetForce(0);
+      
       current_velocity = this->joints[i]->GetVelocity(0);
 
       // This sets the mass-spring-damper dynamics, currently only spring and damper
-//      this->joints[i]->SetForce(0, (rest_angle - current_angle) * skin_spring - skin_damper * current_velocity);
-
+      this->joints[i]->SetForce(0, (rest_angle - current_angle) * skin_spring - skin_damper * current_velocity);
+      
       // TODO test if this is better
-      this->joints[i]->SetStiffnessDamping(0, skin_spring, skin_damper, rest_angle );
+      //this->joints[i]->SetStiffnessDamping(0, skin_spring, skin_damper, rest_angle );
 
-      /*vect.x = current_time  ;
-      vect.y = i             ;
-      vect.z = current_force ;
+      current_force = this->joints[i]->GetForce(0); 	
+      sens_force = (rest_angle - current_angle) * skin_dir_spring - skin_damper * current_velocity;
 
-      msgs::Set(&msg, vect);
-      pub->Publish(msg);*/
+      tacData.sensorID.push_back( i ) ;
+      tacData.force.push_back( current_force ) ;
 
       tactile_data = current_force*255 ;
       tactile_data = tactile_data*skin_max ;
@@ -187,9 +208,16 @@ public:
 
       image_msg.data.push_back( tactile_data ); //this->joints[i]->GetForce(0)
 
-    }
+      tact_sum = tact_sum + sens_force;
+      tact_displacement = tact_displacement + current_angle;
 
-      image_pub.publish(image_msg);
+    }
+    tacData.total_force = tact_sum; 
+    concData.total_force = tact_sum;
+    concData.displacement = tact_displacement/joints.size();
+    image_pub.publish(image_msg);
+    tacData_pub.publish(tacData);
+    conc_pub.publish(concData);  
   }
 
 
@@ -209,16 +237,13 @@ private:
   physics::ModelPtr model_;
   event::ConnectionPtr update_connection_;
 
-  /*msgs::Vector3d msg;
-  transport::PublisherPtr pub;*/
-
-  // ROS Subscriber
-  ros::Subscriber sub;
 
   std::string frame_name;
 
   // ROS Publisher
   ros::Publisher image_pub;
+  ros::Publisher tacData_pub;
+  ros::Publisher conc_pub;
 
   YAML::Parser parser;
   YAML::Node doc;
@@ -226,6 +251,7 @@ private:
 
   // Parameters
   double skin_spring ;
+  double skin_dir_spring;
   double skin_damper ;
 
   double x_size ;
@@ -239,6 +265,6 @@ private:
 };
 
 // Register this plugin with the simulator
-GZ_REGISTER_MODEL_PLUGIN(Spring_Joint)
+GZ_REGISTER_MODEL_PLUGIN(Skin_Joint)
 
 }

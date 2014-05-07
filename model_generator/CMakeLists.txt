@@ -29,5 +29,9 @@ add_executable(skinmodel_sdf_generator src/skinmodel_sdf_generator.cpp)
 
 target_link_libraries( skinmodel_sdf_generator ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
 
+add_executable(only_skinmodel_sdf_generator src/only_skinmodel_sdf_generator.cpp)
+
+target_link_libraries( only_skinmodel_sdf_generator ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
+
 
 
