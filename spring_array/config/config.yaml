@@ -1,6 +1,7 @@
-skin_spring             : 10 #374.2  # 9354
-skin_mass               : 0.0046 # 50 grams
-skin_damper             : 1 #25.2  # 629.5
+skin_spring             : 122.24 #9779.3
+skin_mass               : 0.88625 # 50 grams
+skin_damper             : 1.83 #25.2  # 629.5
+skin_dir_spring         : 48.855
 
 tactile_spring          : 4
 tactile_damper          : 0.35
