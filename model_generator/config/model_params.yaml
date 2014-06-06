@@ -7,4 +7,9 @@ tac_height   : 0.03
 
 plane_height : 0.02
 
-d_pos        : 0.005
+d_pos        : 0.0025
+
+sens_x       : 2.0
+sens_y       : 4.0
+space_x      : 1.0
+space_y      : 1.0

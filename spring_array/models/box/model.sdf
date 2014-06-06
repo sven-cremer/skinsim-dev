@@ -11,7 +11,7 @@
         <collision name="collision">
           <geometry>
             <box>
-              <size>0.02 0.02 0.0005</size>
+              <size>0.0275 0.0275 0.0005</size>
             </box>
           </geometry>
         </collision>
@@ -19,7 +19,7 @@
         <visual name="visual">
           <geometry>
             <box>
-              <size>0.02 0.02 0.0005</size>
+              <size>0.0275 0.0275 0.0005</size>
             </box>
           </geometry>
         </visual>
@@ -32,6 +32,7 @@
           </axis>
       </joint>
       <plugin name="mass_joint" filename="libmass_joint.so" />
+      <!--<plugin name="mass_valid_joint" filename="libmass_valid_joint.so" />-->
     </model>
 </sdf>
 
