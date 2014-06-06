@@ -43,7 +43,12 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 #   Action2.action
 # )
 
-generate_messages()
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs  # Or other packages containing msgs
+# )
+
+generate_messages( DEPENDENCIES std_msgs )
 catkin_package( CATKIN_DEPENDS message_runtime )
 
 
