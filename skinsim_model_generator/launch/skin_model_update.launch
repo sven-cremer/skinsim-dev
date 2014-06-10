@@ -3,15 +3,14 @@
   <!-- these are the arguments you can pass this launch file, for example paused:=true -->
   <arg name="load_modelfile_path" default="true"/>
 
-  <rosparam file="$(find skin_model_generator)/config/model_params.yaml" command="load" />
+  <rosparam file="$(find skinsim_model_generator)/config/model_params.yaml" command="load" />
  
   <!-- set load_jointfile_path flag -->
   <group if="$(arg load_modelfile_path)">
     <param name="sdf_filename"  value="$(find spring_array)/models/spring_board/model.sdf" />
     <param name="joint_config_filename"  value="$(find spring_array)/config/joint_names.yaml" />
-    <param name="tactile_id_filename"  value="$(find spring_array)/config/tactile_id.yaml" />
   </group>
  
-  <node name="skin_model_generator" pkg="skin_model_generator" type="only_skinmodel_sdf_generator" respawn="false" />
+  <node name="skinsim_model_generator" pkg="skinsim_model_generator" type="skinmodel_sdf_generator" respawn="false" />
   
 </launch>

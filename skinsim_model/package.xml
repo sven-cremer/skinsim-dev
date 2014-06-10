@@ -1,5 +1,5 @@
 <package>
-  <name>skin_model</name>
+  <name>skinsim_model</name>
   <version>1.2.4</version>
   <description>
     This package provides the robot skin simulation models.

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>skin_model_generator</name>
+  <name>skinsim_model_generator</name>
   <version>0.0.0</version>
   <description>The model_generator package</description>
 

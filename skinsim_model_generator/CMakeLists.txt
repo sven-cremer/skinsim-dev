@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(skin_model_generator)
+project(skinsim_model_generator)
 
 find_package(catkin REQUIRED COMPONENTS 
   gazebo_ros
