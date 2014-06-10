@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>mesh_manip</name>
+  <name>skinsim_model_generator</name>
   <version>0.0.0</version>
-  <description>The mesh_manip package</description>
+  <description>The model_generator package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -16,34 +16,15 @@
   <license>TODO</license>
 
 
-  <!-- Url tags are optional, but mutiple are allowed, one per tag -->
-  <!-- Optional attribute type can be: website, bugtracker, or repository -->
-  <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/mesh_manip</url> -->
-
-
-  <!-- Author tags are optional, mutiple are allowed, one per tag -->
-  <!-- Authors do not have to be maintianers, but could be -->
-  <!-- Example: -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
-
-
-  <!-- The *_depend tags are used to specify dependencies -->
-  <!-- Dependencies can be catkin packages or system dependencies -->
-  <!-- Examples: -->
-  <!-- Use build_depend for packages you need at compile time: -->
-  <!--   <build_depend>message_generation</build_depend> -->
-  <!-- Use buildtool_depend for build tool packages: -->
-  <!--   <buildtool_depend>catkin</buildtool_depend> -->
-  <!-- Use run_depend for packages you need at runtime: -->
-  <!--   <run_depend>message_runtime</run_depend> -->
-  <!-- Use test_depend for packages you need only for testing: -->
-  <!--   <test_depend>gtest</test_depend> -->
-
   <buildtool_depend>catkin</buildtool_depend>
-  
+
+  <build_depend>gazebo_ros</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>urdf</build_depend>
+
+  <run_depend>gazebo_ros</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>urdf</run_depend>
 
   <build_depend>pcl</build_depend>
   <run_depend>pcl</run_depend>

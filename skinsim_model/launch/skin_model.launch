@@ -4,20 +4,20 @@
   <arg name="load_jointfile_path" default="true"/>
   <arg name="load_ttl_path" default="true"/>
 
-  <rosparam file="$(find spring_array)/config/config.yaml" command="load" />
+  <rosparam file="$(find skinsim_model)/config/config.yaml" command="load" />
  
    <!-- set load_jointfile_path flag -->
   <group if="$(arg load_jointfile_path)">
-    <param name="file_name"  value="$(find spring_array)/config/joint_names.yaml" />
+    <param name="file_name"  value="$(find skinsim_model)/config/joint_names.yaml" />
   </group>
  
   <group if="$(arg load_ttl_path)">
-    <param name="ttl_file"  value="$(find spring_array)/config/pse_rand_ttl.yaml" />
+    <param name="ttl_file"  value="$(find skinsim_model)/config/pse_rand_ttl.yaml" />
   </group>
 
   <!-- Launch empty world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg   name="world_name" value="$(find spring_array)/worlds/spring_array.world"/>
+    <arg   name="world_name" value="$(find skinsim_model)/worlds/skinsim_model.world"/>
   </include>
   
 </launch>

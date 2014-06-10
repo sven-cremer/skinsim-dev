@@ -1,11 +1,11 @@
 #include "ros/ros.h"
-#include "spring_array/tactileData.h"
+#include "skinsim_msgs/tactileData.h"
 #include <iostream>
 
 
 //#include "std_msgs/String.h"
 
-void tactCallback(const spring_array::tactileData::ConstPtr& msg)
+void tactCallback(const skinsim_msgs::tactileData::ConstPtr& msg)
 {
 
 	double sens_force = 0;
