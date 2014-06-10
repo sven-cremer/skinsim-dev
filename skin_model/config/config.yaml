@@ -1,0 +1,35 @@
+skin_spring             : 122.24 #9779.3
+skin_mass               : 0.88625 # 50 grams
+skin_damper             : 1.83 #25.2  # 629.5
+skin_dir_spring         : 48.855
+
+tactile_spring          : 4
+tactile_damper          : 0.35
+tactile_capacitor_area  : 0.25
+tactile_capacitor_depth : 0.4
+tactile_permittivity    : 1
+
+x_size                  : 1
+y_size                  : 1
+
+x_dt                    : 0.2
+y_dt                    : 0.2
+
+tactile_max             : 8
+skin_max                : 8
+
+plane_targetForce       : 0.01
+
+plane_explFctr_Kp       : 2
+plane_explFctr_Ki       : 0.00005
+plane_explFctr_Kd       : 0.5
+
+plane_impCtr_Xnom       : 0.5
+plane_impCtr_M          : 5
+plane_impCtr_K          : 24
+plane_impCtr_D          : 10
+
+# Controller type selection
+# 0 - explicit force control
+# 1 - impedance control
+plane_ctrType           : 0

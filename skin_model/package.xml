@@ -1,0 +1,26 @@
+<package>
+  <name>skin_model</name>
+  <version>1.2.4</version>
+  <description>
+    This package provides the robot skin simulation models.
+  </description>
+  <maintainer email="isura@ieee.org">Isura Ranatunga</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>gazebo_ros</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+
+  <run_depend>gazebo_ros</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>roscpp</run_depend>
+  
+  <build_depend>message_generation</build_depend>
+  <run_depend>message_runtime</run_depend>
+  
+  <build_depend>skinsim_msgs</build_depend>
+  <!--run_depend>skinsim_msgs</run_depend-->
+  
+</package>
