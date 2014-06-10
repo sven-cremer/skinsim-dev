@@ -4,7 +4,10 @@ project(skinsim_msgs)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS std_msgs)
+find_package( catkin REQUIRED COMPONENTS
+              message_generation
+              genmsg
+              std_msgs                   )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -62,10 +65,8 @@ find_package(catkin REQUIRED COMPONENTS std_msgs)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs  # Or other packages containing msgs
-)
+generate_messages( DEPENDENCIES std_msgs )
+catkin_package( CATKIN_DEPENDS message_runtime )
 
 ###################################
 ## catkin specific configuration ##

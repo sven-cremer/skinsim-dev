@@ -4,6 +4,7 @@ project(spring_array)
 find_package(catkin REQUIRED COMPONENTS 
   roscpp
   std_msgs
+  skinsim_msgs
   message_generation
   genmsg
   rospy
@@ -21,12 +22,12 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 ################################################
 
 # Generate messages in the 'msg' folder
- add_message_files( FILES
-   tactileData.msg
-   controllerData.msg
-   conciseData.msg
-   inputData.msg
- )
+# add_message_files( FILES
+#   tactileData.msg
+#   controllerData.msg
+#   conciseData.msg
+#   inputData.msg
+# )
  
 
 ## Generate services in the 'srv' folder
@@ -48,7 +49,7 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 #   std_msgs  # Or other packages containing msgs
 # )
 
-generate_messages( DEPENDENCIES std_msgs )
+# generate_messages( DEPENDENCIES std_msgs )
 catkin_package( CATKIN_DEPENDS message_runtime )
 
 

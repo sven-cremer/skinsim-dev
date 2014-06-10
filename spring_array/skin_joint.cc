@@ -11,9 +11,9 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "spring_array/tactileData.h"
+#include "skinsim_msgs/tactileData.h"
 
-#include "spring_array/conciseData.h"
+#include "skinsim_msgs/conciseData.h"
 #include <sstream>
 
 /*uint64_t GetTimeStamp()
@@ -132,8 +132,8 @@ public:
     transport::NodePtr node(new transport::Node());
 
     this->image_pub = this->ros_node->advertise<sensor_msgs::Image>("skin_image", 1);
-    this->tacData_pub = this->ros_node->advertise<spring_array::tactileData>("tacData",1);
-    this->conc_pub = this->ros_node->advertise<spring_array::conciseData>("concData",1);
+    this->tacData_pub = this->ros_node->advertise<skinsim_msgs::tactileData>("tacData",1);
+    this->conc_pub = this->ros_node->advertise<skinsim_msgs::conciseData>("concData",1);
     this->frame_name = "base_link";
 
     // Initialize the node with the Model name
@@ -159,8 +159,8 @@ public:
     double current_velocity = 0;
     double sens_force = 0;
 
-    spring_array::tactileData tacData;
-    spring_array::conciseData concData;
+    skinsim_msgs::tactileData tacData;
+    skinsim_msgs::conciseData concData;
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
     math::Vector3 vect;
 

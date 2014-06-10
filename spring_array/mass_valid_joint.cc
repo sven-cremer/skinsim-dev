@@ -2,7 +2,7 @@
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
-#include "spring_array/inputData.h"
+#include "skinsim_msgs/inputData.h"
 #include "ros/ros.h"
 #include <yaml-cpp/yaml.h>
 #include <fstream>
@@ -17,7 +17,7 @@ namespace gazebo
       this->ros_node = new ros::NodeHandle("~");
       this->model = _model;
       this->joint = this->model->GetJoint("my_mass_joint");
-      this->input_pub = this->ros_node->advertise<spring_array::inputData>("inputData",1);
+      this->input_pub = this->ros_node->advertise<skinsim_msgs::inputData>("inputData",1);
       std::string para_ttl_file   = "/ttl_file";
       count = 1;
       std::string ttl_file; 
@@ -51,7 +51,7 @@ namespace gazebo
     public: void OnUpdate()
     {
       // Apply a small force to the model.
-      spring_array::inputData inputData;
+      skinsim_msgs::inputData inputData;
       double current_time = this->model->GetWorld()->GetSimTime().Double();
       if(count<this->ttlValues.size())
       {

@@ -3,8 +3,8 @@
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
 
-#include "spring_array/tactileData.h"
-#include "spring_array/controllerData.h"
+#include "skinsim_msgs/tactileData.h"
+#include "skinsim_msgs/controllerData.h"
 
 #include "ros/ros.h"
 
@@ -13,7 +13,7 @@ namespace gazebo
   class Plane_Joint : public ModelPlugin
   {
 
-    void tactileCallback(const spring_array::tactileData::ConstPtr& msg)
+    void tactileCallback(const skinsim_msgs::tactileData::ConstPtr& msg)
     {
       m_lock.lock();
 
@@ -54,7 +54,7 @@ namespace gazebo
       if (!this->ros_node->getParam(para_targetForce, targetForce)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_targetForce.c_str()); }
 
       this->tactile_sub = this->ros_node->subscribe( "tactile_data", 1, &Plane_Joint::tactileCallback, this );
-      this->force_pub = this->ros_node->advertise<spring_array::controllerData>("controller_data", 1);
+      this->force_pub = this->ros_node->advertise<skinsim_msgs::controllerData>("controller_data", 1);
 
       this->model_ = _model;
       this->joint_ = this->model_->GetJoint( "plane_joint" );
@@ -154,7 +154,7 @@ namespace gazebo
     double sens_force ; // sensed force
     double grnd_force ; // ground truth force
     double int_err    ;
-    spring_array::controllerData ctrData;
+    skinsim_msgs::controllerData ctrData;
 
     // Time
     double prev_time ;

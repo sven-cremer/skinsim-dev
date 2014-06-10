@@ -14,7 +14,7 @@
 #include <fstream>
 #include <string>
 
-#include "spring_array/tactileData.h"
+#include "skinsim_msgs/tactileData.h"
 
 uint64_t GetTimeStamp()
 {
@@ -142,7 +142,7 @@ public:
     pub = node->Advertise<msgs::Vector3d>("~/force_sensor_info");
 
     this->image_pub   = this->ros_node->advertise<sensor_msgs::Image>("tactile_image", 1);
-    this->tactile_pub = this->ros_node->advertise<spring_array::tactileData>("tactile_data", 1);
+    this->tactile_pub = this->ros_node->advertise<skinsim_msgs::tactileData>("tactile_data", 1);
     this->frame_name  = "base_link";
 
     // Initialize the node with the Model name
@@ -179,7 +179,7 @@ public:
     double current_velocity = 0;
     double current_voltage  = 0;
 
-    spring_array::tactileData tacData;
+    skinsim_msgs::tactileData tacData;
 
 
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
