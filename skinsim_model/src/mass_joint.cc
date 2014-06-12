@@ -1,10 +1,11 @@
+#include "ros/ros.h"
+
 #include "gazebo/common/CommonIface.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
-#include "skinsim_msgs/inputData.h"
-#include "ros/ros.h"
 
+#include "skinsim_msgs/inputData.h"
 
 namespace gazebo
 {

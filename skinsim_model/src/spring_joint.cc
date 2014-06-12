@@ -1,15 +1,15 @@
-#include <gazebo/physics/physics.hh>
-#include <gazebo/common/Events.hh>
-#include <gazebo/gazebo.hh>
-
-#include <yaml-cpp/yaml.h>
-
 #include <fstream>
 #include <string>
 
 #include "ros/ros.h"
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
+
+#include <gazebo/physics/physics.hh>
+#include <gazebo/common/Events.hh>
+#include <gazebo/gazebo.hh>
+
+#include <yaml-cpp/yaml.h>
 
 namespace gazebo
 {

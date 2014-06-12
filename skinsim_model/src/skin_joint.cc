@@ -1,20 +1,18 @@
-#include <gazebo/physics/physics.hh>
-#include <gazebo/common/Events.hh>
-#include <gazebo/gazebo.hh>
-
-#include <yaml-cpp/yaml.h>
-
 #include <fstream>
 #include <string>
+#include <sstream>
 
 #include "ros/ros.h"
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "skinsim_msgs/tactileData.h"
+#include <gazebo/physics/physics.hh>
+#include <gazebo/common/Events.hh>
+#include <gazebo/gazebo.hh>
 
+#include "skinsim_msgs/tactileData.h"
 #include "skinsim_msgs/conciseData.h"
-#include <sstream>
+#include <yaml-cpp/yaml.h>
 
 /*uint64_t GetTimeStamp()
 {

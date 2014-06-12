@@ -1,9 +1,6 @@
 #include "ros/ros.h"
+
 #include "skinsim_msgs/tactileData.h"
-#include <iostream>
-
-
-//#include "std_msgs/String.h"
 
 void tactCallback(const skinsim_msgs::tactileData::ConstPtr& msg)
 {

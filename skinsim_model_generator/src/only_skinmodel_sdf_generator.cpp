@@ -38,14 +38,14 @@
  *  Created on: Jan 16, 2014
  */
 
-#include "sdf/sdf.hh"
-
 #include <fstream>
 #include <string>
-#include <yaml-cpp/yaml.h>
-#include <Eigen/Core>
 
 #include <ros/ros.h>
+#include "sdf/sdf.hh"
+
+#include <Eigen/Core>
+#include <yaml-cpp/yaml.h>
 
 class SkinSimModelBuilder
 {
