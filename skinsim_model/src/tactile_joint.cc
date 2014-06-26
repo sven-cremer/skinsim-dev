@@ -11,36 +11,38 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "spring_array/tactileData.h"
+#include <fstream>
+#include <string>
 
-#include "spring_array/conciseData.h"
-#include <sstream>
+#include "skinsim_msgs/tactileData.h"
 
-/*uint64_t GetTimeStamp()
+uint64_t GetTimeStamp()
 {
     struct timeval tv;
     gettimeofday(&tv,NULL);
     return tv.tv_sec*(uint64_t)1000000+tv.tv_usec;
-}*/
+}
 
 namespace gazebo
 {
-class Skin_Joint : public ModelPlugin
+class Tactile_Joint : public ModelPlugin
 {
 
 public:
 
-  Skin_Joint()
+  Tactile_Joint()
   {
     // Start up ROS
-    std::string name = "skin_joint_plugin_node";
+    std::string name = "tactile_joint_plugin_node";
     int argc = 0;
-    //Initialize ROS. This allows ROS to do name remapping through the command line -- not important for now. This is also where we specify the name of our node. Node names must be unique in a running system. 
     ros::init(argc, NULL, name);
   }
 
-  ~Skin_Joint()
+  ~Tactile_Joint()
   {
+    /* Temporary data collection code
+    myfile.close();
+    */
     delete this->ros_node;
   }
 
@@ -58,11 +60,14 @@ public:
     // ROS Nodehandle
     this->ros_node = new ros::NodeHandle("~");
 
-    std::string para_file_name   = "/file_name";
+    std::string para_file_name     = "/file_name";
+    std::string para_datafile_name = "/datafile_name";
 
-    std::string para_skin_spring = "/skin_spring";
-    std::string para_skin_dir_spring = "/skin_dir_spring";
-    std::string para_skin_damper = "/skin_damper";
+    std::string para_tactile_spring          = "/tactile_spring";
+    std::string para_tactile_damper          = "/tactile_damper";
+    std::string para_tactile_capacitor_area  = "/tactile_capacitor_area";
+    std::string para_tactile_capacitor_depth = "/tactile_capacitor_depth";
+    std::string para_tactile_permittivity    = "/tactile_permittivity";
 
     std::string para_x_size = "/x_size";
     std::string para_y_size = "/y_size";
@@ -70,16 +75,19 @@ public:
     std::string para_x_dt   = "/x_dt";
     std::string para_y_dt   = "/y_dt";
 
-    std::string para_skin_max = "/skin_max";
+    std::string para_tactile_max = "/tactile_max";
 
     std::string file_name; // = "/home/isura/joint_name.yaml";
+    std::string datafile_name;
 
-    if (!this->ros_node->getParam(para_file_name, file_name)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_file_name.c_str()); }
+    if (!this->ros_node->getParam(para_file_name    , file_name)){ ROS_ERROR("Value not loaded from parameter: %s !)"    , para_file_name.c_str()    ); }
+    if (!this->ros_node->getParam(para_datafile_name, datafile_name)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_datafile_name.c_str()); }
 
-    if (!this->ros_node->getParam(para_skin_spring, skin_spring)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_spring.c_str()); }
-    if (!this->ros_node->getParam(para_skin_dir_spring, skin_dir_spring)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_dir_spring.c_str()); }
-    if (!this->ros_node->getParam(para_skin_damper, skin_damper)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_damper.c_str()); }
-
+    if (!this->ros_node->getParam(para_tactile_spring         , tactile_spring         )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_spring         .c_str()); }
+    if (!this->ros_node->getParam(para_tactile_damper         , tactile_damper         )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_damper         .c_str()); }
+    if (!this->ros_node->getParam(para_tactile_capacitor_area , tactile_capacitor_area )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_capacitor_area .c_str()); }
+    if (!this->ros_node->getParam(para_tactile_capacitor_depth, tactile_capacitor_depth)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_capacitor_depth.c_str()); }
+    if (!this->ros_node->getParam(para_tactile_permittivity   , tactile_permittivity   )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_permittivity   .c_str()); }
 
     if (!this->ros_node->getParam(para_x_size , x_size)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_x_size.c_str()); }
     if (!this->ros_node->getParam(para_y_size , y_size)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_y_size.c_str()); }
@@ -87,8 +95,7 @@ public:
     if (!this->ros_node->getParam(para_x_dt   , x_dt  )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_x_dt  .c_str()); }
     if (!this->ros_node->getParam(para_y_dt   , y_dt  )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_y_dt  .c_str()); }
 
-    if (!this->ros_node->getParam(para_skin_max , skin_max )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_max  .c_str()); }
-
+    if (!this->ros_node->getParam(para_tactile_max , tactile_max )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_tactile_max  .c_str()); }
 
     fin.open(file_name.c_str());
 
@@ -108,7 +115,7 @@ public:
     for (unsigned i = 0; i < doc.size(); i++)
     {
       doc[i]["Joint"] >> scalar;
-      this->jointNames.push_back("spring_" + scalar);
+      this->jointNames.push_back("tactile_" + scalar);
       //std::cout << "Here's the output YAML:\n---" << scalar << "---\n";
     }
 
@@ -131,15 +138,27 @@ public:
     // Create a new transport node
     transport::NodePtr node(new transport::Node());
 
-    this->image_pub = this->ros_node->advertise<sensor_msgs::Image>("skin_image", 1);
-    this->tacData_pub = this->ros_node->advertise<spring_array::tactileData>("tacData",1);
-    this->conc_pub = this->ros_node->advertise<spring_array::conciseData>("concData",1);
-    this->frame_name = "base_link";
+    // Create a publisher on the ~/factory topic
+    pub = node->Advertise<msgs::Vector3d>("~/force_sensor_info");
+
+    this->image_pub   = this->ros_node->advertise<sensor_msgs::Image>("tactile_image", 1);
+    this->tactile_pub = this->ros_node->advertise<skinsim_msgs::tactileData>("tactile_data", 1);
+    this->frame_name  = "base_link";
 
     // Initialize the node with the Model name
     node->Init(model_->GetName());
 
-    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&Skin_Joint::UpdateJoint, this));
+    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&Tactile_Joint::UpdateJoint, this));
+
+    /* Temporary data collection code
+    // Cycle test
+    last_cycle = GetTimeStamp();
+    std::ostringstream convert;
+    convert << jointNames.size();
+    datafile_name = datafile_name + convert.str() + ".txt";
+    myfile.open ( datafile_name.c_str() );
+    */
+
   }
 
   // Called by the world update start event
@@ -152,24 +171,35 @@ public:
 public:
   void UpdateJoint()
   {
+
     double rest_angle = 0;
 
     double current_angle    = 0;
     double current_force    = 0;
     double current_velocity = 0;
-    double sens_force = 0;
+    double current_voltage  = 0;
 
-    spring_array::tactileData tacData;
-    spring_array::conciseData concData;
+    skinsim_msgs::tactileData tacData;
+
+
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
     math::Vector3 vect;
+
+//    ...=  this->model_->GetWorld()->GetSimTime();
 
     tacData.time  = this->model_->GetWorld()->GetSimTime().Double();
     tacData.patchID = 1;
 
-    concData.time = this->model_->GetWorld()->GetSimTime().Double();
+    /* Temporary data collection code
+    cycle_time = GetTimeStamp() - last_cycle;
+    last_cycle = GetTimeStamp();
+//    std::cout << "Cycle time : " << cycle_time << " usec \n";;//cycle_time.sec << "s " << cycle_time.nsec << " nsec \n";
+    std::cout << cycle_time << "\n";//cycle_time.sec << "s " << cycle_time.nsec << " nsec \n";
+    myfile << cycle_time << "\n";
+    */
 
     sensor_msgs::Image image_msg;
+
     image_msg.header.frame_id = this->frame_name;
     image_msg.header.stamp.sec  = ros::Time::now().sec;
     image_msg.header.stamp.nsec = ros::Time::now().nsec;
@@ -178,29 +208,33 @@ public:
     image_msg.width    = 2*x_size / x_dt + 1 ;
     image_msg.step     = image_msg.width     ;
 
-    double tactile_data ;
-    double tact_sum = 0;
-    double tact_displacement = 0;
+    double tactile_data;
+
     for (unsigned int i = 0; i < this->joints.size(); ++i)
     {
+
       current_angle = this->joints[i]->GetAngle(0).Radian();
-      
+      current_force = this->joints[i]->GetForce(0);
       current_velocity = this->joints[i]->GetVelocity(0);
 
-      // This sets the mass-spring-damper dynamics, currently only spring and damper
-      this->joints[i]->SetForce(0, (rest_angle - current_angle) * skin_spring - skin_damper * current_velocity);
-      
-      // TODO test if this is better
-      //this->joints[i]->SetStiffnessDamping(0, skin_spring, skin_damper, rest_angle );
+      current_voltage = sqrt(2*current_force*pow((tactile_capacitor_depth + current_angle),2)/(tactile_permittivity*tactile_capacitor_area));
 
-      current_force = this->joints[i]->GetForce(0); 	
-      sens_force = (rest_angle - current_angle) * skin_dir_spring - skin_damper * current_velocity;
+      // This sets the mass-spring-damper dynamics, currently only spring and damper
+      this->joints[i]->SetForce(0, (rest_angle - current_angle) * tactile_spring - tactile_damper * current_velocity);
+      vect.x = current_time;
+      vect.y = i;
+      vect.z = current_force;
+
+//      msgs::Set( &msg, vect );
+//      pub->Publish( msg );
 
       tacData.sensorID.push_back( i ) ;
       tacData.force.push_back( current_force ) ;
+      tacData.force_noisy.push_back( current_force + ((float)rand() / (float)(RAND_MAX + 1)) ) ;
+
 
       tactile_data = current_force*255 ;
-      tactile_data = tactile_data*skin_max ;
+      tactile_data = tactile_data*tactile_max ;
 
       if( tactile_data > 255 ) { tactile_data = 255; }
 
@@ -208,27 +242,18 @@ public:
 
       image_msg.data.push_back( tactile_data ); //this->joints[i]->GetForce(0)
 
-      tact_sum = tact_sum + sens_force;
-      tact_displacement = tact_displacement + current_angle;
-
     }
-    tacData.total_force = tact_sum; 
-    concData.total_force = tact_sum;
-    concData.displacement = tact_displacement/joints.size();
-    image_pub.publish(image_msg);
-    tacData_pub.publish(tacData);
-    conc_pub.publish(concData);  
+
+      tactile_pub.publish(tacData);
+      image_pub.publish(image_msg);
   }
 
 
-private:
-
   // ROS Nodehandle
+private:
   ros::NodeHandle* ros_node;
-
   /// \brief keep a list of hard coded joint names.
   std::vector<std::string> jointNames;
-
   //physics::JointPtr joint_;
 
   /// \brief Internal list of pointers to Joints
@@ -237,22 +262,28 @@ private:
   physics::ModelPtr model_;
   event::ConnectionPtr update_connection_;
 
+  msgs::Vector3d msg;
+  transport::PublisherPtr pub;
+
+  // ROS Subscriber
+  ros::Subscriber sub;
 
   std::string frame_name;
 
   // ROS Publisher
   ros::Publisher image_pub;
-  ros::Publisher tacData_pub;
-  ros::Publisher conc_pub;
+  ros::Publisher tactile_pub;
 
   YAML::Parser parser;
   YAML::Node doc;
   std::ifstream fin;
 
   // Parameters
-  double skin_spring ;
-  double skin_dir_spring;
-  double skin_damper ;
+  double tactile_spring          ;
+  double tactile_damper          ;
+  double tactile_capacitor_area  ;
+  double tactile_capacitor_depth ;
+  double tactile_permittivity    ;
 
   double x_size ;
   double y_size ;
@@ -260,11 +291,18 @@ private:
   double x_dt   ;
   double y_dt   ;
 
-  double skin_max ;
+  double tactile_max ;
+
+  /* Temporary data collection code
+  // For testing time
+  uint64_t last_cycle;
+  uint64_t cycle_time;
+  std::ofstream myfile;
+  */
 
 };
 
 // Register this plugin with the simulator
-GZ_REGISTER_MODEL_PLUGIN(Skin_Joint)
+GZ_REGISTER_MODEL_PLUGIN(Tactile_Joint)
 
 }

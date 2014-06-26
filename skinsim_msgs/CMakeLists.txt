@@ -1,16 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mesh_manip)
+project(skinsim_msgs)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  pcl_ros
-  pcl_conversions
-  roscpp
-)
-
-find_package(PCL REQUIRED)
+find_package( catkin REQUIRED COMPONENTS
+              message_generation
+              genmsg
+              std_msgs                   )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -46,11 +43,12 @@ find_package(PCL REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files( FILES
+   tactileData.msg
+   controllerData.msg
+   conciseData.msg
+   inputData.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,10 +65,8 @@ find_package(PCL REQUIRED)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages( DEPENDENCIES std_msgs )
+catkin_package( CATKIN_DEPENDS message_runtime )
 
 ###################################
 ## catkin specific configuration ##
@@ -83,8 +79,8 @@ find_package(PCL REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES mesh_manip
-#  CATKIN_DEPENDS pcl roscpp
+#  LIBRARIES skinsim_msgs
+#  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
 
@@ -95,33 +91,23 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
-
-include_directories(${PCL_INCLUDE_DIRS})
-
 
 ## Declare a cpp library
-# add_library(mesh_manip
-#   src/${PROJECT_NAME}/mesh_manip.cpp
+# add_library(skinsim_msgs
+#   src/${PROJECT_NAME}/skinsim_msgs.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(mesh_manip_node src/mesh_manip_node.cpp)
-
-add_executable(mesh2pclTest src/mesh2pclTest.cc)
+# add_executable(skinsim_msgs_node src/skinsim_msgs_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(mesh_manip_node mesh_manip_generate_messages_cpp)
+# add_dependencies(skinsim_msgs_node skinsim_msgs_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(mesh_manip_node
+# target_link_libraries(skinsim_msgs_node
 #   ${catkin_LIBRARIES}
 # )
-
-target_link_libraries(mesh2pclTest ${catkin_LIBRARIES})
 
 #############
 ## Install ##
@@ -138,7 +124,7 @@ target_link_libraries(mesh2pclTest ${catkin_LIBRARIES})
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS mesh_manip mesh_manip_node
+# install(TARGETS skinsim_msgs skinsim_msgs_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -163,7 +149,7 @@ target_link_libraries(mesh2pclTest ${catkin_LIBRARIES})
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_mesh_manip.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_skinsim_msgs.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
