@@ -33,20 +33,19 @@
  *********************************************************************/
 
 /* Author: Isura Ranatunga
-           Ahsan Habib
  *
  * skinmodel_sdf_generator.cpp
  *  Created on: Jan 16, 2014
  */
 
-#include "sdf/sdf.hh"
-
 #include <fstream>
 #include <string>
-#include <yaml-cpp/yaml.h>
-#include <Eigen/Core>
 
 #include <ros/ros.h>
+#include "sdf/sdf.hh"
+
+#include <Eigen/Core>
+#include <yaml-cpp/yaml.h>
 
 class SkinSimModelBuilder
 {
@@ -308,7 +307,7 @@ int main(int argc, char** argv)
 
   std::string para_sdf_filename = "/sdf_filename";
   std::string para_jcf_filename = "/joint_config_filename";
-  //std::string para_tid_filename = "/tactile_id_filename";
+  std::string para_tid_filename = "/tactile_id_filename";
 
   std::string sdf_filename          ; // = "model.sdf";
   std::string joint_config_filename ; // = "joint_names.yaml";
@@ -336,7 +335,7 @@ int main(int argc, char** argv)
 
   if (!nh.getParam(para_sdf_filename , sdf_filename           )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
   if (!nh.getParam(para_jcf_filename , joint_config_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_jcf_filename.c_str()); }
-  //if (!nh.getParam(para_tid_filename , tactile_id_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tid_filename.c_str()); }
+  if (!nh.getParam(para_tid_filename , tactile_id_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tid_filename.c_str()); }
 
   std::string para_density      = "density";
   std::string para_size_x       = "size_x" ;
@@ -395,8 +394,8 @@ int main(int argc, char** argv)
   YAML::Emitter out;
   std::ofstream fout(joint_config_filename.c_str());
 
-  //YAML::Emitter out1;
-  //std::ofstream fout(tactile_id_filename.c_str());
+  YAML::Emitter out1;
+  std::ofstream fout(tactile_id_filename.c_str());
 
 //  sdf::SDFPtr robot(new sdf::SDF());
 //  sdf::init(robot);
@@ -441,7 +440,7 @@ int main(int argc, char** argv)
   double sensor_no = (double)(pos_y - pos_x)/d_pos + 1;
   sensor_no = sensor_no*sensor_no;
   out << YAML::BeginSeq;
-  //out1<< YAML::BeginSeq;
+  out1<< YAML::BeginSeq;
 
 
   for( int i = 1; i <= sensor_no; i++ )
