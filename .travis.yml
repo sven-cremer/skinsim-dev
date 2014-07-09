@@ -30,11 +30,11 @@ install:
     - sudo apt-get update
     - sudo apt-get upgrade
 # First, move code to correct place. Also Travis-CI specific.
-    - mkdir -p ~/rosbuild_ws
-    - cd ..; mv pr2_pbd ~/rosbuild_ws/
+    - mkdir -p ~/catkin_ws
+    - cd ..; mv skinsim ~/catkin_ws/src
 # Settings to make installing script more general.
     - export ROS_CI_DESKTOP=`lsb_release -cs`  # e.g. 'precise'
-    - export ROS_CI_VERSION=groovy  # e.g. 'groovy'
+    - export ROS_CI_VERSION=hydro  # e.g. 'groovy'
     - export ROS_CI_PREFIX=ros-${ROS_CI_VERSION}-  # e.g. 'ros-groovy-'
 # Exports for ROS
     - export ROS_HOSTNAME=localhost
@@ -51,19 +51,18 @@ install:
 # Environment setup
     - source /opt/ros/${ROS_CI_VERSION}/setup.bash
 # Add required debian and python packages with apt-get and pip.
-    - cd ~/rosbuild_ws/pr2_pbd
-    - yes | sudo apt-get -y install $(< packages.txt)
-    - pip install -r requirements.txt
+#     - cd ~/rosbuild_ws/pr2_pbd
+#     - yes | sudo apt-get -y install $(< packages.txt)
+#     - pip install -r requirements.txt
 # Initialize ROS workspace, setup, set path
-    - cd ~/rosbuild_ws
+    - cd ~/catkin_ws
     - rosws init . /opt/ros/${ROS_CI_VERSION}
-    - source ~/rosbuild_ws/setup.bash
-    - export ROS_PACKAGE_PATH=~/rosbuild_ws/:/opt/ros/${ROS_CI_VERSION}/share:/opt/ros/${ROS_CI_VERSION}/stacks
+    - source ~/catkin_ws/devel/setup.bash
+#     - export ROS_PACKAGE_PATH=~/rosbuild_ws/:/opt/ros/${ROS_CI_VERSION}/share:/opt/ros/${ROS_CI_VERSION}/stacks
 # Make messages
-    - cd pr2_pbd
-    - rosmake
+    - catkin_make
 
 # Command to run tests
 # --------------------
-script:
-    - rostest pr2_pbd_interaction test_endtoend.test
+# script:
+#     - rostest pr2_pbd_interaction test_endtoend.test
