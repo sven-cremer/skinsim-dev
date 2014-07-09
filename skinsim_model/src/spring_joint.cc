@@ -1,9 +1,3 @@
-#include <gazebo/physics/physics.hh>
-#include <gazebo/common/Events.hh>
-#include <gazebo/gazebo.hh>
-
-#include <yaml-cpp/yaml.h>
-
 #include <fstream>
 #include <string>
 
@@ -11,14 +5,20 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
+#include <gazebo/physics/physics.hh>
+#include <gazebo/common/Events.hh>
+#include <gazebo/gazebo.hh>
+
+#include <yaml-cpp/yaml.h>
+
 namespace gazebo
 {
-class Spring_Joint : public ModelPlugin
+class SpringJoint : public ModelPlugin
 {
 
 public:
 
-  Spring_Joint()
+  SpringJoint()
   {
     // Start up ROS
     std::string name = "spring_joint_plugin_node";
@@ -26,7 +26,7 @@ public:
     ros::init(argc, NULL, name);
   }
 
-  ~Spring_Joint()
+  ~SpringJoint()
   {
     delete this->ros_node;
   }
@@ -125,7 +125,7 @@ public:
     // Initialize the node with the Model name
     node->Init(model_->GetName());
 
-    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&Spring_Joint::UpdateJoint, this));
+    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&SpringJoint::UpdateJoint, this));
   }
 
   // Called by the world update start event
@@ -239,6 +239,6 @@ private:
 };
 
 // Register this plugin with the simulator
-GZ_REGISTER_MODEL_PLUGIN(Spring_Joint)
+GZ_REGISTER_MODEL_PLUGIN(SpringJoint)
 
 }

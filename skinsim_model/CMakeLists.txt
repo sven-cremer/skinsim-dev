@@ -83,7 +83,7 @@ target_link_libraries(mass_valid_joint ${GAZEBO_LIBRARIES} yaml-cpp)
 #add_dependencies(central spring_array_generate_message_cpp)
 
 
-add_executable(central src/central.cpp)
+add_executable(central src/central.cc)
 target_link_libraries( central ${catkin_LIBRARIES} )
 
 

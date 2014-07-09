@@ -10,7 +10,7 @@
 
 namespace gazebo
 {
-  class Plane_Joint : public ModelPlugin
+  class PlaneJoint : public ModelPlugin
   {
 
     void tactileCallback(const skinsim_msgs::tactileData::ConstPtr& msg)
@@ -53,13 +53,13 @@ namespace gazebo
       std::string para_targetForce    = "/plane_targetForce"   ;
       if (!this->ros_node->getParam(para_targetForce, targetForce)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_targetForce.c_str()); }
 
-      this->tactile_sub = this->ros_node->subscribe( "tactile_data", 1, &Plane_Joint::tactileCallback, this );
+      this->tactile_sub = this->ros_node->subscribe( "tactile_data", 1, &PlaneJoint::tactileCallback, this );
       this->force_pub = this->ros_node->advertise<skinsim_msgs::controllerData>("controller_data", 1);
 
       this->model_ = _model;
       this->joint_ = this->model_->GetJoint( "plane_joint" );
 
-      this->update_connection_ = event::Events::ConnectWorldUpdateBegin( boost::bind(&Plane_Joint::UpdateJoint, this));
+      this->update_connection_ = event::Events::ConnectWorldUpdateBegin( boost::bind(&PlaneJoint::UpdateJoint, this));
 
       sens_force = 0;
       grnd_force = 0;
@@ -181,5 +181,5 @@ namespace gazebo
   };
 
   // Register this plugin with the simulator
-  GZ_REGISTER_MODEL_PLUGIN(Plane_Joint)
+  GZ_REGISTER_MODEL_PLUGIN(PlaneJoint)
 }

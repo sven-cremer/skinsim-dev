@@ -1,14 +1,15 @@
+#include "ros/ros.h"
+
 #include "gazebo/common/CommonIface.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
-#include "skinsim_msgs/inputData.h"
-#include "ros/ros.h"
 
+#include "skinsim_msgs/inputData.h"
 
 namespace gazebo
 {
-  class Mass_Joint : public ModelPlugin
+  class MassJoint : public ModelPlugin
   {
     public: void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
     {
@@ -20,7 +21,7 @@ namespace gazebo
       a = 1;
       force = 0.0;
       this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-          boost::bind(&Mass_Joint::OnUpdate, this));
+          boost::bind(&MassJoint::OnUpdate, this));
       
     }
 
@@ -78,5 +79,5 @@ private:
 
 
   // Register this plugin with the simulator
-  GZ_REGISTER_MODEL_PLUGIN(Mass_Joint)
+  GZ_REGISTER_MODEL_PLUGIN(MassJoint)
 }

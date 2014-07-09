@@ -1,20 +1,17 @@
-#include <gazebo/physics/physics.hh>
-#include <gazebo/common/Events.hh>
-#include <gazebo/gazebo.hh>
-
-#include <yaml-cpp/yaml.h>
-
 #include <fstream>
 #include <string>
 
 #include "ros/ros.h"
+
+#include <gazebo/physics/physics.hh>
+#include <gazebo/common/Events.hh>
+#include <gazebo/gazebo.hh>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <fstream>
-#include <string>
-
 #include "skinsim_msgs/tactileData.h"
+
+#include <yaml-cpp/yaml.h>
 
 uint64_t GetTimeStamp()
 {
@@ -25,12 +22,12 @@ uint64_t GetTimeStamp()
 
 namespace gazebo
 {
-class Tactile_Joint : public ModelPlugin
+class TactileJoint : public ModelPlugin
 {
 
 public:
 
-  Tactile_Joint()
+  TactileJoint()
   {
     // Start up ROS
     std::string name = "tactile_joint_plugin_node";
@@ -38,7 +35,7 @@ public:
     ros::init(argc, NULL, name);
   }
 
-  ~Tactile_Joint()
+  ~TactileJoint()
   {
     /* Temporary data collection code
     myfile.close();
@@ -148,7 +145,7 @@ public:
     // Initialize the node with the Model name
     node->Init(model_->GetName());
 
-    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&Tactile_Joint::UpdateJoint, this));
+    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&TactileJoint::UpdateJoint, this));
 
     /* Temporary data collection code
     // Cycle test
@@ -303,6 +300,6 @@ private:
 };
 
 // Register this plugin with the simulator
-GZ_REGISTER_MODEL_PLUGIN(Tactile_Joint)
+GZ_REGISTER_MODEL_PLUGIN(TactileJoint)
 
 }

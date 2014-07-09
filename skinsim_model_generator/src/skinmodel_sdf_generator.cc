@@ -38,14 +38,14 @@
  *  Created on: Jan 16, 2014
  */
 
-#include "sdf/sdf.hh"
-
 #include <fstream>
 #include <string>
-#include <yaml-cpp/yaml.h>
-#include <Eigen/Core>
 
 #include <ros/ros.h>
+#include "sdf/sdf.hh"
+
+#include <Eigen/Core>
+#include <yaml-cpp/yaml.h>
 
 class SkinSimModelBuilder
 {
@@ -259,25 +259,6 @@ public:
                 << "  </joint>";
   }
 
-  void addPlaneJoint( std::string joint_name,
-                 std::string joint_type,
-                 std::string parent,
-                 std::string child,
-                 Eigen::Vector3d & axis )
-  {
-    sdf_stream_ << "  <joint name = '" + joint_name + "' type='" + joint_type + "'>"
-                << "    <parent>" + parent + "</parent>"
-                << "      <child>" + child + "</child>"
-                << "      <axis>"
-                << "        <xyz>" << axis << "</xyz>"
-                << "        <limit>"
-                << "          <lower>" << 0 << "</lower>"
-                << "          <upper>" <<  0 << "</upper>"
-                << "        </limit>"
-                << "      </axis>"
-                << "  </joint>";
-  }
-
 
   void addPlugin( std::string plugin_name, std::string plugin_filename )
   {
@@ -300,14 +281,13 @@ int main(int argc, char** argv)
 {
 
   // Initialize ROS
-  ros::init (argc, argv, "only_skinmodel_sdf_generator");
+  ros::init (argc, argv, "skinmodel_sdf_generator");
   ros::NodeHandle nh;
 
   SkinSimModelBuilder test;
 
   std::string para_sdf_filename = "/sdf_filename";
   std::string para_jcf_filename = "/joint_config_filename";
-  std::string para_tid_filename = "/tactile_id_filename";
 
   std::string sdf_filename          ; // = "model.sdf";
   std::string joint_config_filename ; // = "joint_names.yaml";
@@ -317,16 +297,26 @@ int main(int argc, char** argv)
   Eigen::Vector4d skin_specular;
   Eigen::Vector4d skin_emissive;
 
+  Eigen::Vector4d tactile_ambient ;
+  Eigen::Vector4d tactile_diffuse ;
+  Eigen::Vector4d tactile_specular;
+  Eigen::Vector4d tactile_emissive;
+
   Eigen::Vector4d base_ambient ;
   Eigen::Vector4d base_diffuse ;
   Eigen::Vector4d base_specular;
   Eigen::Vector4d base_emissive;
 
-  ////                 R    G    B
-  //skin_ambient  << 1.0, 1.0, 1.0, 1.0 ;
-  //skin_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
+  //                 R    G    B
+  skin_ambient  << 1.0, 1.0, 1.0, 1.0 ;
+  skin_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
   skin_specular << 0.1, 0.1, 0.1, 1.0 ;
   skin_emissive = Eigen::Vector4d::Zero();
+
+  tactile_ambient  << 1.0, 0.0, 0.0, 1.0 ;
+  tactile_diffuse  << 1.0, 0.0, 0.0, 1.0 ;
+  tactile_specular << 0.1, 0.1, 0.1, 1.0 ;
+  tactile_emissive = Eigen::Vector4d::Zero();
 
   base_ambient  << 1.0, 1.0, 1.0, 1.0 ;
   base_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
@@ -335,67 +325,43 @@ int main(int argc, char** argv)
 
   if (!nh.getParam(para_sdf_filename , sdf_filename           )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
   if (!nh.getParam(para_jcf_filename , joint_config_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_jcf_filename.c_str()); }
-  if (!nh.getParam(para_tid_filename , tactile_id_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tid_filename.c_str()); }
 
   std::string para_density      = "density";
   std::string para_size_x       = "size_x" ;
   std::string para_size_y       = "size_y" ;
 
   std::string para_skin_height  = "skin_height";
+  std::string para_tac_height   = "tac_height";
+
   std::string para_plane_height = "plane_height";
 
   std::string para_d_pos        = "d_pos"  ;
-
-  std::string para_sens_x       = "sens_x";
-  std::string para_sens_y       = "sens_y" ;
-  std::string para_space_x      = "space_x" ;
-  std::string para_space_y      = "space_y" ;
 
   double density     ;
   double size_x = 1.5;
   double size_y = 1.5;
 
   double skin_height = 1.3;
+  double tac_height  = 0.4;
 
   double plane_height= 0.4;
 
   double d_pos  = 0.5;
 
-  double sens_x = 3.0;
-  double sens_y = 2.0;
-  double space_x = 1.0;
-  double space_y = 1.0;
-
-  double x_id = 1.0;
-  double y_id = 1.0;
-  double x_stat = 0.0;
-  double y_stat = 0.0;
 
   if (!nh.getParam(para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
   if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
   if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
 
   if (!nh.getParam(para_skin_height, skin_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_height.c_str()); }
+  if (!nh.getParam(para_tac_height , tac_height  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tac_height .c_str()); }
 
   if (!nh.getParam(para_plane_height, plane_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_plane_height .c_str()); }
 
   if (!nh.getParam(para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
 
-  if (!nh.getParam(para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
-  if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
-  if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
-  if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
-
-  if (!nh.getParam(para_sens_x , sens_x )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_x.c_str()); }
-  if (!nh.getParam(para_sens_y , sens_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_y.c_str()); }
-  if (!nh.getParam(para_space_x , space_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y.c_str()); }
-  if (!nh.getParam(para_space_y , space_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y.c_str()); }
-
   YAML::Emitter out;
   std::ofstream fout(joint_config_filename.c_str());
-
-  YAML::Emitter out1;
-  std::ofstream fout(tactile_id_filename.c_str());
 
 //  sdf::SDFPtr robot(new sdf::SDF());
 //  sdf::init(robot);
@@ -426,93 +392,77 @@ int main(int argc, char** argv)
 
   axis << 0, 0, 1;
 
-  test.addPlaneJoint( "plane_joint",
+  test.addJoint( "plane_joint",
                  "prismatic",
                  "world",
                  "plane",
                  axis );
 
+  ////////////////////
 
+
+  double tactile_size_x = d_pos   ;
+  double tactile_size_y = d_pos   ;
+  double tactile_size_z = d_pos/10;
 
   double pos_x = -size_x;
   double pos_y =  size_y;
 
   double sensor_no = (double)(pos_y - pos_x)/d_pos + 1;
   sensor_no = sensor_no*sensor_no;
-  out << YAML::BeginSeq;
-  out1<< YAML::BeginSeq;
 
+  out << YAML::BeginSeq;
 
   for( int i = 1; i <= sensor_no; i++ )
   {
 
     std::ostringstream convert;
     convert << i;
-    if(x_stat == 0.0)
-    {
-       if(x_id>space_x)
-       {
-           x_stat = 1.0;
-           x_id = 1.0; 
-       }
-    }
-    else
-    {
-       if(x_id>sens_x)
-       {
-           x_stat = 0.0;
-           x_id = 1.0;   
-       }
-    }
 
-    if(y_stat == 0.0)
-    {
-       if(y_id>space_y)
-       {
-           y_stat = 1.0;
-           y_id = 1.0; 
-       }
-    }
-    else
-    {
-       if(y_id>sens_y)
-       {
-           y_stat = 0.0;
-           y_id = 1.0;   
-       }
-    }
+
     pose << pos_x, pos_y, skin_height, 0, 0, 0;
     radius = d_pos/2;
 
-    if((x_stat == 0.0)||(y_stat == 0.0))
-    {
-        skin_ambient  << 1.0, 1.0, 1.0, 1.0 ;
-        skin_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
-    }
-    else
-    {
-        skin_ambient  << 1.0, 0.0, 0.0, 1.0 ; 
-        skin_diffuse  << 1.0, 0.0, 0.0, 1.0 ;
-    }
-
     test.addLink( "spring_" + convert.str(),
-	          0.00235,
-	          "sphere_collision",
-	          "visual",
-	          radius,
-	          pose,
-	          skin_ambient ,
-	          skin_diffuse ,
-	          skin_specular,
-	          skin_emissive );
-
+                  0.001,
+                  "sphere_collision",
+                  "visual",
+                  radius,
+                  pose,
+                  skin_ambient ,
+                  skin_diffuse ,
+                  skin_specular,
+                  skin_emissive );
 
     axis << 0, 0, 1;
 
     test.addJoint( "spring_joint_" + convert.str(),
                    "prismatic",
-                   "plane",
+                   "tactile_" + convert.str(),
                    "spring_" + convert.str(),
+                   axis );
+
+    ////////////////////
+    pose << pos_x, pos_y, tac_height, 0, 0, 0;
+    box_size << tactile_size_x, tactile_size_y, tactile_size_z;
+
+    test.addLink( "tactile_" + convert.str(),
+                  0.001,
+                  "square_collision",
+                  "visual",
+                  box_size,
+                  pose,
+                  tactile_ambient ,
+                  tactile_diffuse ,
+                  tactile_specular,
+                  tactile_emissive );
+
+    axis << 0, 0, 1;
+
+    test.addJoint( "tactile_joint_" + convert.str(),
+                   "prismatic",
+                   "plane",
+                   "tactile_" + convert.str(),
                    axis );
 
 //    std::cout << pos_x << " " << pos_y << "\n";
@@ -523,17 +473,12 @@ int main(int argc, char** argv)
     {
       pos_x = -size_x;
       pos_y = pos_y - d_pos;
-      x_stat = 0;
-      x_id = 0.0;
-      y_id = y_id + 1.0;
-      //std::cout << " y_id \n";
+//      std::cout << " ------ \n";
     }
 
    out << YAML::BeginMap;
    out << YAML::Key << "Joint" << YAML::Value << "joint_" + convert.str();
    out << YAML::EndMap;
-   x_id = x_id + 1.0;
-   
 
   }
 
@@ -545,8 +490,9 @@ int main(int argc, char** argv)
 
   ////////////////////
 
-  test.addPlugin( "skin_joint" , "libskin_joint.so" );
-  //test.addPlugin( "plane_joint"  , "libplane_joint.so" );
+  test.addPlugin( "spring_joint" , "libspring_joint.so" );
+  test.addPlugin( "tactile_joint", "libtactile_joint.so" );
+  test.addPlugin( "plane_joint"  , "libplane_joint.so" );
 
   test.saveSDFFile( sdf_filename );
 
