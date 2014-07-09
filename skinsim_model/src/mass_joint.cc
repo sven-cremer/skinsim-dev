@@ -16,7 +16,7 @@ namespace gazebo
       this->model = _model;
       this->joint = this->model->GetJoint("my_mass_joint");
       this->input_pub = this->ros_node->advertise<skinsim_msgs::inputData>("inputData",1);
-      action_t = 3.0;
+      action_t = 0.5;
       a = 1;
       force = 0.0;
       this->updateConnection = event::Events::ConnectWorldUpdateBegin(
@@ -59,7 +59,7 @@ namespace gazebo
             a = 0;
           }
         a++;
-        action_t = action_t + 2;
+        action_t = action_t + 1;
       }
       input_pub.publish(inputData); 
     }

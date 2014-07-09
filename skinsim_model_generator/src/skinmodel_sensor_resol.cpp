@@ -40,12 +40,12 @@
  */
 
 #include "sdf/sdf.hh"
-
+#include <ros/package.h>
 #include <fstream>
 #include <string>
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Core>
-
+#include <vector>
 #include <ros/ros.h>
 
 class SkinSimModelBuilder
@@ -301,17 +301,18 @@ int main(int argc, char** argv)
 {
 
   // Initialize ROS
-  ros::init (argc, argv, "only_skinmodel_sdf_generator");
+  ros::init (argc, argv, "skinmodel_sensor_resol");
   ros::NodeHandle nh;
 
   SkinSimModelBuilder test;
 
   std::string para_sdf_filename = "/sdf_filename";
   std::string para_jcf_filename = "/joint_config_filename";
-  //std::string para_tid_filename = "/tactile_id_filename";
+  std::string para_tid_filename = "/tactile_id_filename";
 
   std::string sdf_filename          ; // = "model.sdf";
   std::string joint_config_filename ; // = "joint_names.yaml";
+  std::string tactile_id_filename;    // = "tactile_id.yaml";
 
   Eigen::Vector4d skin_ambient ;
   Eigen::Vector4d skin_diffuse ;
@@ -336,7 +337,7 @@ int main(int argc, char** argv)
 
   if (!nh.getParam(para_sdf_filename , sdf_filename           )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
   if (!nh.getParam(para_jcf_filename , joint_config_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_jcf_filename.c_str()); }
-  //if (!nh.getParam(para_tid_filename , tactile_id_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tid_filename.c_str()); }
+  if (!nh.getParam(para_tid_filename , tactile_id_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tid_filename.c_str()); }
 
   std::string para_density      = "density";
   std::string para_size_x       = "size_x" ;
@@ -347,10 +348,8 @@ int main(int argc, char** argv)
 
   std::string para_d_pos        = "d_pos"  ;
 
-  std::string para_sens_x       = "sens_x";
-  std::string para_sens_y       = "sens_y" ;
-  std::string para_space_x      = "space_x" ;
-  std::string para_space_y      = "space_y" ;
+  std::string para_sens_rad       = "sens_rad";
+  std::string para_space_wid      = "space_wid" ;
 
   double density     ;
   double size_x = 1.5;
@@ -362,15 +361,9 @@ int main(int argc, char** argv)
 
   double d_pos  = 0.5;
 
-  double sens_x = 3.0;
-  double sens_y = 2.0;
-  double space_x = 1.0;
-  double space_y = 1.0;
+  double sens_rad = 1.0;
+  double space_wid = 3.0;
 
-  double x_id = 1.0;
-  double y_id = 1.0;
-  double x_stat = 0.0;
-  double y_stat = 0.0;
 
   if (!nh.getParam(para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
   if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
@@ -387,16 +380,14 @@ int main(int argc, char** argv)
   if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
   if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
 
-  if (!nh.getParam(para_sens_x , sens_x )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_x.c_str()); }
-  if (!nh.getParam(para_sens_y , sens_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_y.c_str()); }
-  if (!nh.getParam(para_space_x , space_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y.c_str()); }
-  if (!nh.getParam(para_space_y , space_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y.c_str()); }
+  if (!nh.getParam(para_sens_rad , sens_rad )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_rad.c_str()); }
+  if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
 
   YAML::Emitter out;
   std::ofstream fout(joint_config_filename.c_str());
 
-  //YAML::Emitter out1;
-  //std::ofstream fout(tactile_id_filename.c_str());
+  YAML::Emitter out1;
+  std::ofstream fout2(tactile_id_filename.c_str());
 
 //  sdf::SDFPtr robot(new sdf::SDF());
 //  sdf::init(robot);
@@ -412,7 +403,7 @@ int main(int argc, char** argv)
   test.generateModelStart("spring_board", pose );
 
   pose << 0, 0, plane_height, 0, 0, 0;
-  box_size << 2.5*size_x, 2.5*size_y, d_pos/10;
+  box_size << 1.5*size_x, 1.5*size_y, d_pos/10;
 
   test.addLink( "plane",
                 20,
@@ -435,66 +426,163 @@ int main(int argc, char** argv)
 
 
 
-  double pos_x = -size_x;
-  double pos_y =  size_y;
+  double skin_no = (double)(size_x/d_pos)*(size_y/d_pos);
+  int x_skin_len = (int)(size_x/d_pos);
+  int y_skin_len = (int)(size_y/d_pos);
+  int skin_ix [y_skin_len][x_skin_len];
+  int ix = 1;
+  for ( int i = 0; i<y_skin_len; i++)
+  {
+    for( int j = 0; j<x_skin_len; j++)
+    {
+      skin_ix[i][j] = ix;
+      ix++;
+    }
+  }
+  int cent_x = (int)x_skin_len/2;
+  int cent_y = (int)y_skin_len/2;
+  std::vector <int> search_pts_x;  
+  std::vector <int> search_pts_y;
+  std::vector <int> sens_cent_ix;
 
-  double sensor_no = (double)(pos_y - pos_x)/d_pos + 1;
-  sensor_no = sensor_no*sensor_no;
+  std::string path_cent = ros::package::getPath("skinsim_model") + "/config/tactile_cent_id.txt";
+  std::ofstream tact_cent_rec;
+  tact_cent_rec.open(path_cent.c_str());
+
+  // ---------down ------------
+  for(int iy=cent_y; iy<=(y_skin_len-1); iy=iy+space_wid)
+  {
+    if((iy+sens_rad)<=(y_skin_len-1))
+    {
+      // --- left ----
+      for(int ix=cent_x;ix>=0;ix=ix-space_wid)
+      {
+        if((ix-sens_rad)>=0)
+        {
+          search_pts_x.push_back(ix);
+          search_pts_y.push_back(iy);
+          sens_cent_ix.push_back(skin_ix[iy][ix]);
+          tact_cent_rec << skin_ix[iy][ix]<<' ';
+        }
+      }
+      // --- right ----
+      for(int ix=(cent_x+space_wid);ix<=(x_skin_len-1);ix=ix+space_wid)
+      {
+        if((ix+sens_rad)<=(x_skin_len-1))
+        {
+          search_pts_x.push_back(ix);
+          search_pts_y.push_back(iy);
+          sens_cent_ix.push_back(skin_ix[iy][ix]);
+          tact_cent_rec << skin_ix[iy][ix]<<' ';
+        }
+      }
+    }
+  }
+
+
+
+  // ---------upper ------------
+  for(int iy=(cent_y-space_wid); iy>=0; iy=iy-space_wid)
+  {
+    if((iy-sens_rad)>=0)
+    {
+      // --- left ----
+      for(int ix=cent_x;ix>=0;ix=ix-space_wid)
+      {
+        if((ix-sens_rad)>=0)
+        {
+          search_pts_x.push_back(ix);
+          search_pts_y.push_back(iy);
+          sens_cent_ix.push_back(skin_ix[iy][ix]);
+          tact_cent_rec << skin_ix[iy][ix]<<' ';
+        }
+      }
+      // --- right ----
+      for(int ix=(cent_x+space_wid);ix<=(x_skin_len-1);ix=ix+space_wid)
+      {
+        if((ix+sens_rad)<=(x_skin_len-1))
+        {
+          search_pts_x.push_back(ix);
+          search_pts_y.push_back(iy);
+          sens_cent_ix.push_back(skin_ix[iy][ix]);
+          tact_cent_rec << skin_ix[iy][ix]<<' ';
+        }
+      }
+    }
+  }
+
+  tact_cent_rec.close();
+  std::vector <int> sens_cent_disp;
+  sens_cent_disp = sens_cent_ix;
+  std::sort(sens_cent_disp.begin(), sens_cent_disp.end(), std::greater<int>());
+
+  std::vector <int> tact_sens_ix;
+  std::string path = ros::package::getPath("skinsim_model") + "/config/tactile_id.txt";
+  std::ofstream tact_rec;
+  tact_rec.open(path.c_str());
+
+  for(int pt_ix=0; pt_ix<=(sens_cent_ix.size()-1); pt_ix++)
+  {
+    int tact_cent_x = search_pts_x[pt_ix];
+    int tact_cent_y = search_pts_y[pt_ix];
+    
+    for(int i = 0; i<=(y_skin_len-1);i++)
+    {
+      for(int j = 0; j<=(x_skin_len-1);j++)
+      {
+        if((abs(i - tact_cent_y)<=sens_rad)&&(abs(j - tact_cent_x)<=sens_rad))
+        {
+          tact_sens_ix.push_back(skin_ix[i][j]);
+          tact_rec << skin_ix[i][j]<<' ';
+        } 
+      }
+    }
+    if(pt_ix!=sens_cent_ix.size())
+    {
+      tact_rec<<'\n';
+    }
+  }
+  tact_rec.close();
+  std::sort(tact_sens_ix.begin(), tact_sens_ix.end(), std::greater<int>());
+
+
+  double pos_x = -(size_x-d_pos)/2;
+  double pos_y = (size_y-d_pos)/2;
+
   out << YAML::BeginSeq;
   //out1<< YAML::BeginSeq;
+  int x_ix = 1, y_ix = 1;
+  
 
-
-  for( int i = 1; i <= sensor_no; i++ )
+  for( int i = 1; i <= skin_no; i++ )
   {
 
     std::ostringstream convert;
     convert << i;
-    if(x_stat == 0.0)
+    
+    if( x_ix > x_skin_len )
     {
-       if(x_id>space_x)
-       {
-           x_stat = 1.0;
-           x_id = 1.0; 
-       }
-    }
-    else
-    {
-       if(x_id>sens_x)
-       {
-           x_stat = 0.0;
-           x_id = 1.0;   
-       }
+      x_ix = 1;
+      y_ix++;
     }
 
-    if(y_stat == 0.0)
+    if(skin_ix[y_ix-1][x_ix-1]==tact_sens_ix.back())
+    //if(skin_ix[y_ix-1][x_ix-1]==sens_cent_disp.back())
     {
-       if(y_id>space_y)
-       {
-           y_stat = 1.0;
-           y_id = 1.0; 
-       }
+       skin_ambient  << 1.0, 0.0, 0.0, 1.0 ; 
+       skin_diffuse  << 1.0, 0.0, 0.0, 1.0 ;
+       tact_sens_ix.pop_back();
+       //sens_cent_disp.pop_back();     
     }
     else
     {
-       if(y_id>sens_y)
-       {
-           y_stat = 0.0;
-           y_id = 1.0;   
-       }
-    }
+       skin_ambient  << 1.0, 1.0, 1.0, 1.0 ;
+       skin_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
+
+    } 
+
     pose << pos_x, pos_y, skin_height, 0, 0, 0;
     radius = d_pos/2;
-
-    if((x_stat == 0.0)||(y_stat == 0.0))
-    {
-        skin_ambient  << 1.0, 1.0, 1.0, 1.0 ;
-        skin_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
-    }
-    else
-    {
-        skin_ambient  << 1.0, 0.0, 0.0, 1.0 ; 
-        skin_diffuse  << 1.0, 0.0, 0.0, 1.0 ;
-    }
 
     test.addLink( "spring_" + convert.str(),
 	          0.00235,
@@ -519,22 +607,18 @@ int main(int argc, char** argv)
 //    std::cout << pos_x << " " << pos_y << "\n";
 
     pos_x = pos_x + d_pos;
-
-    if( pos_x > size_x )
+    
+    if( pos_x > size_x/2)
     {
-      pos_x = -size_x;
+      pos_x = -(size_x-d_pos)/2;
       pos_y = pos_y - d_pos;
-      x_stat = 0;
-      x_id = 0.0;
-      y_id = y_id + 1.0;
       //std::cout << " y_id \n";
     }
-
+    x_ix++; 
    out << YAML::BeginMap;
    out << YAML::Key << "Joint" << YAML::Value << "joint_" + convert.str();
    out << YAML::EndMap;
-   x_id = x_id + 1.0;
-   
+  
 
   }
 
@@ -543,10 +627,11 @@ int main(int argc, char** argv)
   // Write YAML file and close
   fout << out.c_str();
   fout.close();
+  fout2.close();
 
   ////////////////////
 
-  test.addPlugin( "skin_joint" , "libskin_joint.so" );
+  test.addPlugin( "skin_tactile_joint" , "libskin_tactile_joint.so" );
   //test.addPlugin( "plane_joint"  , "libplane_joint.so" );
 
   test.saveSDFFile( sdf_filename );
