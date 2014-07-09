@@ -85,7 +85,7 @@ target_link_libraries(skin_tactile_joint ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARI
 #add_dependencies(central spring_array_generate_message_cpp)
 
 
-add_executable(central src/central.cpp)
+add_executable(central src/central.cc)
 target_link_libraries( central ${catkin_LIBRARIES} )
 
 

@@ -1,20 +1,18 @@
-#include <gazebo/physics/physics.hh>
-#include <gazebo/common/Events.hh>
-#include <gazebo/gazebo.hh>
-
-#include <yaml-cpp/yaml.h>
-
 #include <fstream>
 #include <string>
+#include <sstream>
 
 #include "ros/ros.h"
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "skinsim_msgs/tactileData.h"
+#include <gazebo/physics/physics.hh>
+#include <gazebo/common/Events.hh>
+#include <gazebo/gazebo.hh>
 
+#include "skinsim_msgs/tactileData.h"
 #include "skinsim_msgs/conciseData.h"
-#include <sstream>
+#include <yaml-cpp/yaml.h>
 
 /*uint64_t GetTimeStamp()
 {
@@ -25,12 +23,12 @@
 
 namespace gazebo
 {
-class Skin_Joint : public ModelPlugin
+class SkinJoint : public ModelPlugin
 {
 
 public:
 
-  Skin_Joint()
+  SkinJoint()
   {
     // Start up ROS
     std::string name = "skin_joint_plugin_node";
@@ -39,7 +37,7 @@ public:
     ros::init(argc, NULL, name);
   }
 
-  ~Skin_Joint()
+  ~SkinJoint()
   {
     delete this->ros_node;
   }
@@ -139,7 +137,7 @@ public:
     // Initialize the node with the Model name
     node->Init(model_->GetName());
 
-    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&Skin_Joint::UpdateJoint, this));
+    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&SkinJoint::UpdateJoint, this));
   }
 
   // Called by the world update start event
@@ -265,6 +263,6 @@ private:
 };
 
 // Register this plugin with the simulator
-GZ_REGISTER_MODEL_PLUGIN(Skin_Joint)
+GZ_REGISTER_MODEL_PLUGIN(SkinJoint)
 
 }

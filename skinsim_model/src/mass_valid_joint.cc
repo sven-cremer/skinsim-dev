@@ -1,16 +1,21 @@
+#include <string>
+#include <fstream>
+
+#include "ros/ros.h"
+
 #include "gazebo/common/CommonIface.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
+
 #include "skinsim_msgs/inputData.h"
-#include "ros/ros.h"
+
 #include <yaml-cpp/yaml.h>
-#include <fstream>
-#include <string>
+
 
 namespace gazebo
 {
-  class Mass_Valid_Joint : public ModelPlugin
+  class MassValidJoint : public ModelPlugin
   {
     public: void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
     {
@@ -44,7 +49,7 @@ namespace gazebo
         //std::cout << "Here's the output YAML:\n---" << scalar << "---\n";
       }
       this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-          boost::bind(&Mass_Valid_Joint::OnUpdate, this));
+          boost::bind(&MassValidJoint::OnUpdate, this));
       
     }
 
@@ -91,5 +96,5 @@ private:
 
 
   // Register this plugin with the simulator
-  GZ_REGISTER_MODEL_PLUGIN(Mass_Valid_Joint)
+  GZ_REGISTER_MODEL_PLUGIN(MassValidJoint)
 }
