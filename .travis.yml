@@ -1,0 +1,68 @@
+# General setup
+# -------------
+language: python
+python:
+    - "2.7"
+# Allows the python virtualenv to use apt-get installed packages, which
+# is essential (as ROS recommends this and pip doesn't seem to contain
+# all packages, or contains them with errors).
+virtualenv:
+    system_site_packages: true
+# Allow caching of debian (apt-get) packages. This means they're cached
+# on Travis, so we still have to download/install them, but it will be
+# faster than going to the ubuntu repositories.
+cache: apt
+# Git settings.
+# NOTE(mbforbes): Change this to groovy-devel when moving to PR2 repo.
+branches:
+    only:
+        - style
+# Before anything, see if we can get the mongoDB troubles out of the way.
+# Note that this is a Travis-CI specific problem; this is not needed in
+# general.
+before_install:
+    - sudo apt-get --purge remove mongodb-10gen
+
+# Commands to install dependencies
+# --------------------------------
+install:
+# Update package list and install new versions.
+    - sudo apt-get update
+    - sudo apt-get upgrade
+# First, move code to correct place. Also Travis-CI specific.
+    - mkdir -p ~/catkin_ws
+    - cd ..; mv skinsim ~/catkin_ws/src
+# Settings to make installing script more general.
+    - export ROS_CI_DESKTOP=`lsb_release -cs`  # e.g. 'precise'
+    - export ROS_CI_VERSION=hydro  # e.g. 'groovy'
+    - export ROS_CI_PREFIX=ros-${ROS_CI_VERSION}-  # e.g. 'ros-groovy-'
+# Exports for ROS
+    - export ROS_HOSTNAME=localhost
+    - export ROS_MASTER_URI=http://localhost:11311
+    - export ROBOT=sim
+# Add ROS repositories, setup keys, update
+    - echo "deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main" | sudo tee /etc/apt/sources.list.d/ros-latest.list
+    - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+    - yes | sudo apt-get -y update
+# Main installation, ROS setup
+    - yes | sudo apt-get -y install ${ROS_CI_PREFIX}desktop-full
+    - sudo rosdep init
+    - rosdep update
+# Environment setup
+    - source /opt/ros/${ROS_CI_VERSION}/setup.bash
+# Add required debian and python packages with apt-get and pip.
+#     - cd ~/rosbuild_ws/pr2_pbd
+#     - yes | sudo apt-get -y install $(< packages.txt)
+#     - pip install -r requirements.txt
+# Initialize ROS workspace, setup, set path
+    - cd ~/catkin_ws
+    - rosws init . /opt/ros/${ROS_CI_VERSION}
+    - source ~/catkin_ws/devel/setup.bash
+#     - export ROS_PACKAGE_PATH=~/rosbuild_ws/:/opt/ros/${ROS_CI_VERSION}/share:/opt/ros/${ROS_CI_VERSION}/stacks
+# Make messages
+    - catkin_make
+
+# Command to run tests
+# --------------------
+# script:
+#     - rostest pr2_pbd_interaction test_endtoend.test
