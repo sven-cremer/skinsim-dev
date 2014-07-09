@@ -27,4 +27,4 @@ SkinSim tries to adhere to the following style guides:
 - Gazebo Style Guide : http://gazebosim.org/user_guide/modifying__style.html
 - Google C++ Style Guide : http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 
-
+[![Build Status](https://drone.io/bitbucket.org/nextgensystems/skinsim/status.png)](https://drone.io/bitbucket.org/nextgensystems/skinsim/latest)
