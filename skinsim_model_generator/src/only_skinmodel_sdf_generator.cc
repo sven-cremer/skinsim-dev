@@ -311,6 +311,7 @@ int main(int argc, char** argv)
 
   std::string sdf_filename          ; // = "model.sdf";
   std::string joint_config_filename ; // = "joint_names.yaml";
+  std::string tactile_id_filename   ;
 
   Eigen::Vector4d skin_ambient ;
   Eigen::Vector4d skin_diffuse ;
@@ -395,7 +396,7 @@ int main(int argc, char** argv)
   std::ofstream fout(joint_config_filename.c_str());
 
   YAML::Emitter out1;
-  std::ofstream fout(tactile_id_filename.c_str());
+  std::ofstream fout1(tactile_id_filename.c_str());
 
 //  sdf::SDFPtr robot(new sdf::SDF());
 //  sdf::init(robot);
