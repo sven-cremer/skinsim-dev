@@ -36,7 +36,7 @@ target_link_libraries( skinmodel_sdf_generator ${catkin_LIBRARIES} ${GAZEBO_LIBR
 add_executable(only_skinmodel_sdf_generator src/only_skinmodel_sdf_generator.cc)
 target_link_libraries( only_skinmodel_sdf_generator ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
 
-add_executable(skinmodel_sensor_resol src/skinmodel_sensor_resol.cpp)
+add_executable(skinmodel_sensor_resol src/skinmodel_sensor_resol.cc)
 target_link_libraries( skinmodel_sensor_resol ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
 
 
