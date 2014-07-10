@@ -95,6 +95,7 @@ int main(int argc, char** argv)
   if (!nh.getParam(para_jcf_filename , joint_config_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_jcf_filename.c_str()); }
   if (!nh.getParam(para_tid_filename , tactile_id_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tid_filename.c_str()); }
 
+  std::string para_xByX         = "xByX";
   std::string para_density      = "density";
   std::string para_size_x       = "size_x" ;
   std::string para_size_y       = "size_y" ;
@@ -107,7 +108,9 @@ int main(int argc, char** argv)
   std::string para_sens_rad       = "sens_rad";
   std::string para_space_wid      = "space_wid" ;
 
-  double density     ;
+  double xByX   = 0.0;
+
+  double density= 0.0;
   double size_x = 1.5;
   double size_y = 1.5;
 
@@ -120,21 +123,23 @@ int main(int argc, char** argv)
   double sens_rad = 1.0;
   double space_wid = 3.0;
 
-
+  if (!nh.getParam(para_xByX   , xByX    )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_xByX.c_str())   ; }
+  if (!nh.getParam(para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
   if (!nh.getParam(para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
-  if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
-  if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
+
+  // FIXME this assumes square patches
+  if( xByX != 0.0 )
+  {
+    size_x = d_pos*xByX ;
+    size_y = d_pos*xByX ;
+  }else
+  {
+    if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
+    if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
+  }
 
   if (!nh.getParam(para_skin_height, skin_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_height.c_str()); }
-
   if (!nh.getParam(para_plane_height, plane_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_plane_height .c_str()); }
-
-  if (!nh.getParam(para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
-
-  if (!nh.getParam(para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
-  if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
-  if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
-  if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
 
   if (!nh.getParam(para_sens_rad , sens_rad )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_rad.c_str()); }
   if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
