@@ -185,7 +185,9 @@ int main(int argc, char** argv)
                  "prismatic",
                  "world",
                  "plane",
-                 axis );
+                 axis,
+                 0,
+                 0 );
 
 
 

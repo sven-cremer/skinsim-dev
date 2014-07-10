@@ -3,6 +3,7 @@
 float64 time
 float64 force_sensed
 float64 force
+float64 joint_force
 
 float64 explFctr_Kp
 float64 explFctr_Ki

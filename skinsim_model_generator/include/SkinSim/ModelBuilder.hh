@@ -262,7 +262,9 @@ public:
                  std::string joint_type,
                  std::string parent,
                  std::string child,
-                 Eigen::Vector3d & axis )
+                 Eigen::Vector3d & axis, 
+                 double upper_limit,
+                 double lower_limit )
   {
     sdf_stream_ << "  <joint name = '" + joint_name + "' type='" + joint_type + "'>"
                 << "    <parent>" + parent + "</parent>"
@@ -270,8 +272,8 @@ public:
                 << "      <axis>"
                 << "        <xyz>" << axis << "</xyz>"
                 << "        <limit>"
-                << "          <lower>" << 0 << "</lower>"
-                << "          <upper>" <<  0 << "</upper>"
+                << "          <lower>" << lower_limit << "</lower>"
+                << "          <upper>" << upper_limit << "</upper>"
                 << "        </limit>"
                 << "      </axis>"
                 << "  </joint>";
