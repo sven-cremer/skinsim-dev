@@ -174,13 +174,23 @@ int main(int argc, char** argv)
 
   axis << 0, 0, 1;
 
+  //robot is moving
   test.addPlaneJoint( "plane_joint",
                  "prismatic",
                  "world",
                  "plane",
-                 axis );
+                 axis,
+                 -1e+16,
+                 1e+16 );
 
-
+  //environment is moving 
+  /*test.addPlaneJoint( "plane_joint",
+                 "prismatic",
+                 "world",
+                 "plane",
+                 axis,
+                 0,
+                 0 );*/
 
   double skin_no = (double)(size_x/d_pos)*(size_y/d_pos);
   int x_skin_len = (int)(size_x/d_pos);
@@ -388,7 +398,7 @@ int main(int argc, char** argv)
   ////////////////////
 
   test.addPlugin( "skin_tactile_joint" , "libskin_tactile_joint.so" );
-  //test.addPlugin( "plane_joint"  , "libplane_joint.so" );
+  test.addPlugin( "plane_joint"  , "libplane_joint.so" );
 
   test.saveSDFFile( sdf_filename );
 

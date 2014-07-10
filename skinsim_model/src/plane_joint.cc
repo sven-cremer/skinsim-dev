@@ -21,7 +21,7 @@ namespace gazebo
         grnd_force = 0;
         for (unsigned int i = 0; i < msg->force.size(); ++i)
         {
-          sens_force = sens_force + msg->force_noisy[i];
+          //sens_force = sens_force + msg->force_noisy[i];
           grnd_force = grnd_force + msg->force[i];
         }
 
@@ -53,7 +53,7 @@ namespace gazebo
       std::string para_targetForce    = "/plane_targetForce"   ;
       if (!this->ros_node->getParam(para_targetForce, targetForce)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_targetForce.c_str()); }
 
-      this->tactile_sub = this->ros_node->subscribe( "tactile_data", 1, &PlaneJoint::tactileCallback, this );
+      this->tactile_sub = this->ros_node->subscribe( "tacData", 1, &PlaneJoint::tactileCallback, this );
       this->force_pub = this->ros_node->advertise<skinsim_msgs::controllerData>("controller_data", 1);
 
       this->model_ = _model;
@@ -99,6 +99,7 @@ namespace gazebo
           // TODO need antiwindup
           this->joint_->SetForce( 0, a*explFctr_Kp + int_err*explFctr_Ki + der_err*explFctr_Kd);
   //        this->joint_->SetForce( 0, a*explFctr_Kp + int_err*explFctr_Ki );
+          current_force = this->joint_->GetForce(0);
         }
 
         // Impedance control
@@ -109,19 +110,21 @@ namespace gazebo
           double damp_coefficient = impCtr_D    ;
 
           double current_angle = this->joint_->GetAngle(0).Radian();
-          double current_force = this->joint_->GetForce(0);
+
           double current_velocity = this->joint_->GetVelocity(0);
           double current_time = this->model_->GetWorld()->GetSimTime().Double();
           this->joint_->SetForce(0, ( rest_angle - current_angle)*stiffness - damp_coefficient*current_velocity );
+          //current_force = this->joint_->GetForce(0);
+          
         }
 
         //std::cout << name<<" Current force: "<<current_force<<"\n";
       }
 
       ctrData.time         = this->model_->GetWorld()->GetSimTime().Double();
-      ctrData.force_sensed = sensed_force;
+      //ctrData.force_sensed = sensed_force;
       ctrData.force        = ground_force;
-
+      ctrData.joint_force  = current_force;
       ctrData.explFctr_Kp  = explFctr_Kp;
       ctrData.explFctr_Ki  = explFctr_Ki;
       ctrData.explFctr_Kd  = explFctr_Kd;
@@ -153,6 +156,7 @@ namespace gazebo
     // Force sensed
     double sens_force ; // sensed force
     double grnd_force ; // ground truth force
+    double current_force;
     double int_err    ;
     skinsim_msgs::controllerData ctrData;
 
