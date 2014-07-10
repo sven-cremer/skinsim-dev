@@ -49,19 +49,19 @@ namespace SkinSim
 class SkinSimModelBuilder
 {
 private:
-  std::ostringstream sdf_stream_;
-  sdf::SDF sdfParsed_;
+  std::ostringstream m_sdfStream;
+  sdf::SDF m_sdfParsed;
 
   void generateSDFHeader()
   {
-    sdf_stream_ << "<?xml version='1.0' ?>"
+    m_sdfStream << "<?xml version='1.0' ?>"
                 << "<sdf version='1.4'>"
                 << " ";
   }
 
   void generateModelEnd()
   {
-    sdf_stream_ << "    </model>"
+    m_sdfStream << "    </model>"
                 << "</sdf>";
   }
 
@@ -84,14 +84,14 @@ public:
 
   void generateModelStart( std::string name, Eigen::VectorXd & pose )
   {
-    sdf_stream_ << "<model name='" + name + "'>"
+    m_sdfStream << "<model name='" + name + "'>"
                 << "<pose>"<< pose << "</pose>"
                 << " ";
   }
 
   void addGeometry( double radius )
   {
-    sdf_stream_ << "      <geometry>"
+    m_sdfStream << "      <geometry>"
                 << "        <sphere>"
                 << "          <radius>" << radius << "</radius>"
                 << "        </sphere>"
@@ -100,7 +100,7 @@ public:
 
   void addGeometry( Eigen::Vector3d & box_size )
   {
-    sdf_stream_ << "    <geometry>"
+    m_sdfStream << "    <geometry>"
                 << "       <box>"
                 << "         <size>" << box_size << "</size>"
                 << "       </box>"
@@ -109,7 +109,7 @@ public:
 
   void addSurface()
   {
-    sdf_stream_ << "        <surface>"
+    m_sdfStream << "        <surface>"
                 << "          <friction>"
                 << "            <ode>"
                 << "              <mu>0.0</mu>"
@@ -120,11 +120,11 @@ public:
   }
 
   void addMaterial( Eigen::Vector4d & ambient ,
-                    Eigen::Vector4d & diffuse ,
-                    Eigen::Vector4d & specular,
-                    Eigen::Vector4d & emissive  )
+                     Eigen::Vector4d & diffuse ,
+                     Eigen::Vector4d & specular,
+                     Eigen::Vector4d & emissive  )
   {
-    sdf_stream_ << "  <material>"
+    m_sdfStream << "  <material>"
                 << "    <ambient>"  << ambient  << "</ambient>"
                 << "    <diffuse>"  << diffuse  << "</diffuse>"
                 << "    <specular>" << specular << "</specular>"
@@ -134,71 +134,71 @@ public:
 
   void addCollision( std::string collision_name,  double radius )
   {
-    sdf_stream_ << "    <collision name='" + collision_name + "'>";
+    m_sdfStream << "    <collision name='" + collision_name + "'>";
                 addGeometry( radius );
                 addSurface();
-    sdf_stream_ << "    </collision>";
+    m_sdfStream << "    </collision>";
   }
 
   void addCollision( std::string collision_name, Eigen::Vector3d & box_size )
   {
-    sdf_stream_ << "    <collision name='" + collision_name + "'>";
+    m_sdfStream << "    <collision name='" + collision_name + "'>";
                 addGeometry( box_size );
                 addSurface();
-    sdf_stream_ << "    </collision>";
+    m_sdfStream << "    </collision>";
   }
 
   void addVisual( std::string visual_name,
-                  double radius,
-                  Eigen::Vector4d & ambient ,
-                  Eigen::Vector4d & diffuse ,
-                  Eigen::Vector4d & specular,
-                  Eigen::Vector4d & emissive  )
+                   double radius,
+                   Eigen::Vector4d & ambient ,
+                   Eigen::Vector4d & diffuse ,
+                   Eigen::Vector4d & specular,
+                   Eigen::Vector4d & emissive  )
   {
-    sdf_stream_ << "    <visual name='" + visual_name + "'>";
+    m_sdfStream << "    <visual name='" + visual_name + "'>";
                 addGeometry( radius );
                 addMaterial( ambient ,
                              diffuse ,
                              specular,
                              emissive );
-    sdf_stream_ << "    </visual>";
+    m_sdfStream << "    </visual>";
   }
 
   void addVisual( std::string visual_name,
-                  Eigen::Vector3d & box_size,
-                  Eigen::Vector4d & ambient ,
-                  Eigen::Vector4d & diffuse ,
-                  Eigen::Vector4d & specular,
-                  Eigen::Vector4d & emissive  )
+                   Eigen::Vector3d & box_size,
+                   Eigen::Vector4d & ambient ,
+                   Eigen::Vector4d & diffuse ,
+                   Eigen::Vector4d & specular,
+                   Eigen::Vector4d & emissive  )
   {
-    sdf_stream_ << "    <visual name='" + visual_name + "'>";
+    m_sdfStream << "    <visual name='" + visual_name + "'>";
                 addGeometry( box_size );
                 addMaterial( ambient ,
                              diffuse ,
                              specular,
                              emissive );
-    sdf_stream_ << "    </visual>";
+    m_sdfStream << "    </visual>";
   }
 
   void addInertia( double mass )
   {
-    sdf_stream_ << "    <inertial>"
+    m_sdfStream << "    <inertial>"
                 << "      <mass>"<< mass <<"</mass>"
                 << "    </inertial>";
   }
 
   void addLink( std::string link_name,
-                double mass,
-                std::string collision_name,
-                std::string visual_name,
-                double radius,
-                Eigen::VectorXd & pose,
-                Eigen::Vector4d & ambient ,
-                Eigen::Vector4d & diffuse ,
-                Eigen::Vector4d & specular,
-                Eigen::Vector4d & emissive  )
+                 double mass,
+                 std::string collision_name,
+                 std::string visual_name,
+                 double radius,
+                 Eigen::VectorXd & pose,
+                 Eigen::Vector4d & ambient ,
+                 Eigen::Vector4d & diffuse ,
+                 Eigen::Vector4d & specular,
+                 Eigen::Vector4d & emissive  )
   {
-    sdf_stream_ << "  <link name='" + link_name + "'>"
+    m_sdfStream << "  <link name='" + link_name + "'>"
                 << "    <pose>"<< pose << "</pose>";
 
                 addInertia( mass );
@@ -210,21 +210,21 @@ public:
                            specular,
                            emissive );
 
-    sdf_stream_ << "   </link>";
+    m_sdfStream << "   </link>";
   }
 
   void addLink( std::string link_name,
-                double mass,
-                std::string collision_name,
-                std::string visual_name,
-                Eigen::Vector3d & box_size,
-                Eigen::VectorXd & pose,
-                Eigen::Vector4d & ambient ,
-                Eigen::Vector4d & diffuse ,
-                Eigen::Vector4d & specular,
-                Eigen::Vector4d & emissive  )
+                 double mass,
+                 std::string collision_name,
+                 std::string visual_name,
+                 Eigen::Vector3d & box_size,
+                 Eigen::VectorXd & pose,
+                 Eigen::Vector4d & ambient ,
+                 Eigen::Vector4d & diffuse ,
+                 Eigen::Vector4d & specular,
+                 Eigen::Vector4d & emissive  )
   {
-    sdf_stream_ << "  <link name='" + link_name + "'>"
+    m_sdfStream << "  <link name='" + link_name + "'>"
                 << "    <pose>"<< pose << "</pose>";
 
                 addInertia( mass );
@@ -236,16 +236,16 @@ public:
                            specular,
                            emissive );
 
-    sdf_stream_ << "   </link>";
+    m_sdfStream << "   </link>";
   }
 
   void addJoint( std::string joint_name,
-                 std::string joint_type,
-                 std::string parent,
-                 std::string child,
-                 Eigen::Vector3d & axis )
+                  std::string joint_type,
+                  std::string parent,
+                  std::string child,
+                  Eigen::Vector3d & axis )
   {
-    sdf_stream_ << "  <joint name = '" + joint_name + "' type='" + joint_type + "'>"
+    m_sdfStream << "  <joint name = '" + joint_name + "' type='" + joint_type + "'>"
                 << "    <parent>" + parent + "</parent>"
                 << "      <child>" + child + "</child>"
                 << "      <axis>"
@@ -259,14 +259,14 @@ public:
   }
 
   void addPlaneJoint( std::string joint_name,
-                 std::string joint_type,
-                 std::string parent,
-                 std::string child,
-                 Eigen::Vector3d & axis, 
-                 double upper_limit,
-                 double lower_limit )
+                        std::string joint_type,
+                        std::string parent,
+                        std::string child,
+                        Eigen::Vector3d & axis,
+                        double upper_limit,
+                        double lower_limit )
   {
-    sdf_stream_ << "  <joint name = '" + joint_name + "' type='" + joint_type + "'>"
+    m_sdfStream << "  <joint name = '" + joint_name + "' type='" + joint_type + "'>"
                 << "    <parent>" + parent + "</parent>"
                 << "      <child>" + child + "</child>"
                 << "      <axis>"
@@ -282,14 +282,14 @@ public:
 
   void addPlugin( std::string plugin_name, std::string plugin_filename )
   {
-    sdf_stream_ << "<plugin name='" + plugin_name + "' filename='" + plugin_filename + "' />";
+    m_sdfStream << "<plugin name='" + plugin_name + "' filename='" + plugin_filename + "' />";
   }
 
   void saveSDFFile( std::string sdf_filename )
   {
     generateModelEnd();
-    sdfParsed_.SetFromString(sdf_stream_.str());
-    sdfParsed_.Write( sdf_filename );
+    m_sdfParsed.SetFromString(m_sdfStream.str());
+    m_sdfParsed.Write( sdf_filename );
   }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
