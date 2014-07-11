@@ -9,6 +9,7 @@
   <group if="$(arg load_modelfile_path)">
     <param name="sdf_filename"  value="$(find skinsim_model_generator)/generated_models/model.sdf" />
     <param name="joint_config_filename"  value="$(find skinsim_model_generator)/generated_models/joint_names.yaml" />
+    <param name="tactile_id_filename"  value="$(find skinsim_model_generator)/generated_models/tactile_id.yaml" />
   </group>
  
   <node name="skinsim_model_generator" pkg="skinsim_model_generator" type="skinmodel_sdf_generator" respawn="false" />
