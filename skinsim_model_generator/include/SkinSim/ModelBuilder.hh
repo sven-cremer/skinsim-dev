@@ -296,7 +296,7 @@ public:
 
 };
 
-}
+using namespace std;
 
 void createModelFiles( string sdf_filename          ,
                          string joint_config_filename ,
@@ -599,5 +599,6 @@ void createModelFiles( string sdf_filename          ,
   test.saveSDFFile( sdf_filename );
 }
 
+}
 
 #endif /* MODELBUILDER_HH_ */
