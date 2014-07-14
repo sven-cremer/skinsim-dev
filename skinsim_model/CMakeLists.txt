@@ -43,6 +43,9 @@ target_link_libraries(skin_tactile_joint ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARI
 add_library(SkinJointPlugin SHARED src/SkinJointPlugin.cc)
 target_link_libraries(SkinJointPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
 
+add_library(TactileSensorPlugin SHARED src/TactileSensorPlugin.cc)
+target_link_libraries(TactileSensorPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
+
 catkin_package(
     CATKIN_DEPENDS message_runtime
     DEPENDS 
