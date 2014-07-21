@@ -41,7 +41,6 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/Events.hh>
 #include <gazebo/gazebo.hh>
-#include <gazebo/sensors/sensors.hh>
 
 #include <yaml-cpp/yaml.h>
 
@@ -55,7 +54,7 @@
 
 namespace gazebo
 {
-class TactileSensorPlugin : public SensorPlugin
+class TactileSensorPlugin : public ModelPlugin
 {
 
 public:
@@ -163,7 +162,7 @@ private:
 };
 
 // Register this plugin with the simulator
-GZ_REGISTER_MODEL_PLUGIN(TactileSensorPlugin)
+GZ_REGISTER_MODEL_PLUGIN (TactileSensorPlugin)
 
 }
 

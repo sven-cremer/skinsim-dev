@@ -1,6 +1,6 @@
 # No of elements per side
 # do nothing if 0 use size_x and size_y
-xByX         : 17.0 # 0.0
+xByX         : 10.0 # 0.0
 
 d_pos        : 0.0025 #0.005
 density      : 1.0
