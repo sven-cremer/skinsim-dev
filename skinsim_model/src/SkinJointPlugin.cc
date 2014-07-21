@@ -51,6 +51,8 @@
 #include <list>
 #include <vector>
 
+#include <boost/filesystem.hpp>
+
 #include "SkinSim/ModelPath.hh"
 
 namespace gazebo

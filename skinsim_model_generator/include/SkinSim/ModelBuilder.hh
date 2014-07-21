@@ -41,9 +41,13 @@
 #ifndef MODELBUILDER_HH_
 #define MODELBUILDER_HH_
 
+#include <ros/ros.h>
+
 #include "sdf/sdf.hh"
 #include <iostream>
 #include <fstream>
+
+#include <boost/filesystem.hpp>
 
 namespace SkinSim
 {
@@ -72,16 +76,14 @@ private:
     SPHERE
   } GEOMETRY_TYPE;
 
-
 public:
   SkinSimModelBuilder( )
   {
     generateSDFHeader();
   }
 
-  SkinSimModelBuilder( std::string sdf_filename          ,
-                          std::string joint_config_filename ,
-                          std::string tactile_id_filename   ,
+  SkinSimModelBuilder(  std::string model_name            ,
+                          std::string sdf_filename          ,
                           double xByX                       ,
                           double density                    ,
                           double size_x                     ,
@@ -93,9 +95,8 @@ public:
                           double space_wid                   )
   {
     generateSDFHeader();
-    createModelFiles( sdf_filename          ,
-                      joint_config_filename ,
-                      tactile_id_filename   ,
+    createModelFiles( model_name            ,
+                      sdf_filename          ,
                       xByX                  ,
                       density               ,
                       size_x                ,
@@ -313,26 +314,83 @@ public:
     m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' />\n";
   }
 
-  void saveSDFFile( std::string sdf_filename )
+  std::string genModelDirectory( std::string & sdf_filename, std::string & model_name )
   {
-    generateModelEnd();
-    m_sdfParsed.SetFromString( m_sdfStream.str() );
-    m_sdfParsed.Write( sdf_filename );
+    boost::filesystem::path dir_path ( sdf_filename );
+
+    try
+    {
+      if (boost::filesystem::exists(dir_path))    // does p actually exist?
+      {
+        if (boost::filesystem::is_regular_file(dir_path))        // is p a regular file?
+        {
+          dir_path = dir_path.branch_path();
+        }
+
+        if (boost::filesystem::is_directory(dir_path))      // is p a directory?
+        {
+          boost::filesystem::path dir(dir_path / model_name);
+          if(boost::filesystem::create_directory(dir)) {
+            //ROS_WARN_STREAM( "Success" );
+          }
+        }
+      }
+    }
+    catch (const boost::filesystem::filesystem_error& ex)
+    {
+      //ROS_ERROR_STREAM( ex.what() );
+    }
+
+    std::string filepath = dir_path.string() + "/" + model_name + "/";
+
+    return filepath;
   }
 
-  void saveFile( std::string sdf_filename )
+  void saveSDFFile( std::string & sdf_filename, std::string & model_name )
   {
     generateModelEnd();
 
+    std::string filename = genModelDirectory( sdf_filename, model_name ) + model_name + ".sdf";
+
+    m_sdfParsed.SetFromString( m_sdfStream.str() );
+    m_sdfParsed.Write( filename );
+  }
+
+  void saveConfigFile( std::string & sdf_filename, std::string & model_name )
+  {
+    std::ostringstream modelConfig;
+
+    modelConfig << "<?xml version='1.0'?>                     \n"
+                << "                                          \n"
+                << "<model>                                   \n"
+                << "  <name>" << model_name << "</name>       \n"
+                << "  <version>1.0</version>                  \n"
+                << "  <sdf >" << model_name << ".sdf</sdf>    \n"
+                << "                                          \n"
+                << "  <author>                                \n"
+                << "    <name>Isura Ranatunga</name>          \n"
+                << "    <email>isura@ieee.org</email>         \n"
+                << "  </author>                               \n"
+                << "                                          \n"
+                << "  <description>                           \n"
+                << "    A Simple "<< model_name << "          \n"
+                << "  </description>                          \n"
+                << "</model>                                  \n";
+
+    std::string filename = genModelDirectory( sdf_filename, model_name ) + "model.config";
+    saveFile( filename, modelConfig );
+  }
+
+  void saveFile( std::string & filename, std::ostringstream & model )
+  {
     std::ofstream saveToFile;
-    saveToFile.open ( sdf_filename.c_str() );
-    saveToFile << m_sdfStream.str();
+    saveToFile.open ( filename.c_str() );
+    saveToFile << model.str();
     saveToFile.close();
   }
 
-  void createModelFiles( std::string sdf_filename          ,
-                           std::string joint_config_filename ,
-                           std::string tactile_id_filename   ,
+  void createModelFiles( std::string model_name            ,
+                           std::string sdf_filename          ,
                            double xByX                       ,
                            double density                    ,
                            double size_x                     ,
@@ -364,6 +422,11 @@ public:
     base_specular << 0.1, 0.1, 0.1, 1.0 ;
     base_emissive = Eigen::Vector4d::Zero();
 
+    std::string modelDirectory = genModelDirectory( sdf_filename, model_name );
+
+    std::string joint_config_filename = modelDirectory + "joint_names.yaml";
+    std::string tactile_id_filename   = modelDirectory + "tactile_id.yaml";
+
     YAML::Emitter out;
     std::ofstream fout(joint_config_filename.c_str());
 
@@ -381,7 +444,7 @@ public:
     pose.resize(6,1);
     pose << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
 
-    generateModelStart("spring_board", pose );
+    generateModelStart( model_name, pose );
 
     pose << 0, 0, plane_height, 0, 0, 0;
     box_size << 1.5*size_x, 1.5*size_y, d_pos/10;
@@ -627,7 +690,9 @@ public:
 
     addPlugin( "plane_joint"  , "libplane_joint.so" );
 
-    saveSDFFile( sdf_filename );
+    saveSDFFile( sdf_filename, model_name );
+    saveConfigFile( sdf_filename, model_name );
+
   }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

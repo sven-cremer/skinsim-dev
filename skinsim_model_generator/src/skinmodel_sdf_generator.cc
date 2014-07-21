@@ -61,25 +61,27 @@ int main(int argc, char** argv)
   ros::init (argc, argv, "skinmodel_sensor_resol");
   ros::NodeHandle nh;
 
-  std::string para_sdf_filename     = "/sdf_filename";
-  std::string para_jcf_filename     = "/joint_config_filename";
-  std::string para_tid_filename     = "/tactile_id_filename";
+  std::string para_model_name   = "/model_name";
+  std::string para_sdf_dir_name = "/sdf_dir_name";
+  std::string para_sdf_filename = "/sdf_filename";
+  std::string para_jcf_filename = "/joint_config_filename";
+  std::string para_tid_filename = "/tactile_id_filename";
 
-  std::string para_xByX             = "xByX";
-  std::string para_density          = "density";
-  std::string para_size_x           = "size_x" ;
-  std::string para_size_y           = "size_y" ;
+  std::string para_xByX         = "xByX";
+  std::string para_density      = "density";
+  std::string para_size_x       = "size_x" ;
+  std::string para_size_y       = "size_y" ;
 
-  std::string para_skin_height      = "skin_height";
-  std::string para_plane_height     = "plane_height";
-  std::string para_d_pos            = "d_pos"  ;
+  std::string para_skin_height  = "skin_height";
+  std::string para_plane_height = "plane_height";
+  std::string para_d_pos        = "d_pos"  ;
 
-  std::string para_sens_rad         = "sens_rad";
-  std::string para_space_wid        = "space_wid" ;
+  std::string para_sens_rad     = "sens_rad";
+  std::string para_space_wid    = "space_wid" ;
 
-  std::string sdf_filename          = "model.sdf";
-  std::string joint_config_filename = "joint_names.yaml";
-  std::string tactile_id_filename   = "tactile_id.yaml";
+  std::string model_name        = "spring_array";
+  std::string sdf_dir_name      = "~/";
+  std::string sdf_filename      = "model.sdf";
 
   double xByX   = 0.0;
 
@@ -94,13 +96,13 @@ int main(int argc, char** argv)
   double sens_rad = 1.0;
   double space_wid = 3.0;
 
-  if (!nh.getParam(para_sdf_filename , sdf_filename           )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
-  if (!nh.getParam(para_jcf_filename , joint_config_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_jcf_filename.c_str()); }
-  if (!nh.getParam(para_tid_filename , tactile_id_filename    )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tid_filename.c_str()); }
+  if (!nh.getParam( para_model_name   , model_name   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_model_name.c_str())  ; }
+  if (!nh.getParam( para_sdf_dir_name , sdf_dir_name )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_dir_name.c_str()); }
+  if (!nh.getParam( para_sdf_filename , sdf_filename )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
 
-  if (!nh.getParam(para_xByX   , xByX    )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_xByX.c_str())   ; }
-  if (!nh.getParam(para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
-  if (!nh.getParam(para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
+  if (!nh.getParam( para_xByX   , xByX    )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_xByX.c_str())   ; }
+  if (!nh.getParam( para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
+  if (!nh.getParam( para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
 
   // FIXME this assumes square patches
   if( xByX != 0.0 )
@@ -120,18 +122,17 @@ int main(int argc, char** argv)
   if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
 
   // Create model files
-  SkinSimModelBuilder skinSimModelBuilderObject( sdf_filename          ,
-                                                 joint_config_filename ,
-                                                 tactile_id_filename   ,
-                                                 xByX                  ,
-                                                 density               ,
-                                                 size_x                ,
-                                                 size_y                ,
-                                                 skin_height           ,
-                                                 plane_height          ,
-                                                 d_pos                 ,
-                                                 sens_rad              ,
-                                                 space_wid              );
+  SkinSimModelBuilder skinSimModelBuilderObject( model_name   ,
+                                                 sdf_filename ,
+                                                 xByX         ,
+                                                 density      ,
+                                                 size_x       ,
+                                                 size_y       ,
+                                                 skin_height  ,
+                                                 plane_height ,
+                                                 d_pos        ,
+                                                 sens_rad     ,
+                                                 space_wid     );
 
   return 0;
 
