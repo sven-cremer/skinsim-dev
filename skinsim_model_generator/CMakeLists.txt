@@ -35,6 +35,9 @@ catkin_package(
 add_executable(skinmodel_sdf_generator src/skinmodel_sdf_generator.cc)
 target_link_libraries( skinmodel_sdf_generator ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
 
+add_executable(automatedTest src/automatedTest.cc)
+target_link_libraries( automatedTest ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
+
 # Mesh code
 add_executable(mesh2pclTest src/mesh2pclTest.cc)
 target_link_libraries(mesh2pclTest ${catkin_LIBRARIES})

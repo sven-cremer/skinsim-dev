@@ -33,10 +33,9 @@
  *********************************************************************/
 
 /* Author: Isura Ranatunga
-           Ahsan Habib
  *
- * skinmodel_sdf_generator.cpp
- *  Created on: Jan 16, 2014
+ * automatedTest.cc
+ *  Created on: Jul 21, 2014
  */
 
 #include <fstream>
@@ -58,7 +57,7 @@ int main(int argc, char** argv)
 {
 
   // Initialize ROS
-  ros::init (argc, argv, "skinmodel_generation");
+  ros::init (argc, argv, "skinmodel_automated_tester");
   ros::NodeHandle nh;
 
   std::string para_model_name   = "/model_name";
@@ -121,20 +120,31 @@ int main(int argc, char** argv)
   if (!nh.getParam(para_sens_rad , sens_rad )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_rad.c_str()); }
   if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
 
-  // Create model files
-  SkinSimModelBuilder skinSimModelBuilderObject( model_name   ,
-                                                 sdf_filename ,
-                                                 xByX         ,
-                                                 density      ,
-                                                 size_x       ,
-                                                 size_y       ,
-                                                 skin_height  ,
-                                                 plane_height ,
-                                                 d_pos        ,
-                                                 sens_rad     ,
-                                                 space_wid     );
+  int expNumber = 50;
+
+  for( int i = 1; i <= expNumber; ++i )
+  {
+    // Create model files
+    stringstream ss;
+    ss << i;
+    std::string expStr = ss.str();
+
+    SkinSimModelBuilder skinSimModelBuilderObject( model_name + expStr ,
+                                                   sdf_filename ,
+                                                   xByX         ,
+                                                   density      ,
+                                                   size_x       ,
+                                                   size_y       ,
+                                                   skin_height  ,
+                                                   plane_height ,
+                                                   d_pos        ,
+                                                   sens_rad     ,
+                                                   space_wid     );
+  }
 
   return 0;
 
 }
+
+
 
