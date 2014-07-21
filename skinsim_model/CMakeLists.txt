@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(skinsim_model)
 
+set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_C_COMPILER "clang")
+
 find_package(catkin REQUIRED COMPONENTS 
   roscpp
   std_msgs
