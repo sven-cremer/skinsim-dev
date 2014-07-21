@@ -593,7 +593,9 @@ void createModelFiles( string sdf_filename          ,
 
   ////////////////////
 
-  test.addPlugin( "skin_tactile_joint" , "libskin_tactile_joint.so" );
+  test.addPlugin( "skin_tactile_joint" , "libTactileSensorPlugin.so" );
+  test.addPlugin( "skin_tactile_joint" , "libSkinJointPlugin.so" );
+
   test.addPlugin( "plane_joint"  , "libplane_joint.so" );
 
   test.saveSDFFile( sdf_filename );
