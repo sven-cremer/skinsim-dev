@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 
   if (!nh.getParam(para_sdf_filename , sdf_filename           )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
   if (!nh.getParam(para_jcf_filename , joint_config_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_jcf_filename.c_str()); }
-  if (!nh.getParam(para_tid_filename , tactile_id_filename  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tid_filename.c_str()); }
+  if (!nh.getParam(para_tid_filename , tactile_id_filename    )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_tid_filename.c_str()); }
 
   if (!nh.getParam(para_xByX   , xByX    )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_xByX.c_str())   ; }
   if (!nh.getParam(para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
@@ -120,18 +120,18 @@ int main(int argc, char** argv)
   if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
 
   // Create model files
-  createModelFiles( sdf_filename          ,
-                    joint_config_filename ,
-                    tactile_id_filename   ,
-                    xByX                  ,
-                    density               ,
-                    size_x                ,
-                    size_y                ,
-                    skin_height           ,
-                    plane_height          ,
-                    d_pos                 ,
-                    sens_rad              ,
-                    space_wid              );
+  SkinSimModelBuilder skinSimModelBuilderObject( sdf_filename          ,
+                                                 joint_config_filename ,
+                                                 tactile_id_filename   ,
+                                                 xByX                  ,
+                                                 density               ,
+                                                 size_x                ,
+                                                 size_y                ,
+                                                 skin_height           ,
+                                                 plane_height          ,
+                                                 d_pos                 ,
+                                                 sens_rad              ,
+                                                 space_wid              );
 
   return 0;
 
