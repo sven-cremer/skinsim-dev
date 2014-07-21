@@ -85,7 +85,7 @@ public:
   void generateModelStart( std::string name, Eigen::VectorXd & pose )
   {
     m_sdfStream << "<model name='" + name + "'>"
-                << "<pose>"<< pose << "</pose>"
+                << "<pose>"<< pose.transpose() << "</pose>"
                 << " ";
   }
 
@@ -102,7 +102,7 @@ public:
   {
     m_sdfStream << "    <geometry>"
                 << "       <box>"
-                << "         <size>" << box_size << "</size>"
+                << "         <size>" << box_size.transpose() << "</size>"
                 << "       </box>"
                 << "     </geometry>";
   }
@@ -125,10 +125,10 @@ public:
                      Eigen::Vector4d & emissive  )
   {
     m_sdfStream << "  <material>"
-                << "    <ambient>"  << ambient  << "</ambient>"
-                << "    <diffuse>"  << diffuse  << "</diffuse>"
-                << "    <specular>" << specular << "</specular>"
-                << "    <emissive>" << emissive << "</emissive>"
+                << "    <ambient>"  << ambient .transpose() << "</ambient>"
+                << "    <diffuse>"  << diffuse .transpose() << "</diffuse>"
+                << "    <specular>" << specular.transpose() << "</specular>"
+                << "    <emissive>" << emissive.transpose() << "</emissive>"
                 << "  </material>";
   }
 
@@ -199,7 +199,7 @@ public:
                  Eigen::Vector4d & emissive  )
   {
     m_sdfStream << "  <link name='" + link_name + "'>"
-                << "    <pose>"<< pose << "</pose>";
+                << "    <pose>"<< pose.transpose() << "</pose>";
 
                 addInertia( mass );
                 addCollision( collision_name, radius );
@@ -225,7 +225,7 @@ public:
                  Eigen::Vector4d & emissive  )
   {
     m_sdfStream << "  <link name='" + link_name + "'>"
-                << "    <pose>"<< pose << "</pose>";
+                << "    <pose>"<< pose.transpose() << "</pose>";
 
                 addInertia( mass );
                 addCollision( collision_name, box_size );
@@ -249,7 +249,7 @@ public:
                 << "    <parent>" + parent + "</parent>"
                 << "      <child>" + child + "</child>"
                 << "      <axis>"
-                << "        <xyz>" << axis << "</xyz>"
+                << "        <xyz>" << axis.transpose() << "</xyz>"
                 << "        <limit>"
                 << "          <lower>" << -1e+16 << "</lower>"
                 << "          <upper>" <<  1e+16 << "</upper>"
@@ -270,7 +270,7 @@ public:
                 << "    <parent>" + parent + "</parent>"
                 << "      <child>" + child + "</child>"
                 << "      <axis>"
-                << "        <xyz>" << axis << "</xyz>"
+                << "        <xyz>" << axis.transpose() << "</xyz>"
                 << "        <limit>"
                 << "          <lower>" << lower_limit << "</lower>"
                 << "          <upper>" << upper_limit << "</upper>"
@@ -393,6 +393,7 @@ void createModelFiles( string sdf_filename          ,
   int y_skin_len = (int)(size_y/d_pos);
   int skin_ix [y_skin_len][x_skin_len];
   int ix = 1;
+
   for ( int i = 0; i<y_skin_len; i++)
   {
     for( int j = 0; j<x_skin_len; j++)
@@ -401,6 +402,7 @@ void createModelFiles( string sdf_filename          ,
       ix++;
     }
   }
+
   int cent_x = (int)x_skin_len/2;
   int cent_y = (int)y_skin_len/2;
   std::vector <int> search_pts_x;
@@ -440,8 +442,6 @@ void createModelFiles( string sdf_filename          ,
       }
     }
   }
-
-
 
   // ---------upper ------------
   for(int iy=(cent_y-space_wid); iy>=0; iy=iy-space_wid)
@@ -504,17 +504,17 @@ void createModelFiles( string sdf_filename          ,
       tact_rec<<'\n';
     }
   }
-  tact_rec.close();
-  std::sort(tact_sens_ix.begin(), tact_sens_ix.end(), std::greater<int>());
 
+  tact_rec.close();
+
+  std::sort(tact_sens_ix.begin(), tact_sens_ix.end(), std::greater<int>());
 
   double pos_x = -(size_x-d_pos)/2;
   double pos_y = (size_y-d_pos)/2;
 
   out << YAML::BeginSeq;
-  //out1<< YAML::BeginSeq;
-  int x_ix = 1, y_ix = 1;
 
+  int x_ix = 1, y_ix = 1;
 
   for( int i = 1; i <= skin_no; i++ )
   {
@@ -557,7 +557,6 @@ void createModelFiles( string sdf_filename          ,
                   skin_specular,
                   skin_emissive );
 
-
     axis << 0, 0, 1;
 
     test.addJoint( "spring_joint_" + convert.str(),
@@ -576,11 +575,12 @@ void createModelFiles( string sdf_filename          ,
       pos_y = pos_y - d_pos;
       //std::cout << " y_id \n";
     }
-    x_ix++;
-   out << YAML::BeginMap;
-   out << YAML::Key << "Joint" << YAML::Value << "joint_" + convert.str();
-   out << YAML::EndMap;
 
+    x_ix++;
+
+    out << YAML::BeginMap;
+    out << YAML::Key << "Joint" << YAML::Value << "joint_" + convert.str();
+    out << YAML::EndMap;
 
   }
 
