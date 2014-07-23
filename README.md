@@ -5,9 +5,13 @@ SkinSim is a multi-modal skin simulation environment based on the Gazebo simulat
 
 # Install
 - clone to catkin workspace eg. ~/catkin_ws/src
-
+```
 git clone https://isura@bitbucket.org/isura/skinsimdev.git
-
+```
+- Add path to skinsim as SKINSIM_PATH env variable
+```
+export SKINSIM_PATH=~/catkin_ws/src/skinsim
+```
 # Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
 - Current version : 0.0.0
