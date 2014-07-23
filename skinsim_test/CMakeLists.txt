@@ -42,7 +42,7 @@ if(HAVE_DART)
   link_directories ( ${DARTCore_LIBRARY_DIRS} )
 endif()
 
-add_executable(automatedTest src/automatedTest.cc)
+add_executable( automatedTest src/automatedTest.cc )
 target_link_libraries( automatedTest ${GAZEBO_LIBRARIES} yaml-cpp ${Boost_LIBRARIES} )
 
 

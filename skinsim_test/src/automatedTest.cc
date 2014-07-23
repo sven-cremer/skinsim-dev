@@ -41,105 +41,182 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
+
+#include <sdf/sdf.hh>
+
+#include <boost/thread.hpp>
+#include <boost/filesystem.hpp>
+
+#include "gazebo/transport/transport.hh"
+
+#include "gazebo/common/CommonIface.hh"
+#include "gazebo/common/SystemPaths.hh"
+#include "gazebo/common/Console.hh"
+#include "gazebo/physics/World.hh"
+#include "gazebo/physics/PhysicsTypes.hh"
+#include "gazebo/physics/PhysicsIface.hh"
+#include "gazebo/sensors/sensors.hh"
+#include "gazebo/rendering/rendering.hh"
+#include "gazebo/msgs/msgs.hh"
+
+#include "gazebo/gazebo_config.h"
+#include "gazebo/Server.hh"
 
 #include <Eigen/Core>
 #include <yaml-cpp/yaml.h>
 
 #include <SkinSim/ModelBuilder.hh>
 
-#include <gazebo/test/ServerFixture.hh>
+using namespace gazebo;
 
 using namespace SkinSim;
 using namespace std;
 
+class SkinSimTestingFramework
+{
+
+protected: Server *server;
+
+public:
+  SkinSimTestingFramework()
+  {
+  }
+ 
+  void runTests()
+  {
+    // Initialize ROS
+  //  ros::init (argc, argv, "skinmodel_automated_tester");
+  //  ros::NodeHandle nh;
+
+  //  std::string para_model_name   = "/model_name";
+  //  std::string para_sdf_dir_name = "/sdf_dir_name";
+  //  std::string para_sdf_filename = "/sdf_filename";
+  //  std::string para_jcf_filename = "/joint_config_filename";
+  //  std::string para_tid_filename = "/tactile_id_filename";
+  //
+  //  std::string para_xByX         = "xByX";
+  //  std::string para_density      = "density";
+  //  std::string para_size_x       = "size_x" ;
+  //  std::string para_size_y       = "size_y" ;
+  //
+  //  std::string para_skin_height  = "skin_height";
+  //  std::string para_plane_height = "plane_height";
+  //  std::string para_d_pos        = "d_pos"  ;
+  //
+  //  std::string para_sens_rad     = "sens_rad";
+  //  std::string para_space_wid    = "space_wid" ;
+
+    std::string model_name        = "spring_array";
+
+    std::string pathString( getenv ("SKINSIM_PATH") );
+    std::string sdf_dir_name      = pathString + "/skinsim_gen/generated_models";
+    std::string sdf_filename      = pathString + "/skinsim_gen/generated_models";
+
+    double xByX         = 0.0 ;
+
+    double density      = 0.0 ;
+    double size_x       = 1.5 ;
+    double size_y       = 1.5 ;
+
+    double skin_height  = 1.3 ;
+    double plane_height = 0.4 ;
+    double d_pos        = 0.5 ;
+
+    double sens_rad     = 1.0 ;
+    double space_wid    = 3.0 ;
+
+  //  if (!nh.getParam( para_model_name   , model_name   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_model_name.c_str())  ; }
+  //  if (!nh.getParam( para_sdf_dir_name , sdf_dir_name )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_dir_name.c_str()); }
+  //  if (!nh.getParam( para_sdf_filename , sdf_filename )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
+  //
+  //  if (!nh.getParam( para_xByX   , xByX    )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_xByX.c_str())   ; }
+  //  if (!nh.getParam( para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
+  //  if (!nh.getParam( para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
+
+    // FIXME this assumes square patches
+    if( xByX != 0.0 )
+    {
+      size_x = d_pos*xByX ;
+      size_y = d_pos*xByX ;
+    }else
+    {
+  //    if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
+  //    if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
+    }
+
+  //  if (!nh.getParam(para_skin_height, skin_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_height.c_str()); }
+  //  if (!nh.getParam(para_plane_height, plane_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_plane_height .c_str()); }
+  //
+  //  if (!nh.getParam(para_sens_rad , sens_rad )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_rad.c_str()); }
+  //  if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
+
+    int expNumber = 50;
+
+    std::string _worldFilename = pathString + "/skinsim_model/worlds/skinsim_model.world";
+    bool _paused = true;
+    std::string _physics = "ode";
+
+    for( int i = 1; i <= expNumber; ++i )
+    {
+      // Create model files
+      stringstream ss;
+      ss << i;
+      std::string expStr = ss.str();
+
+      SkinSimModelBuilder skinSimModelBuilderObject( model_name + expStr ,
+                                                     sdf_filename        ,
+                                                     xByX                ,
+                                                     density             ,
+                                                     size_x              ,
+                                                     size_y              ,
+                                                     skin_height         ,
+                                                     plane_height        ,
+                                                     d_pos               ,
+                                                     sens_rad            ,
+                                                     space_wid            );
+
+      //  Load("worlds/box_plane_low_friction_test.world", true);
+      //  physics::WorldPtr world = physics::get_world("default");
+      //  world->Step(5000);
+
+      this->server = new Server();
+
+      this->server->PreLoad();
+      if (_physics.length())
+        this->server->LoadFile(_worldFilename,  _physics);
+      else
+        this->server->LoadFile(_worldFilename);
+
+      if (!rendering::get_scene(
+            gazebo::physics::get_world()->GetName()))
+      {
+        rendering::create_scene(
+            gazebo::physics::get_world()->GetName(), false, true);
+      }
+
+      //this->SetPause(_paused);
+
+      this->server->Run();
+
+      this->server->Fini();
+
+      delete this->server;
+      this->server = NULL;
+
+    }
+
+  }
+
+};
+
+
+
 int main(int argc, char** argv)
 {
 
-  // Initialize ROS
-//  ros::init (argc, argv, "skinmodel_automated_tester");
-//  ros::NodeHandle nh;
-
-//  std::string para_model_name   = "/model_name";
-//  std::string para_sdf_dir_name = "/sdf_dir_name";
-//  std::string para_sdf_filename = "/sdf_filename";
-//  std::string para_jcf_filename = "/joint_config_filename";
-//  std::string para_tid_filename = "/tactile_id_filename";
-//
-//  std::string para_xByX         = "xByX";
-//  std::string para_density      = "density";
-//  std::string para_size_x       = "size_x" ;
-//  std::string para_size_y       = "size_y" ;
-//
-//  std::string para_skin_height  = "skin_height";
-//  std::string para_plane_height = "plane_height";
-//  std::string para_d_pos        = "d_pos"  ;
-//
-//  std::string para_sens_rad     = "sens_rad";
-//  std::string para_space_wid    = "space_wid" ;
-
-  std::string model_name        = "spring_array";
-  std::string sdf_dir_name      = "~/";
-  std::string sdf_filename      = "model.sdf";
-
-  double xByX         = 0.0 ;
-
-  double density      = 0.0 ;
-  double size_x       = 1.5 ;
-  double size_y       = 1.5 ;
-
-  double skin_height  = 1.3 ;
-  double plane_height = 0.4 ;
-  double d_pos        = 0.5 ;
-
-  double sens_rad     = 1.0 ;
-  double space_wid    = 3.0 ;
-
-//  if (!nh.getParam( para_model_name   , model_name   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_model_name.c_str())  ; }
-//  if (!nh.getParam( para_sdf_dir_name , sdf_dir_name )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_dir_name.c_str()); }
-//  if (!nh.getParam( para_sdf_filename , sdf_filename )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
-//
-//  if (!nh.getParam( para_xByX   , xByX    )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_xByX.c_str())   ; }
-//  if (!nh.getParam( para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
-//  if (!nh.getParam( para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
-
-  // FIXME this assumes square patches
-  if( xByX != 0.0 )
-  {
-    size_x = d_pos*xByX ;
-    size_y = d_pos*xByX ;
-  }else
-  {
-//    if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
-//    if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
-  }
-
-//  if (!nh.getParam(para_skin_height, skin_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_height.c_str()); }
-//  if (!nh.getParam(para_plane_height, plane_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_plane_height .c_str()); }
-//
-//  if (!nh.getParam(para_sens_rad , sens_rad )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_rad.c_str()); }
-//  if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
-
-  int expNumber = 50;
-
-  for( int i = 1; i <= expNumber; ++i )
-  {
-    // Create model files
-    stringstream ss;
-    ss << i;
-    std::string expStr = ss.str();
-
-    SkinSimModelBuilder skinSimModelBuilderObject( model_name + expStr ,
-                                                   sdf_filename        ,
-                                                   xByX                ,
-                                                   density             ,
-                                                   size_x              ,
-                                                   size_y              ,
-                                                   skin_height         ,
-                                                   plane_height        ,
-                                                   d_pos               ,
-                                                   sens_rad            ,
-                                                   space_wid            );
-  }
+  SkinSimTestingFramework skinSimTestingFrameworkObject;
+  skinSimTestingFrameworkObject.runTests();
 
   return 0;
 
