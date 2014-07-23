@@ -41,11 +41,10 @@
 #ifndef MODELBUILDER_HH_
 #define MODELBUILDER_HH_
 
-#include <ros/ros.h>
-
 #include "sdf/sdf.hh"
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
 
 #include <boost/filesystem.hpp>
 
@@ -501,7 +500,9 @@ public:
     std::vector <int> search_pts_y;
     std::vector <int> sens_cent_ix;
 
-    std::string path_cent = ros::package::getPath("skinsim_model") + "/config/tactile_cent_id.txt";
+    std::string pathString( getenv ("SKINSIM_PATH") );
+
+    std::string path_cent = pathString + "skinsim_model/config/tactile_cent_id.txt";
     std::ofstream tact_cent_rec;
     tact_cent_rec.open(path_cent.c_str());
 
@@ -571,7 +572,8 @@ public:
     std::sort(sens_cent_disp.begin(), sens_cent_disp.end(), std::greater<int>());
 
     std::vector <int> tact_sens_ix;
-    std::string path = ros::package::getPath("skinsim_model") + "/config/tactile_id.txt";
+
+    std::string path = pathString + "skinsim_model/config/tactile_id.txt";
     std::ofstream tact_rec;
     tact_rec.open(path.c_str());
 
