@@ -12,7 +12,11 @@ FIND_PACKAGE( PkgConfig REQUIRED )
 find_package( gazebo    REQUIRED )
 find_package( Eigen3    REQUIRED )
 find_package( OGRE      REQUIRED )
-find_package( Boost     COMPONENTS system filesystem REQUIRED )
+find_package( Boost     COMPONENTS
+                        system
+                        filesystem
+                        thread
+                        REQUIRED )
 
 include_directories ("${PROJECT_SOURCE_DIR}/../skinsim_gen/include")
 

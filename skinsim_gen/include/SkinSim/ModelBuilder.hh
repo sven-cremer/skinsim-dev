@@ -308,9 +308,10 @@ public:
                 << "  </joint>\n";
   }
 
-  void addPlugin( std::string plugin_name, std::string plugin_filename )
+  void addPlugin( std::string plugin_name, std::string plugin_filename, std::string & sdf_filename, std::string & model_name )
   {
-    m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' />\n";
+    m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' />\n"
+                << "    <file_name>" << genModelDirectory( sdf_filename, model_name ) << "</file_name>";
   }
 
   std::string genModelDirectory( std::string & sdf_filename, std::string & model_name )
@@ -687,8 +688,8 @@ public:
 
     ////////////////////
 
-    addPlugin( "skin_tactile_joint" , "libTactileSensorPlugin.so" );
-    addPlugin( "skin_tactile_joint" , "libSkinJointPlugin.so" );
+    addPlugin( "skin_tactile_joint" , "libTactileSensorPlugin.so", sdf_filename, model_name );
+    addPlugin( "skin_tactile_joint" , "libSkinJointPlugin.so", sdf_filename, model_name );
 
     addPlugin( "plane_joint"  , "libplane_joint.so" );
 

@@ -38,17 +38,17 @@
  *  Created on: Jul 14, 2014
  */
 
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <vector>
+
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/Events.hh>
 #include <gazebo/gazebo.hh>
 
 #include <yaml-cpp/yaml.h>
 
-#include <fstream>
-#include <string>
-#include <sstream>
-
-#include <vector>
 
 #include "SkinSim/ModelPath.hh"
 

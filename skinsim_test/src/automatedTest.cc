@@ -77,12 +77,97 @@ class SkinSimTestingFramework
 {
 
 protected: Server *server;
+protected: boost::thread *serverThread;
+
+protected: common::Time simTime, realTime, pauseTime;
+private: double percentRealTime;
+private: bool paused;
+private: bool serverRunning;
+protected: transport::NodePtr node;
+protected: transport::SubscriberPtr statsSub;
 
 public:
   SkinSimTestingFramework()
   {
+    this->server = NULL;
+
+    this->node = transport::NodePtr(new transport::Node());
+    this->node->Init();
+    this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
   }
  
+  /////////////////////////////////////////////////
+  void OnStats(ConstWorldStatisticsPtr &_msg)
+  {
+    this->simTime = msgs::Convert(_msg->sim_time());
+    this->realTime = msgs::Convert(_msg->real_time());
+    this->pauseTime = msgs::Convert(_msg->pause_time());
+    this->paused = _msg->paused();
+
+//    if (this->realTime == 0)
+//      this->percentRealTime = 0;
+//    else
+//      this->percentRealTime =
+//        (this->simTime / this->realTime).Double();
+
+    this->serverRunning = true;
+  }
+  
+  /////////////////////////////////////////////////
+  void SetPause(bool _pause)
+  {
+    physics::pause_worlds(_pause);
+  }
+  
+  /////////////////////////////////////////////////
+  void Unload()
+  {
+    gzdbg << "ServerFixture::Unload" << std::endl;
+    this->serverRunning = false;
+    if (this->node)
+      this->node->Fini();
+
+    if (this->server)
+    {
+      this->server->Stop();
+
+      if (this->serverThread)
+      {
+        this->serverThread->join();
+      }
+    }
+
+    delete this->serverThread;
+    this->serverThread = NULL;
+  }
+
+  /////////////////////////////////////////////////
+  void RunServer(const std::string &_worldFilename, bool _paused, const std::string &_physics)
+  {
+    this->server = new Server();
+    this->server->PreLoad();
+    if (_physics.length())
+      this->server->LoadFile(_worldFilename,  _physics);
+    else
+      this->server->LoadFile(_worldFilename);
+
+    if (!rendering::get_scene(
+          gazebo::physics::get_world()->GetName()))
+    {
+      rendering::create_scene(
+          gazebo::physics::get_world()->GetName(), false, true);
+    }
+
+    this->SetPause(_paused);
+
+    this->server->Run();
+
+    this->server->Fini();
+
+    delete this->server;
+    this->server = NULL;
+  }
+  
   void runTests()
   {
     // Initialize ROS
@@ -151,14 +236,17 @@ public:
   //  if (!nh.getParam(para_sens_rad , sens_rad )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_rad.c_str()); }
   //  if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
 
-    int expNumber = 50;
+    int expNumber = 3;
 
     std::string _worldFilename = pathString + "/skinsim_model/worlds/skinsim_model.world";
-    bool _paused = true;
+    bool _paused = false;
     std::string _physics = "ode";
 
     for( int i = 1; i <= expNumber; ++i )
     {
+      
+      std::cout << std::endl << "Experiment number: " << i << std::endl;
+      
       // Create model files
       stringstream ss;
       ss << i;
@@ -180,29 +268,32 @@ public:
       //  physics::WorldPtr world = physics::get_world("default");
       //  world->Step(5000);
 
-      this->server = new Server();
-
-      this->server->PreLoad();
-      if (_physics.length())
-        this->server->LoadFile(_worldFilename,  _physics);
-      else
-        this->server->LoadFile(_worldFilename);
-
-      if (!rendering::get_scene(
-            gazebo::physics::get_world()->GetName()))
-      {
-        rendering::create_scene(
-            gazebo::physics::get_world()->GetName(), false, true);
-      }
-
-      //this->SetPause(_paused);
-
-      this->server->Run();
-
-      this->server->Fini();
-
       delete this->server;
       this->server = NULL;
+
+      // Create, load, and run the server in its own thread
+      this->serverThread = new boost::thread(
+         boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
+                     _paused, _physics));
+
+      // Wait for the server to come up
+      // Use a 60 second timeout.
+      int waitCount = 0, maxWaitCount = 6000;
+      while ((!this->server || !this->server->GetInitialized()) &&
+             ++waitCount < maxWaitCount)
+        common::Time::MSleep(100);
+      gzdbg << "ServerFixture load in "
+             << static_cast<double>(waitCount)/10.0
+             << " seconds, timeout after "
+             << static_cast<double>(maxWaitCount)/10.0
+             << " seconds\n";
+      
+      common::Time::MSleep(2000);
+
+      std::cout << std::endl << "Time: " << simTime.sec << " sec " << simTime.nsec << " nsec " << std::endl;
+
+
+      Unload();
 
     }
 
