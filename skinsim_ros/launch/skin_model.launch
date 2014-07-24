@@ -17,7 +17,7 @@
 
   <!-- Launch empty world -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg   name="world_name" value="$(find skinsim_model)/worlds/skinsim_model.world"/>
+    <arg   name="world_name" value="$(find skinsim_model)/worlds/spring_array.world"/>
   </include>
   
 </launch>
