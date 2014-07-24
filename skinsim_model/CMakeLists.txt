@@ -40,9 +40,6 @@ target_link_libraries(mass_joint ${GAZEBO_LIBRARIES})
 add_library(mass_valid_joint SHARED src/mass_valid_joint.cc)
 target_link_libraries(mass_valid_joint ${GAZEBO_LIBRARIES} yaml-cpp)
 
-add_library(skin_tactile_joint SHARED src/skin_tactile_joint.cc)
-target_link_libraries(skin_tactile_joint ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
-
 add_library(SkinJointPlugin SHARED src/SkinJointPlugin.cc)
 target_link_libraries(SkinJointPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
 

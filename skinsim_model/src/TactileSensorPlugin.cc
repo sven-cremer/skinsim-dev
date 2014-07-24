@@ -63,6 +63,8 @@ public:
     std::string fullname;
     getModelConfigPath( fullname, _sdf );
 
+    fullname = fullname + std::string("/joint_names.yaml");
+
     fin.open(fullname.c_str());
 
     // FIXME change to gazebo errors msg

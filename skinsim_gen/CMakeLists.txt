@@ -32,8 +32,8 @@ catkin_package( DEPENDS
 # Build whatever you need here
 add_executable(envTest src/envTest.cc)
 
-add_executable(skinmodel_gen src/skinmodel_sdf_generator.cc)
-target_link_libraries( skinmodel_gen ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
+add_executable(skinmodel_sdf_generator src/skinmodel_sdf_generator.cc)
+target_link_libraries( skinmodel_sdf_generator ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
 
 #add_executable(automatedTest src/automatedTest.cc)
 #target_link_libraries( automatedTest ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
