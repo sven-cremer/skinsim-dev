@@ -6,12 +6,37 @@
 #include "skinsim_msgs/tactileData.h"
 #include "skinsim_msgs/controllerData.h"
 
+#include <boost/filesystem.hpp>
+
 #include "ros/ros.h"
 
 namespace gazebo
 {
   class PlaneJoint : public ModelPlugin
   {
+
+    std::ofstream saveToFile;
+
+    void writeCtrDataToFile( skinsim_msgs::controllerData & ctrData )
+    {
+      saveToFile << ctrData.time         << ","
+                 << ctrData.force_sensed << ","
+                 << ctrData.force        << ","
+                 << ctrData.joint_force  << ","
+                 << ctrData.explFctr_Kp  << ","
+                 << ctrData.explFctr_Ki  << ","
+                 << ctrData.explFctr_Kd  << ","
+                 << ctrData.impCtr_Xnom  << ","
+                 << ctrData.impCtr_K     << ","
+                 << ctrData.impCtr_D     << ","
+                 << ctrData.ctrType      << ","
+                 << ctrData.targetForce  << std::endl ;
+    }
+
+    ~PlaneJoint()
+    {
+      saveToFile.close();
+    }
 
     void tactileCallback(const skinsim_msgs::tactileData::ConstPtr& msg)
     {
@@ -28,7 +53,9 @@ namespace gazebo
       m_lock.unlock();
     }
 
-    public: void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
+    public:
+
+    void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
     {
       // ROS Nodehandle
       this->ros_node = new ros::NodeHandle("~");
@@ -67,6 +94,26 @@ namespace gazebo
       a_prev     = 0;
 
       prev_time  = this->model_->GetWorld()->GetSimTime().Double();
+
+      // TODO improve this
+      // Experimental data collection
+      std::string pathString( getenv ("SKINSIM_PATH") );
+      std::string filename = pathString + "/data/efc_99_99_99.dat";
+
+      saveToFile.open ( filename.c_str() );
+
+      saveToFile << "time,"
+                 << "force_sensed,"
+                 << "force,"
+                 << "joint_force,"
+                 << "explFctr_Kp,"
+                 << "explFctr_Ki,"
+                 << "explFctr_Kd,"
+                 << "impCtr_Xnom,"
+                 << "impCtr_K,"
+                 << "impCtr_D,"
+                 << "ctrType,"
+                 << "targetForce," << std::endl ;
 
     }
 
@@ -135,6 +182,9 @@ namespace gazebo
 
       ctrData.ctrType      = ctrType    ;
       ctrData.targetForce  = targetForce;
+
+
+      writeCtrDataToFile( ctrData );
 
       force_pub.publish( ctrData );
 
