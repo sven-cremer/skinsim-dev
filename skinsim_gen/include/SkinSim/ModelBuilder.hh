@@ -315,7 +315,7 @@ public:
                 << "  </plugin>";
   }
 
-  std::string genModelDirectory( std::string & sdf_filename, std::string & model_name )
+  std::string getDirPath( std::string & sdf_filename, std::string & model_name )
   {
     boost::filesystem::path dir_path ( sdf_filename );
 
@@ -326,12 +326,15 @@ public:
         if (boost::filesystem::is_regular_file(dir_path))        // is p a regular file?
         {
           dir_path = dir_path.branch_path();
+          dir_path = dir_path.branch_path();
         }
 
         if (boost::filesystem::is_directory(dir_path))      // is p a directory?
         {
           boost::filesystem::path dir(dir_path / model_name);
-          if(boost::filesystem::create_directory(dir)) {
+          dir_path = dir_path.branch_path();
+          if(boost::filesystem::create_directory(dir))
+          {
             //ROS_WARN_STREAM( "Success" );
           }
         }
@@ -342,8 +345,18 @@ public:
       //ROS_ERROR_STREAM( ex.what() );
     }
 
-    std::string filepath = dir_path.string() + "/" + model_name + "/";
+    return dir_path.string();
+  }
 
+  std::string genModelDirectory( std::string & sdf_filename, std::string & model_name )
+  {
+    std::string filepath = getDirPath( sdf_filename, model_name ) + "/models/" + model_name + "/";
+    return filepath;
+  }
+
+  std::string genWorldDirectory( std::string & sdf_filename, std::string & model_name )
+  {
+    std::string filepath = getDirPath( sdf_filename, model_name ) + "/worlds/";
     return filepath;
   }
 
@@ -379,6 +392,58 @@ public:
                 << "</model>                                  \n";
 
     std::string filename = genModelDirectory( sdf_filename, model_name ) + "model.config";
+    saveFile( filename, modelConfig );
+  }
+
+  void saveWorldFile( std::string & sdf_filename, std::string & model_name )
+  {
+    std::ostringstream modelConfig;
+
+    modelConfig << "<?xml version='1.0'?>                                           \n"
+                << "<gazebo version='1.3'>                                          \n"
+                << "<world name='default'>                                          \n"
+                << "                                                                \n"
+                << "<include>                                                       \n"
+                << "  <uri>model://ground_plane</uri>                               \n"
+                << "</include>                                                      \n"
+                << "                                                                \n"
+                << "<include>                                                       \n"
+                << "  <uri>model://sun</uri>                                        \n"
+                << "</include>                                                      \n"
+                << "                                                                \n"
+                << "<include>                                                       \n"
+                << "  <uri>model://" << model_name << "</uri>                       \n"
+                << "</include>                                                      \n"
+                << "                                                                \n"
+                << "<physics type='ode'>                                            \n"
+                << "  <gravity>0.0 0.0 -9.8</gravity>                               \n"
+                << "  <ode>                                                         \n"
+                << "    <solver>                                                    \n"
+                << "      <iters>150</iters>                                        \n"
+                << "    </solver>                                                   \n"
+                << "    <constraints>                                               \n"
+                << "      <cfm>0.2</cfm>                                            \n"
+                << "    </constraints>                                              \n"
+                << "  </ode>                                                        \n"
+                << "</physics>                                                      \n"
+                << "                                                                \n"
+                << "                                                                \n"
+                << "<include>                                                       \n"
+                << "  <uri>model://box</uri>                                        \n"
+                << "  <pose>0 0 0.055 0 0 0</pose>                                  \n"
+                << "</include>                                                      \n"
+                << "                                                                \n"
+                << "<gui fullscreen='0'>                                            \n"
+                << "  <camera name='user_camera'>                                   \n"
+                << "    <pose>0.130675 -0.121126 0.095229 0 0.347643 2.35619</pose> \n"
+                << "    <view_controller>orbit</view_controller>                    \n"
+                << "  </camera>                                                     \n"
+                << "</gui>                                                          \n"
+                << "                                                                \n"
+                << "</world>                                                        \n"
+                << "</gazebo>                                                       \n";
+
+    std::string filename = genWorldDirectory( sdf_filename, model_name ) + model_name + ".world";
     saveFile( filename, modelConfig );
   }
 
@@ -696,6 +761,7 @@ public:
 
     saveSDFFile( sdf_filename, model_name );
     saveConfigFile( sdf_filename, model_name );
+    saveWorldFile( sdf_filename, model_name );
 
   }
 
