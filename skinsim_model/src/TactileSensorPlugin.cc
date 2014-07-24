@@ -49,7 +49,6 @@
 
 #include <yaml-cpp/yaml.h>
 
-
 #include "SkinSim/ModelPath.hh"
 
 namespace gazebo
@@ -58,10 +57,6 @@ class TactileSensorPlugin : public ModelPlugin
 {
 
 public:
-
-  TactileSensorPlugin();
-
-  ~TactileSensorPlugin();
 
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   {
