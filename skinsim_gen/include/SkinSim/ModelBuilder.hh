@@ -56,6 +56,7 @@ class SkinSimModelBuilder
 private:
   std::ostringstream m_sdfStream;
   sdf::SDF m_sdfParsed;
+  std::string pathString;
 
   void generateSDFHeader()
   {
@@ -78,7 +79,7 @@ private:
 public:
   SkinSimModelBuilder( )
   {
-    generateSDFHeader();
+    initSkinSimModelBuilder();
   }
 
   SkinSimModelBuilder(  std::string model_name            ,
@@ -93,7 +94,7 @@ public:
                           double sens_rad                   ,
                           double space_wid                   )
   {
-    generateSDFHeader();
+    initSkinSimModelBuilder();
     createModelFiles( model_name            ,
                       sdf_filename          ,
                       xByX                  ,
@@ -110,6 +111,13 @@ public:
   ~SkinSimModelBuilder()
   {
 
+  }
+
+  void initSkinSimModelBuilder()
+  {
+    // Set SkinSim path
+    pathString = getenv ("SKINSIM_PATH");
+    generateSDFHeader();
   }
 
   void generateModelStart( std::string name, Eigen::VectorXd & pose )
@@ -317,40 +325,48 @@ public:
 
   std::string getDirPath( std::string & sdf_filename, std::string & model_name )
   {
-    boost::filesystem::path dir_path ( sdf_filename );
+//    boost::filesystem::path dir_path ( sdf_filename );
 
-    try
-    {
-      if (boost::filesystem::exists(dir_path))    // does p actually exist?
-      {
-        if (boost::filesystem::is_regular_file(dir_path))        // is p a regular file?
-        {
-          dir_path = dir_path.branch_path();
-          dir_path = dir_path.branch_path();
-        }
+//    try
+//    {
+//      if (boost::filesystem::exists(dir_path))    // does p actually exist?
+//      {
+//        if (boost::filesystem::is_regular_file(dir_path))        // is p a regular file?
+//        {
+//          dir_path = dir_path.branch_path();
+//          dir_path = dir_path.branch_path();
+//        }
+//
+//        if (boost::filesystem::is_directory(dir_path))      // is p a directory?
+//        {
+//          boost::filesystem::path dir(dir_path / model_name);
+//          dir_path = dir_path.branch_path();
+//          if(boost::filesystem::create_directory(dir))
+//          {
+//            //ROS_WARN_STREAM( "Success" );
+//          }
+//        }
+//      }
+//    }
+//    catch (const boost::filesystem::filesystem_error& ex)
+//    {
+//      //ROS_ERROR_STREAM( ex.what() );
+//    }
 
-        if (boost::filesystem::is_directory(dir_path))      // is p a directory?
-        {
-          boost::filesystem::path dir(dir_path / model_name);
-          dir_path = dir_path.branch_path();
-          if(boost::filesystem::create_directory(dir))
-          {
-            //ROS_WARN_STREAM( "Success" );
-          }
-        }
-      }
-    }
-    catch (const boost::filesystem::filesystem_error& ex)
-    {
-      //ROS_ERROR_STREAM( ex.what() );
-    }
+//    return dir_path.string();
 
-    return dir_path.string();
+    return pathString + "/skinsim_model";
+
   }
 
   std::string genModelDirectory( std::string & sdf_filename, std::string & model_name )
   {
     std::string filepath = getDirPath( sdf_filename, model_name ) + "/models/" + model_name + "/";
+    boost::filesystem::path dir(filepath);
+    if(boost::filesystem::create_directory(dir))
+    {
+      //ROS_WARN_STREAM( "Success" );
+    }
     return filepath;
   }
 
@@ -566,8 +582,6 @@ public:
     std::vector <int> search_pts_x;
     std::vector <int> search_pts_y;
     std::vector <int> sens_cent_ix;
-
-    std::string pathString( getenv ("SKINSIM_PATH") );
 
     std::string path_cent = pathString + "skinsim_model/config/tactile_cent_id.txt";
     std::ofstream tact_cent_rec;

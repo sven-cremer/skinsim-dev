@@ -195,8 +195,8 @@ public:
     std::string model_name        = "spring_array";
 
     std::string pathString( getenv ("SKINSIM_PATH") );
-    std::string sdf_dir_name      = pathString + "/skinsim_gen/generated_models";
-    std::string sdf_filename      = pathString + "/skinsim_gen/generated_models";
+    std::string sdf_dir_name      = pathString + "/skinsim_model";
+    std::string sdf_filename      = pathString + "/skinsim_model";
 
     double xByX         = 0.0 ;
 
@@ -237,8 +237,7 @@ public:
   //  if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
 
     int expNumber = 3;
-
-    std::string _worldFilename = pathString + "/skinsim_model/worlds/skinsim_model.world";
+    std::string _worldFilename("~");
     bool _paused = false;
     std::string _physics = "ode";
 
@@ -270,6 +269,9 @@ public:
 
       delete this->server;
       this->server = NULL;
+
+      // Point to newly created world file location
+      _worldFilename = pathString + "/skinsim_model/worlds/" + model_name + expStr + ".world";
 
       // Create, load, and run the server in its own thread
       this->serverThread = new boost::thread(
