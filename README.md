@@ -12,6 +12,15 @@ git clone https://isura@bitbucket.org/isura/skinsimdev.git
 ```
 export SKINSIM_PATH=~/catkin_ws/src/skinsim
 ```
+- Export model and plugin folders
+```
+echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/skinsim_model/models" >> ~/.bashrc
+```
+echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/skinsim_plugins/build" >> ~/.bashrc
+```
+source ~/.bashrc
+```
+
 # Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
 - Current version : 0.0.0
