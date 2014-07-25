@@ -16,7 +16,9 @@ export SKINSIM_PATH=~/catkin_ws/src/skinsim
 ```
 echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/skinsim_model/models" >> ~/.bashrc
 ```
+```
 echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/skinsim_plugins/build" >> ~/.bashrc
+```
 ```
 source ~/.bashrc
 ```
