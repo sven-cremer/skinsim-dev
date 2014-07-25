@@ -31,23 +31,23 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 
 # Build whatever you need here
 
-add_library(plane_joint SHARED src/plane_joint.cc)
-target_link_libraries(plane_joint ${GAZEBO_LIBRARIES})
+# add_library(plane_joint SHARED src/plane_joint.cc)
+# target_link_libraries(plane_joint ${GAZEBO_LIBRARIES})
 
-add_library(mass_joint SHARED src/mass_joint.cc)
-target_link_libraries(mass_joint ${GAZEBO_LIBRARIES})
+# add_library(mass_joint SHARED src/mass_joint.cc)
+# target_link_libraries(mass_joint ${GAZEBO_LIBRARIES})
 
-add_library(mass_valid_joint SHARED src/mass_valid_joint.cc)
-target_link_libraries(mass_valid_joint ${GAZEBO_LIBRARIES} yaml-cpp)
+# add_library(mass_valid_joint SHARED src/mass_valid_joint.cc)
+# target_link_libraries(mass_valid_joint ${GAZEBO_LIBRARIES} yaml-cpp)
 
 #add_library(PlaneJoint SHARED src/PlaneJoint.cc)
 #target_link_libraries(PlaneJoint ${GAZEBO_LIBRARIES})
 
-add_library(SkinJointPlugin SHARED src/SkinJointPlugin.cc)
-target_link_libraries(SkinJointPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
+# add_library(SkinJointPlugin SHARED src/SkinJointPlugin.cc)
+# target_link_libraries(SkinJointPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
 
-add_library(TactileSensorPlugin SHARED src/TactileSensorPlugin.cc)
-target_link_libraries(TactileSensorPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
+# add_library(TactileSensorPlugin SHARED src/TactileSensorPlugin.cc)
+# target_link_libraries(TactileSensorPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
 
 catkin_package(
     CATKIN_DEPENDS message_runtime
