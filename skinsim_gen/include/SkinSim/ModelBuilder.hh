@@ -83,7 +83,6 @@ public:
   }
 
   SkinSimModelBuilder(  std::string model_name            ,
-                          std::string sdf_filename          ,
                           double xByX                       ,
                           double density                    ,
                           double size_x                     ,
@@ -96,7 +95,6 @@ public:
   {
     initSkinSimModelBuilder();
     createModelFiles( model_name            ,
-                      sdf_filename          ,
                       xByX                  ,
                       density               ,
                       size_x                ,
@@ -316,14 +314,14 @@ public:
                 << "  </joint>\n";
   }
 
-  void addPlugin( std::string plugin_name, std::string plugin_filename, std::string & sdf_filename, std::string & model_name )
+  void addPlugin( std::string plugin_name, std::string plugin_filename, std::string & model_name )
   {
     m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
                 << "    <file_name>" << model_name << "</file_name>\n"
                 << "  </plugin>";
   }
 
-  std::string getDirPath( std::string & sdf_filename, std::string & model_name )
+  std::string getDirPath( std::string & model_name )
   {
 //    boost::filesystem::path dir_path ( sdf_filename );
 
@@ -359,9 +357,9 @@ public:
 
   }
 
-  std::string genModelDirectory( std::string & sdf_filename, std::string & model_name )
+  std::string genModelDirectory( std::string & model_name )
   {
-    std::string filepath = getDirPath( sdf_filename, model_name ) + "/models/" + model_name + "/";
+    std::string filepath = getDirPath( model_name ) + "/models/" + model_name + "/";
     boost::filesystem::path dir(filepath);
     if(boost::filesystem::create_directory(dir))
     {
@@ -370,23 +368,23 @@ public:
     return filepath;
   }
 
-  std::string genWorldDirectory( std::string & sdf_filename, std::string & model_name )
+  std::string genWorldDirectory( std::string & model_name )
   {
-    std::string filepath = getDirPath( sdf_filename, model_name ) + "/worlds/";
+    std::string filepath = getDirPath( model_name ) + "/worlds/";
     return filepath;
   }
 
-  void saveSDFFile( std::string & sdf_filename, std::string & model_name )
+  void saveSDFFile( std::string & model_name )
   {
     generateModelEnd();
 
-    std::string filename = genModelDirectory( sdf_filename, model_name ) + model_name + ".sdf";
+    std::string filename = genModelDirectory( model_name ) + model_name + ".sdf";
 
     m_sdfParsed.SetFromString( m_sdfStream.str() );
     m_sdfParsed.Write( filename );
   }
 
-  void saveConfigFile( std::string & sdf_filename, std::string & model_name )
+  void saveConfigFile( std::string & model_name )
   {
     std::ostringstream modelConfig;
 
@@ -407,11 +405,11 @@ public:
                 << "  </description>                          \n"
                 << "</model>                                  \n";
 
-    std::string filename = genModelDirectory( sdf_filename, model_name ) + "model.config";
+    std::string filename = genModelDirectory( model_name ) + "model.config";
     saveFile( filename, modelConfig );
   }
 
-  void saveWorldFile( std::string & sdf_filename, std::string & model_name )
+  void saveWorldFile( std::string & model_name )
   {
     std::ostringstream modelConfig;
 
@@ -459,7 +457,7 @@ public:
                 << "</world>                                                        \n"
                 << "</gazebo>                                                       \n";
 
-    std::string filename = genWorldDirectory( sdf_filename, model_name ) + model_name + ".world";
+    std::string filename = genWorldDirectory( model_name ) + model_name + ".world";
     saveFile( filename, modelConfig );
   }
 
@@ -472,7 +470,6 @@ public:
   }
 
   void createModelFiles( std::string model_name            ,
-                           std::string sdf_filename          ,
                            double xByX                       ,
                            double density                    ,
                            double size_x                     ,
@@ -504,7 +501,7 @@ public:
     base_specular << 0.1, 0.1, 0.1, 1.0 ;
     base_emissive = Eigen::Vector4d::Zero();
 
-    std::string modelDirectory = genModelDirectory( sdf_filename, model_name );
+    std::string modelDirectory = genModelDirectory( model_name );
 
     std::string joint_config_filename = modelDirectory + "joint_names.yaml";
     std::string tactile_id_filename   = modelDirectory + "tactile_id.yaml";
@@ -768,14 +765,14 @@ public:
 
     ////////////////////
 
-    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", sdf_filename, model_name );
-    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", sdf_filename, model_name );
+    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
+    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
 
-    addPlugin( "skinsimPlaneJoint", "libplane_joint.so", sdf_filename, model_name );
+    addPlugin( "skinsimPlaneJoint", "libplane_joint.so", model_name );
 
-    saveSDFFile( sdf_filename, model_name );
-    saveConfigFile( sdf_filename, model_name );
-    saveWorldFile( sdf_filename, model_name );
+    saveSDFFile(    model_name );
+    saveConfigFile( model_name );
+    saveWorldFile(  model_name );
 
   }
 

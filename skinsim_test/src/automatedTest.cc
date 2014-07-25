@@ -194,10 +194,6 @@ public:
 
     std::string model_name        = "spring_array";
 
-    std::string pathString( getenv ("SKINSIM_PATH") );
-    std::string sdf_dir_name      = pathString + "/skinsim_model";
-    std::string sdf_filename      = pathString + "/skinsim_model";
-
     double xByX         = 0.0 ;
 
     double density      = 0.0 ;
@@ -237,7 +233,10 @@ public:
   //  if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
 
     int expNumber = 3;
+
+    std::string pathString( getenv ("SKINSIM_PATH") );
     std::string _worldFilename("~");
+
     bool _paused = false;
     std::string _physics = "ode";
 
@@ -252,7 +251,6 @@ public:
       std::string expStr = ss.str();
 
       SkinSimModelBuilder skinSimModelBuilderObject( model_name + expStr ,
-                                                     sdf_filename        ,
                                                      xByX                ,
                                                      density             ,
                                                      size_x              ,

@@ -123,7 +123,6 @@ int main(int argc, char** argv)
 
   // Create model files
   SkinSimModelBuilder skinSimModelBuilderObject( model_name   ,
-                                                 sdf_filename ,
                                                  xByX         ,
                                                  density      ,
                                                  size_x       ,
