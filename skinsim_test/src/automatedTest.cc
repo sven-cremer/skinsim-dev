@@ -38,6 +38,7 @@
  *  Created on: Jul 21, 2014
  */
 
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -67,6 +68,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <SkinSim/ModelBuilder.hh>
+#include <SkinSim/ModelSpecYAML.hh>
 
 using namespace gazebo;
 
@@ -170,29 +172,7 @@ public:
   
   void runTests()
   {
-    // Initialize ROS
-  //  ros::init (argc, argv, "skinmodel_automated_tester");
-  //  ros::NodeHandle nh;
-
-  //  std::string para_model_name   = "/model_name";
-  //  std::string para_sdf_dir_name = "/sdf_dir_name";
-  //  std::string para_sdf_filename = "/sdf_filename";
-  //  std::string para_jcf_filename = "/joint_config_filename";
-  //  std::string para_tid_filename = "/tactile_id_filename";
-  //
-  //  std::string para_xByX         = "xByX";
-  //  std::string para_density      = "density";
-  //  std::string para_size_x       = "size_x" ;
-  //  std::string para_size_y       = "size_y" ;
-  //
-  //  std::string para_skin_height  = "skin_height";
-  //  std::string para_plane_height = "plane_height";
-  //  std::string para_d_pos        = "d_pos"  ;
-  //
-  //  std::string para_sens_rad     = "sens_rad";
-  //  std::string para_space_wid    = "space_wid" ;
-
-    std::string model_name        = "spring_array";
+    BuildModelSpec modelSpecs;
 
     double xByX         = 0.0 ;
 
@@ -207,59 +187,43 @@ public:
     double sens_rad     = 1.0 ;
     double space_wid    = 3.0 ;
 
-  //  if (!nh.getParam( para_model_name   , model_name   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_model_name.c_str())  ; }
-  //  if (!nh.getParam( para_sdf_dir_name , sdf_dir_name )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_dir_name.c_str()); }
-  //  if (!nh.getParam( para_sdf_filename , sdf_filename )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sdf_filename.c_str()); }
-  //
-  //  if (!nh.getParam( para_xByX   , xByX    )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_xByX.c_str())   ; }
-  //  if (!nh.getParam( para_d_pos  , d_pos   )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_d_pos  .c_str()); }
-  //  if (!nh.getParam( para_density, density )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_density.c_str()); }
-
-    // FIXME this assumes square patches
-    if( xByX != 0.0 )
-    {
-      size_x = d_pos*xByX ;
-      size_y = d_pos*xByX ;
-    }else
-    {
-  //    if (!nh.getParam(para_size_x , size_x  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_x .c_str()); }
-  //    if (!nh.getParam(para_size_y , size_y  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_size_y .c_str()); }
-    }
-
-  //  if (!nh.getParam(para_skin_height, skin_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_skin_height.c_str()); }
-  //  if (!nh.getParam(para_plane_height, plane_height )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_plane_height .c_str()); }
-  //
-  //  if (!nh.getParam(para_sens_rad , sens_rad )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_sens_rad.c_str()); }
-  //  if (!nh.getParam(para_space_wid , space_wid  )) { ROS_ERROR("Value not loaded from parameter: %s !)", para_space_wid.c_str()); }
-
-    int expNumber = 3;
-
+    // Read YAML files
     std::string pathString( getenv ("SKINSIM_PATH") );
-    std::string _worldFilename("~");
+    std::string configFilePath = pathString + "/skinsim_test/config/model_params.yaml";
+    std::ifstream fin(configFilePath.c_str());
+    YAML::Parser parser(fin);
+    YAML::Node doc;
 
+    parser.GetNextDocument(doc);
+
+    std::string _worldFilename("~");
     bool _paused = false;
     std::string _physics = "ode";
 
-    for( int i = 1; i <= expNumber; ++i )
+    for(unsigned i=0;i<doc.size();i++)
     {
-      
-      std::cout << std::endl << "Experiment number: " << i << std::endl;
-      
-      // Create model files
-      stringstream ss;
-      ss << i;
-      std::string expStr = ss.str();
+      doc[i] >> modelSpecs;
 
-      SkinSimModelBuilder skinSimModelBuilderObject( model_name + expStr ,
-                                                     xByX                ,
-                                                     density             ,
-                                                     size_x              ,
-                                                     size_y              ,
-                                                     skin_height         ,
-                                                     plane_height        ,
-                                                     d_pos               ,
-                                                     sens_rad            ,
-                                                     space_wid            );
+      // FIXME this assumes square patches
+      if( modelSpecs.spec.xByX != 0.0 )
+      {
+        modelSpecs.spec.size_x = modelSpecs.spec.d_pos*modelSpecs.spec.xByX ;
+        modelSpecs.spec.size_y = modelSpecs.spec.d_pos*modelSpecs.spec.xByX ;
+      }
+      
+      std::cout << std::endl << "Experiment number: " << i + 1 << std::endl;
+
+      // Create model files
+      SkinSimModelBuilder skinSimModelBuilderObject( modelSpecs.name              ,
+                                                     modelSpecs.spec.xByX         ,
+                                                     modelSpecs.spec.density      ,
+                                                     modelSpecs.spec.size_x       ,
+                                                     modelSpecs.spec.size_y       ,
+                                                     modelSpecs.spec.skin_height  ,
+                                                     modelSpecs.spec.plane_height ,
+                                                     modelSpecs.spec.d_pos        ,
+                                                     modelSpecs.spec.sens_rad     ,
+                                                     modelSpecs.spec.space_wid     );
 
       //  Load("worlds/box_plane_low_friction_test.world", true);
       //  physics::WorldPtr world = physics::get_world("default");
@@ -269,7 +233,7 @@ public:
       this->server = NULL;
 
       // Point to newly created world file location
-      _worldFilename = pathString + "/skinsim_model/worlds/" + model_name + expStr + ".world";
+      _worldFilename = pathString + "/skinsim_model/worlds/" + modelSpecs.name + ".world";
 
       // Create, load, and run the server in its own thread
       this->serverThread = new boost::thread(
@@ -296,6 +260,8 @@ public:
       Unload();
 
     }
+
+    delete this->server;
 
   }
 
