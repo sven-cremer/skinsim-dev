@@ -81,6 +81,8 @@ class SkinSimTestingFramework
 protected: Server *server;
 protected: boost::thread *serverThread;
 
+protected: common::StrStr_M m_gazeboParams;
+
 protected: common::Time simTime, realTime, pauseTime;
 private: double percentRealTime;
 private: bool paused;
@@ -160,6 +162,8 @@ public:
           gazebo::physics::get_world()->GetName(), false, true);
     }
 
+    this->server->SetParams( m_gazeboParams );
+
     this->SetPause(_paused);
 
     this->server->Run();
@@ -235,6 +239,8 @@ public:
       // Point to newly created world file location
       _worldFilename = pathString + "/skinsim_model/worlds/" + modelSpecs.name + ".world";
 
+      m_gazeboParams["iterations"] = "5000";
+
       // Create, load, and run the server in its own thread
       this->serverThread = new boost::thread(
          boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
@@ -252,7 +258,11 @@ public:
              << static_cast<double>(maxWaitCount)/10.0
              << " seconds\n";
       
-      common::Time::MSleep(2000);
+      while( physics::worlds_running() )
+      {
+        common::Time::MSleep(100);
+
+      }
 
       std::cout << std::endl << "Time: " << simTime.sec << " sec " << simTime.nsec << " nsec " << std::endl;
 
