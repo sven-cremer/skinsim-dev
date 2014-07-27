@@ -768,7 +768,7 @@ public:
     addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
     addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
 
-    addPlugin( "skinsimPlaneJoint", "libplane_joint.so", model_name );
+    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
 
     saveSDFFile(    model_name );
     saveConfigFile( model_name );

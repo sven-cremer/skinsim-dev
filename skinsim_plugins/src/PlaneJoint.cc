@@ -3,50 +3,67 @@
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
 
-#include "skinsim_msgs/tactileData.h"
-#include "skinsim_msgs/controllerData.h"
-
 #include <boost/filesystem.hpp>
+
+#include <SkinSim/ControlSpecYAML.hh>
+
+#include "tactileData.pb.h"
 
 namespace gazebo
 {
+  typedef const boost::shared_ptr<const skinsim_msgs::msgs::TactileData> TactileDataPtr;
+
+  struct ControllerData
+  {
+    double time         ;
+    double force_sensed ;
+    double force        ;
+    double joint_force  ;
+    double targetForce  ;
+  };
+
   class PlaneJoint : public ModelPlugin
   {
 
-    std::ofstream saveToFile;
+    std::ofstream  saveToFile;
+    ControllerSpec ctrSpecs  ;
 
-    void writeCtrDataToFile( skinsim_msgs::controllerData & ctrData )
+    transport::SubscriberPtr tactileSub;
+    transport::NodePtr       node      ;
+
+    std::string pathString;
+
+    void cb(ConstWorldStatisticsPtr &_msg)
+    {
+      std::cout << _msg->DebugString();
+    }
+
+    void writeCtrDataToFile( ControllerData & ctrData )
     {
       saveToFile << ctrData.time         << ","
                  << ctrData.force_sensed << ","
                  << ctrData.force        << ","
                  << ctrData.joint_force  << ","
-                 << ctrData.explFctr_Kp  << ","
-                 << ctrData.explFctr_Ki  << ","
-                 << ctrData.explFctr_Kd  << ","
-                 << ctrData.impCtr_Xnom  << ","
-                 << ctrData.impCtr_K     << ","
-                 << ctrData.impCtr_D     << ","
-                 << ctrData.ctrType      << ","
                  << ctrData.targetForce  << std::endl ;
     }
 
     ~PlaneJoint()
     {
       saveToFile.close();
+      gazebo::transport::fini();
     }
 
-    void tactileCallback(const skinsim_msgs::tactileData::ConstPtr& msg)
+    void tactileCallback( TactileDataPtr &msg)
     {
       m_lock.lock();
 
         sens_force = 0;
         grnd_force = 0;
-        for (unsigned int i = 0; i < msg->force.size(); ++i)
-        {
-          //sens_force = sens_force + msg->force_noisy[i];
-          grnd_force = grnd_force + msg->force[i];
-        }
+//        for (unsigned int i = 0; i < msg->force.size(); ++i)
+//        {
+          sens_force = msg->force_noisy();
+          grnd_force = msg->force();
+//        }
 
       m_lock.unlock();
     }
@@ -55,28 +72,35 @@ namespace gazebo
 
     void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
     {
-      std::string para_explFctr_Kp = "/plane_explFctr_Kp";
-      std::string para_explFctr_Ki = "/plane_explFctr_Ki";
-      std::string para_explFctr_Kd = "/plane_explFctr_Kd";
-      if (!this->ros_node->getParam(para_explFctr_Kp, explFctr_Kp)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_explFctr_Kp.c_str()); }
-      if (!this->ros_node->getParam(para_explFctr_Ki, explFctr_Ki)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_explFctr_Ki.c_str()); }
-      if (!this->ros_node->getParam(para_explFctr_Kd, explFctr_Kd)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_explFctr_Kd.c_str()); }
+      // Get SkinSim path
+      pathString = getenv ("SKINSIM_PATH");
 
-      std::string para_impCtr_Xnom = "/plane_impCtr_Xnom";
-      std::string para_impCtr_K    = "/plane_impCtr_K"   ;
-      std::string para_impCtr_D    = "/plane_impCtr_D"   ;
-      if (!this->ros_node->getParam(para_impCtr_Xnom, impCtr_Xnom)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_impCtr_Xnom.c_str()); }
-      if (!this->ros_node->getParam(para_impCtr_K   , impCtr_K   )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_impCtr_K   .c_str()); }
-      if (!this->ros_node->getParam(para_impCtr_D   , impCtr_D   )){ ROS_ERROR("Value not loaded from parameter: %s !)", para_impCtr_D   .c_str()); }
+      // Read YAML files
+      std::string configFilePath = pathString + "/skinsim_model/config/ctr_config.yaml";
+      std::ifstream fin(configFilePath.c_str());
 
-      std::string para_ctrType    = "/plane_ctrType"   ;
-      if (!this->ros_node->getParam(para_ctrType, ctrType)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_ctrType.c_str()); }
+      YAML::Parser parser(fin);
+      YAML::Node doc;
+      parser.GetNextDocument(doc);
+      doc[0] >> ctrSpecs;
 
-      std::string para_targetForce    = "/plane_targetForce"   ;
-      if (!this->ros_node->getParam(para_targetForce, targetForce)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_targetForce.c_str()); }
+      fin.close();
 
-      this->tactile_sub = this->ros_node->subscribe( "tacData", 1, &PlaneJoint::tactileCallback, this );
-      this->force_pub = this->ros_node->advertise<skinsim_msgs::controllerData>("controller_data", 1);
+      explFctr_Kp = ctrSpecs.explFctr_Kp ;
+      explFctr_Ki = ctrSpecs.explFctr_Ki ;
+      explFctr_Kd = ctrSpecs.explFctr_Kd ;
+      impCtr_Xnom = ctrSpecs.impCtr_Xnom ;
+      impCtr_M    = ctrSpecs.impCtr_M    ;
+      impCtr_K    = ctrSpecs.impCtr_K    ;
+      impCtr_D    = ctrSpecs.impCtr_D    ;
+      ctrType     = ctrSpecs.ctrType     ;
+      targetForce = ctrSpecs.targetForce ;
+
+//      this->tactile_sub = this->ros_node->subscribe( "tacData", 1, &PlaneJoint::tactileCallback, this );
+
+      this->node = transport::NodePtr(new transport::Node());
+      this->node->Init("/gazebo");
+      this->tactileSub = this->node->Subscribe("/gazebo/tacData", &PlaneJoint::tactileCallback, this);
 
       this->model_ = _model;
       this->joint_ = this->model_->GetJoint( "plane_joint" );
@@ -88,11 +112,11 @@ namespace gazebo
       int_err    = 0;
       a_prev     = 0;
 
-      prev_time  = this->model_->GetWorld()->GetSimTime().Double();
+      m_prevTime    = this->model_->GetWorld()->GetSimTime().Double();
+      m_currentTime = this->model_->GetWorld()->GetSimTime().Double();
 
       // TODO improve this
       // Experimental data collection
-      std::string pathString( getenv ("SKINSIM_PATH") );
       std::string filename = pathString + "/data/efc_99_99_99.dat";
 
       saveToFile.open ( filename.c_str() );
@@ -101,35 +125,29 @@ namespace gazebo
                  << "force_sensed,"
                  << "force,"
                  << "joint_force,"
-                 << "explFctr_Kp,"
-                 << "explFctr_Ki,"
-                 << "explFctr_Kd,"
-                 << "impCtr_Xnom,"
-                 << "impCtr_K,"
-                 << "impCtr_D,"
-                 << "ctrType,"
                  << "targetForce," << std::endl ;
 
     }
 
     public: void UpdateJoint()
     {
-
       m_lock.lock();
         double sensed_force = sens_force ;
         double ground_force = grnd_force ;
       m_lock.unlock();
 
+      // Get current time
+      m_currentTime = this->model_->GetWorld()->GetSimTime().Double();
 
-      if( this->model_->GetWorld()->GetSimTime().Double() > 1.0 )
+      if( m_currentTime > 1.0 )
       {
 
         // Explicit force controller
         if( ctrType == 0 )
         {
-          double delT = this->model_->GetWorld()->GetSimTime().Double() - prev_time ;
+          double delT = m_currentTime - m_prevTime ;
 
-          prev_time = this->model_->GetWorld()->GetSimTime().Double();
+          m_prevTime = m_currentTime;
 
           double a = targetForce - ground_force;
           double der_err = ( a - a_prev )/0.001;
@@ -141,7 +159,7 @@ namespace gazebo
           // TODO need antiwindup
           this->joint_->SetForce( 0, a*explFctr_Kp + int_err*explFctr_Ki + der_err*explFctr_Kd);
   //        this->joint_->SetForce( 0, a*explFctr_Kp + int_err*explFctr_Ki );
-          current_force = this->joint_->GetForce(0);
+          joint_force = this->joint_->GetForce(0);
         }
 
         // Impedance control
@@ -154,7 +172,7 @@ namespace gazebo
           double current_angle = this->joint_->GetAngle(0).Radian();
 
           double current_velocity = this->joint_->GetVelocity(0);
-          double current_time = this->model_->GetWorld()->GetSimTime().Double();
+
           this->joint_->SetForce(0, ( rest_angle - current_angle)*stiffness - damp_coefficient*current_velocity );
           //current_force = this->joint_->GetForce(0);
           
@@ -163,25 +181,14 @@ namespace gazebo
         //std::cout << name<<" Current force: "<<current_force<<"\n";
       }
 
-      ctrData.time         = this->model_->GetWorld()->GetSimTime().Double();
-      //ctrData.force_sensed = sensed_force;
-      ctrData.force        = ground_force;
-      ctrData.joint_force  = current_force;
-      ctrData.explFctr_Kp  = explFctr_Kp;
-      ctrData.explFctr_Ki  = explFctr_Ki;
-      ctrData.explFctr_Kd  = explFctr_Kd;
-
-      ctrData.impCtr_Xnom  = impCtr_Xnom;
-      ctrData.impCtr_K     = impCtr_K   ;
-      ctrData.impCtr_D     = impCtr_D   ;
-
-      ctrData.ctrType      = ctrType    ;
-      ctrData.targetForce  = targetForce;
+      ctrData.time         = m_currentTime;
+      ctrData.force_sensed = sensed_force ;
+      ctrData.force        = ground_force ;
+      ctrData.joint_force  = joint_force  ;
+      ctrData.targetForce  = targetForce  ;
 
       // Save exp data
       writeCtrDataToFile( ctrData );
-
-      force_pub.publish( ctrData );
 
     }
 
@@ -189,24 +196,17 @@ namespace gazebo
     physics::ModelPtr model_;  
     event::ConnectionPtr update_connection_;
 
-    // ROS
-    ros::NodeHandle* ros_node;
-
-    // ROS Subscriber
-    ros::Subscriber tactile_sub;
-
-    // ROS Publisher
-    ros::Publisher  force_pub;
-
     // Force sensed
     double sens_force ; // sensed force
     double grnd_force ; // ground truth force
-    double current_force;
+    double joint_force;
     double int_err    ;
-    skinsim_msgs::controllerData ctrData;
+
+    ControllerData ctrData;
 
     // Time
-    double prev_time ;
+    double m_currentTime;
+    double m_prevTime ;
     double a_prev;
     boost::mutex m_lock ;
 
@@ -217,6 +217,7 @@ namespace gazebo
 
     // Impedance controller
     double impCtr_Xnom ;
+    double impCtr_M    ;
     double impCtr_K    ;
     double impCtr_D    ;
 

@@ -76,6 +76,7 @@ int main(int argc, char** argv)
   std::ifstream fin(configFilePath.c_str());
   YAML::Parser parser(fin);
   YAML::Node doc;
+  fin.close();
 
   parser.GetNextDocument(doc);
 

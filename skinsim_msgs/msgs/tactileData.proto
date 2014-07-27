@@ -1,0 +1,18 @@
+package skinsim_msgs.msgs;
+
+message TactileData
+{
+  required double time                   = 1 ;
+                                             
+  optional int64  patchID                 = 2 ;
+  optional int64  TactElemID              = 3 ;
+  optional double force                   = 4 ;
+  optional double force_noisy             = 5 ;
+                                             
+  optional int64  TactID                  = 6 ;
+  optional double tact_ind_force          = 7 ;
+  optional double tact_total_force        = 8 ;
+                                             
+  optional double capacitance             = 10;
+  optional double capacitance_noisy       = 11;
+}

@@ -16,7 +16,10 @@ find_package(Boost ${MIN_BOOST_VERSION} REQUIRED system filesystem regex)
 #find_package(Protobuf REQUIRED)
 
 include_directories(include ${GAZEBO_INCLUDE_DIRS}
-			    ${SDFormat_INCLUDE_DIRS} )
+                            ${SDFormat_INCLUDE_DIRS} )
+
+include_directories ("${PROJECT_SOURCE_DIR}/../skinsim_msgs/build")
+link_directories(~/catkin_ws/src/skinsimdev/skinsim_msgs/build)
 							
 # Build
 
@@ -29,14 +32,14 @@ include_directories(include ${GAZEBO_INCLUDE_DIRS}
 # add_library(mass_valid_joint SHARED src/mass_valid_joint.cc)
 # target_link_libraries(mass_valid_joint ${GAZEBO_LIBRARIES} yaml-cpp)
 
-#add_library(PlaneJoint SHARED src/PlaneJoint.cc)
-#target_link_libraries(PlaneJoint ${GAZEBO_LIBRARIES})
+add_library(PlaneJoint SHARED src/PlaneJoint.cc)
+target_link_libraries(PlaneJoint ${GAZEBO_LIBRARIES} skinsim_msgs )
 
 add_library(SkinJointPlugin SHARED src/SkinJointPlugin.cc)
-target_link_libraries(SkinJointPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
+target_link_libraries(SkinJointPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp skinsim_msgs )
 
 add_library(TactileSensorPlugin SHARED src/TactileSensorPlugin.cc)
-target_link_libraries(TactileSensorPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp )
+target_link_libraries(TactileSensorPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp skinsim_msgs )
 
 add_executable( yamlTest src/yamlTest.cc )
 target_link_libraries( yamlTest yaml-cpp )

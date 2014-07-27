@@ -51,10 +51,16 @@
 
 #include "SkinSim/ModelPath.hh"
 
+#include "tactileData.pb.h"
+
 namespace gazebo
 {
+
 class TactileSensorPlugin : public ModelPlugin
 {
+
+  transport::PublisherPtr tactilePub;
+  transport::NodePtr       node      ;
 
 public:
 
@@ -105,7 +111,9 @@ public:
     }
 
     // Create a new transport node
-    transport::NodePtr node(new transport::Node());
+    this->node = transport::NodePtr(new transport::Node());
+    this->node->Init("/gazebo");
+    this->tactilePub = this->node->Advertise<skinsim_msgs::msgs::TactileData>("/gazebo/tacData");
 
     // Initialize the node with the Model name
     node->Init(model_->GetName());
@@ -126,6 +134,25 @@ public:
     math::Vector3 vect;
 
     // TODO add tactile sensor data publish
+    skinsim_msgs::msgs::TactileData tactileMsg;
+
+    skin_mass   = 0.88625;
+    skin_spring = 122.24 ;
+    skin_damper = 1.83   ;
+
+    for (unsigned int i = 0; i < this->joints.size(); ++i)
+    {
+      current_angle = this->joints[i]->GetAngle(0).Radian();
+      current_velocity = this->joints[i]->GetVelocity(0);
+
+      // This sets the mass-spring-damper dynamics, currently only spring and damper
+      sens_force += skin_spring*(rest_angle - current_angle) - skin_damper * current_velocity ;
+    }
+
+    sens_force += sens_force / this->joints.size();
+    tactileMsg.set_force( sens_force );
+
+    tactilePub->Publish(tactileMsg);
 
   }
 
@@ -144,6 +171,7 @@ private:
   std::ifstream fin;
 
   // Parameters
+  double skin_mass;
   double skin_spring ;
   double skin_dir_spring;
   double skin_damper ;
