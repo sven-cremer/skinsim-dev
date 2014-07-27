@@ -19,7 +19,7 @@ include_directories(include ${GAZEBO_INCLUDE_DIRS}
                             ${SDFormat_INCLUDE_DIRS} )
 
 include_directories ("${PROJECT_SOURCE_DIR}/../skinsim_msgs/build")
-link_directories(~/catkin_ws/src/skinsimdev/skinsim_msgs/build)
+link_directories($ENV{SKINSIM_PATH}/skinsim_msgs/build)
 							
 # Build
 
