@@ -4,7 +4,7 @@ project(skinsim_model)
 set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_C_COMPILER "clang")
 
-LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake )
+LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../CMake )
 
 set (MIN_OGRE_VERSION 1.7.4 CACHE INTERNAL "Ogre version requirement" FORCE)
 
@@ -33,12 +33,6 @@ include_directories ( ${ODE_INCLUDE_DIRS}
                       ${EIGEN3_INCLUDE_DIR}    )
 
 link_directories( ${Boost_LIBRARY_DIRS} )
-
-#link_directories(
-#  ${ogre_library_dirs}
-#  ${Boost_LIBRARY_DIRS}
-#  ${ODE_LIBRARY_DIRS}
-#)
 
 if(HAVE_BULLET)
   include_directories ( ${BULLET_INCLUDE_DIRS} )

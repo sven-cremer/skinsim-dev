@@ -4,40 +4,38 @@ project(skinsim_gen)
 set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_C_COMPILER "clang")
 
-find_package( catkin REQUIRED COMPONENTS 
-              gazebo_ros
-              roscpp
-              pcl_ros
-              pcl_conversions           )
+LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../CMake )
+
+set (MIN_OGRE_VERSION 1.7.4 CACHE INTERNAL "Ogre version requirement" FORCE)
+
+# find_package( libyaml-cpp REQUIRED )
 
 # Depend on system install of Gazebo
-find_package(gazebo REQUIRED)
+FIND_PACKAGE( PkgConfig REQUIRED )
+find_package( gazebo    REQUIRED )
+find_package( Eigen3    REQUIRED )
+find_package( Boost     COMPONENTS
+                        system
+                        filesystem
+                        thread
+                        REQUIRED )
 
-find_package(PCL REQUIRED)
+include_directories ("${PROJECT_SOURCE_DIR}/include")
 
-link_directories(${GAZEBO_LIBRARY_DIRS})
+include_directories ( ${Boost_INCLUDE_DIRS}
+                      ${PROTOBUF_INCLUDE_DIR}
+                      ${GAZEBO_INCLUDE_DIRS}
+                      ${SDFormat_INCLUDE_DIRS}
+                      ${EIGEN3_INCLUDE_DIR}    )
 
-include_directories(include ${catkin_INCLUDE_DIRS}
-                            ${GAZEBO_INCLUDE_DIRS}
-                            ${SDFormat_INCLUDE_DIRS}
-                            ${PCL_INCLUDE_DIRS}      )
+link_directories( ${Boost_LIBRARY_DIRS} )
 
-catkin_package( DEPENDS 
-                  gazebo_ros
-                  roscpp
-                CATKIN_DEPENDS
-                INCLUDE_DIRS 
-                LIBRARIES      )
-
-# Build whatever you need here
+# Build
 add_executable(envTest src/envTest.cc)
 
 add_executable(skinmodel_sdf_generator src/skinmodel_sdf_generator.cc)
-target_link_libraries( skinmodel_sdf_generator ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
-
-#add_executable(automatedTest src/automatedTest.cc)
-#target_link_libraries( automatedTest ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp )
+target_link_libraries( skinmodel_sdf_generator ${GAZEBO_LIBRARIES} yaml-cpp  ${Boost_LIBRARIES} )
 
 # Mesh code
-add_executable(mesh2pclTest src/mesh2pclTest.cc)
-target_link_libraries(mesh2pclTest ${catkin_LIBRARIES})
+#add_executable(mesh2pclTest src/mesh2pclTest.cc)
+#target_link_libraries(mesh2pclTest ${catkin_LIBRARIES})
