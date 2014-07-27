@@ -23,14 +23,11 @@ link_directories($ENV{SKINSIM_PATH}/skinsim_msgs/build)
 							
 # Build
 
-# add_library(plane_joint SHARED src/plane_joint.cc)
-# target_link_libraries(plane_joint ${GAZEBO_LIBRARIES})
-
-add_library(mass_joint SHARED src/mass_joint.cc)
-target_link_libraries(mass_joint ${GAZEBO_LIBRARIES})
-
 # add_library(mass_valid_joint SHARED src/mass_valid_joint.cc)
 # target_link_libraries(mass_valid_joint ${GAZEBO_LIBRARIES} yaml-cpp)
+
+add_library(MassJoint SHARED src/MassJoint.cc)
+target_link_libraries(MassJoint ${GAZEBO_LIBRARIES})
 
 add_library(PlaneJoint SHARED src/PlaneJoint.cc)
 target_link_libraries(PlaneJoint ${GAZEBO_LIBRARIES} skinsim_msgs )
