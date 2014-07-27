@@ -55,11 +55,6 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-
-  std::string model_name        = "spring_array";
-  std::string sdf_dir_name      = "~/";
-  std::string sdf_filename      = "model.sdf";
-
   BuildModelSpec modelSpecs;
 
   double xByX         = 0.0 ;
