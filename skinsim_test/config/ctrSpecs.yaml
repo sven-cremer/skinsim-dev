@@ -1,0 +1,9 @@
+- name: testSpec
+  explFctr_Kp: 0
+  explFctr_Ki: 0
+  explFctr_Kd: 0
+  impCtr_Xnom: 0
+  impCtr_K: 0
+  impCtr_D: 0
+  ctrType: 0
+  targetForce: 0

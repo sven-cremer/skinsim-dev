@@ -22,6 +22,7 @@ find_package( Boost     COMPONENTS
                         REQUIRED )
 
 include_directories ("${PROJECT_SOURCE_DIR}/../skinsim_gen/include")
+include_directories ("${PROJECT_SOURCE_DIR}/../skinsim_plugins/include")
 
 include_directories ( ${ODE_INCLUDE_DIRS}
                       ${OPENGL_INCLUDE_DIR}
@@ -46,4 +47,6 @@ endif()
 add_executable( automatedTest src/automatedTest.cc )
 target_link_libraries( automatedTest ${GAZEBO_LIBRARIES} yaml-cpp ${Boost_LIBRARIES} )
 
+add_executable( genExpSpecs src/genExpSpecs.cc )
+target_link_libraries( genExpSpecs ${GAZEBO_LIBRARIES} yaml-cpp ${Boost_LIBRARIES} )
 

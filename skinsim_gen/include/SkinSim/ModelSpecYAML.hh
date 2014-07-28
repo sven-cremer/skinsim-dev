@@ -49,7 +49,7 @@
 #include <vector>
 
 // Specs of the model to be built
-struct Spec
+struct ModelSpec
 {
   // No of elements per side
   // do nothing if 0 use size_x and size_y
@@ -73,10 +73,10 @@ struct Spec
 struct BuildModelSpec
 {
   std::string name;
-  Spec        spec;
+  ModelSpec        spec;
 };
 
-void operator >> (const YAML::Node& node, Spec& spec)
+void operator >> (const YAML::Node& node, ModelSpec& spec)
 {
   node["xByX"        ] >> spec.xByX        ;
   node["d_pos"       ] >> spec.d_pos       ;
@@ -94,12 +94,12 @@ void operator >> (const YAML::Node& node, BuildModelSpec& buildModelSpec)
 {
    node["name"] >> buildModelSpec.name;
    const YAML::Node& specs = node["spec"];
-   Spec spec;
+   ModelSpec spec;
    specs[0] >> spec;
    buildModelSpec.spec = spec;
 }
 
-YAML::Emitter& operator << (YAML::Emitter& out, const Spec& spec)
+YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
 {
     out << YAML::BeginMap;
     out << YAML::Key << "xByX"        ; out << YAML::Value <<  spec.xByX        ;
