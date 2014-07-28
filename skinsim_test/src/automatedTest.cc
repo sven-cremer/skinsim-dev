@@ -48,6 +48,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "gazebo/transport/transport.hh"
 
@@ -69,6 +70,7 @@
 
 #include <SkinSim/ModelBuilder.hh>
 #include <SkinSim/ModelSpecYAML.hh>
+#include <SkinSim/ControlSpecYAML.hh>
 
 using namespace gazebo;
 
@@ -174,6 +176,37 @@ public:
     this->server = NULL;
   }
   
+  void saveControlSpec( std::string expName )
+  {
+    // Write YAML files
+    std::string pathString( getenv ("SKINSIM_PATH") );
+    std::string ctrSpecPath = pathString + "/skinsim_model/config/ctr_config.yaml";
+    std::ofstream ctrOut(ctrSpecPath.c_str());
+
+    YAML::Emitter ctrYAMLEmitter;
+
+    ControllerSpec ctrSpec;
+
+    ctrSpec.name         = expName ;
+    ctrSpec.explFctr_Kp  = 2       ;
+    ctrSpec.explFctr_Ki  = 0.00005 ;
+    ctrSpec.explFctr_Kd  = 0.5     ;
+    ctrSpec.impCtr_Xnom  = 0.5     ;
+    ctrSpec.impCtr_M     = 5       ;
+    ctrSpec.impCtr_K     = 24      ;
+    ctrSpec.impCtr_D     = 10      ;
+    ctrSpec.ctrType      = 1       ;
+    ctrSpec.targetForce  = 0.01    ;
+
+    // Save controller specs
+    ctrYAMLEmitter << YAML::BeginSeq;
+    ctrYAMLEmitter << ctrSpec;
+    ctrYAMLEmitter << YAML::EndSeq;
+
+    ctrOut << ctrYAMLEmitter.c_str();;
+    ctrOut.close();
+  }
+
   void runTests()
   {
     BuildModelSpec modelSpecs;
@@ -193,7 +226,7 @@ public:
 
     // Read YAML files
     std::string pathString( getenv ("SKINSIM_PATH") );
-    std::string configFilePath = pathString + "/skinsim_test/config/expSpecs.yaml";
+    std::string configFilePath = pathString + "/skinsim_test/config/mdlSpecs.yaml";
     std::ifstream fin(configFilePath.c_str());
     YAML::Parser parser(fin);
     YAML::Node doc;
@@ -233,8 +266,24 @@ public:
       //  physics::WorldPtr world = physics::get_world("default");
       //  world->Step(5000);
 
+
+
       delete this->server;
       this->server = NULL;
+
+      // Save controller specs
+      // efc_(Ne)_(sens_rad)_(space_wid)
+
+      double Ne = modelSpecs.spec.xByX * modelSpecs.spec.xByX;
+
+      std::string expName = "efc_"                                                        +
+                            boost::lexical_cast<std::string>( Ne )                        +
+                            "_"                                                           +
+                            boost::lexical_cast<std::string>( modelSpecs.spec.sens_rad  ) +
+                            "_"                                                           +
+                            boost::lexical_cast<std::string>( modelSpecs.spec.space_wid )  ;
+
+      saveControlSpec( expName );
 
       // Point to newly created world file location
       _worldFilename = pathString + "/skinsim_model/worlds/" + modelSpecs.name + ".world";

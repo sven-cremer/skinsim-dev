@@ -44,40 +44,75 @@
 #include <vector>
 
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <SkinSim/ControlSpecYAML.hh>
 #include <SkinSim/ModelSpecYAML.hh>
 
 int main(int argc, char** argv)
 {
-  std::vector<ControllerSpec> ctrSpecs;
-  std::vector<ModelSpec>      mdlSpecs;
+  std::vector<BuildModelSpec>  mdlSpecs;
 
   // Write YAML files
   std::string pathString( getenv ("SKINSIM_PATH") );
-  std::string ctrSpecPath = pathString + "/skinsim_test/config/ctrSpecs.yaml";
   std::string mdlSpecPath = pathString + "/skinsim_test/config/mdlSpecs.yaml";
 
-  std::ofstream ctrOut(ctrSpecPath.c_str());
   std::ofstream mdlOut(mdlSpecPath.c_str());
 
-  YAML::Emitter ctrYAMLEmitter;
   YAML::Emitter mdlYAMLEmitter;
 
-  int expNum = 10;
+  BuildModelSpec tempMdlSpecs;
+
+  for(unsigned i  = 5; i < 100 ; i += 5 )
+  {
+    tempMdlSpecs.name              = "spring_array" + boost::lexical_cast<std::string>( i );
+    tempMdlSpecs.spec.xByX         = i   ;
+    tempMdlSpecs.spec.density      = 1.0 ;
+    tempMdlSpecs.spec.size_x       = 0.0525 ;
+    tempMdlSpecs.spec.size_y       = 0.0525 ;
+    tempMdlSpecs.spec.skin_height  = 0.04 ;
+    tempMdlSpecs.spec.tac_height   = 0.03;
+    tempMdlSpecs.spec.plane_height = 0.4 ;
+    tempMdlSpecs.spec.d_pos        = 0.0025 ;
+    tempMdlSpecs.spec.sens_rad     = 1.0 ;
+    tempMdlSpecs.spec.space_wid    = 4.0 ;
+    mdlSpecs.push_back( tempMdlSpecs ) ;
+  }
+
+  // Save model specs
+  mdlYAMLEmitter << YAML::BeginSeq;
+  for(unsigned i  =0; i < mdlSpecs.size() ;i++)
+  {
+    mdlYAMLEmitter << mdlSpecs[i];
+  }
+  mdlYAMLEmitter << YAML::EndSeq;
+
+  mdlOut << mdlYAMLEmitter.c_str();;
+  mdlOut.close();
+
+  // ---------------------------------------------
+
+  std::vector<ControllerSpec> ctrSpecs;
+
+  // Write YAML files
+  std::string ctrSpecPath = pathString + "/skinsim_test/config/ctrSpecs.yaml";
+
+  std::ofstream ctrOut(ctrSpecPath.c_str());
+
+  YAML::Emitter ctrYAMLEmitter;
 
   ControllerSpec tempSpec;
 
-  tempSpec.name         = "testSpec" ;
-  tempSpec.explFctr_Kp  = 0 ;
-  tempSpec.explFctr_Ki  = 0 ;
-  tempSpec.explFctr_Kd  = 0 ;
-  tempSpec.impCtr_Xnom  = 0 ;
-  tempSpec.impCtr_M     = 0 ;
-  tempSpec.impCtr_K     = 0 ;
-  tempSpec.impCtr_D     = 0 ;
-  tempSpec.ctrType      = 0 ;
-  tempSpec.targetForce  = 0 ;
+  tempSpec.name         = "efc_00_00_00" ;
+  tempSpec.explFctr_Kp  = 2       ;
+  tempSpec.explFctr_Ki  = 0.00005 ;
+  tempSpec.explFctr_Kd  = 0.5     ;
+  tempSpec.impCtr_Xnom  = 0.5     ;
+  tempSpec.impCtr_M     = 5       ;
+  tempSpec.impCtr_K     = 24      ;
+  tempSpec.impCtr_D     = 10      ;
+  tempSpec.ctrType      = 1       ;
+  tempSpec.targetForce  = 0.01    ;
 
   ctrSpecs.push_back( tempSpec );
 
@@ -89,19 +124,9 @@ int main(int argc, char** argv)
   }
   ctrYAMLEmitter << YAML::EndSeq;
 
-  // Save model specs
-  mdlYAMLEmitter << YAML::BeginSeq;
-  for(unsigned i  =0; i < ctrSpecs.size() ;i++)
-  {
-    mdlYAMLEmitter << mdlSpecs;
-  }
-  mdlYAMLEmitter << YAML::EndSeq;
-
   ctrOut << ctrYAMLEmitter.c_str();;
   ctrOut.close();
 
-  mdlOut << mdlYAMLEmitter.c_str();;
-  mdlOut.close();
 
 
   return 0;

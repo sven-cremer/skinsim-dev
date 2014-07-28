@@ -73,7 +73,7 @@ struct ModelSpec
 struct BuildModelSpec
 {
   std::string name;
-  ModelSpec        spec;
+  ModelSpec   spec;
 };
 
 void operator >> (const YAML::Node& node, ModelSpec& spec)
