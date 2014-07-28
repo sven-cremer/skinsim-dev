@@ -70,8 +70,8 @@ public:
 
     fullname = fullname + std::string("/joint_names.yaml");
 
-    m_spring = 122.24;
-    m_damper = 1.83  ;
+    m_spring = 122.24 ;
+    m_damper = 1.83   ;
 
     m_fin.open(fullname.c_str());
 
@@ -115,7 +115,6 @@ public:
   {
   }
 
-public:
   void UpdateJoint()
   {
     double rest_angle = 0;

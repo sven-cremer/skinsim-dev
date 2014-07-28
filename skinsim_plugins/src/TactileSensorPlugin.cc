@@ -59,10 +59,16 @@ namespace gazebo
 class TactileSensorPlugin : public ModelPlugin
 {
 
-  transport::PublisherPtr tactilePub;
-  transport::NodePtr       node      ;
+  transport::PublisherPtr  tactilePub ;
+  transport::NodePtr       node       ;
 
 public:
+
+  ~TactileSensorPlugin()
+  {
+    // Make sure to shut everything down.
+    gazebo::transport::fini();
+  }
 
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   {
@@ -112,16 +118,22 @@ public:
 
     // Create a new transport node
     this->node = transport::NodePtr(new transport::Node());
-    this->node->Init("/gazebo");
-    this->tactilePub = this->node->Advertise<skinsim_msgs::msgs::TactileData>("/gazebo/tacData");
+    this->node->Init(model_->GetName());
+//    this->tactilePub = this->node->Advertise<skinsim_msgs::msgs::TactileData>("~/tacData");
+    tactilePub = node->Advertise<msgs::Vector3d>("~/tacData");
 
-    // Initialize the node with the Model name
-    node->Init(model_->GetName());
+    this->m_updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&TactileSensorPlugin::UpdateJoint, this));
   }
 
   // Called by the world update start event
 public:
+
   void OnUpdate()
+  {
+
+  }
+
+  void UpdateJoint()
   {
     double rest_angle = 0;
 
@@ -131,10 +143,6 @@ public:
     double sens_force = 0;
 
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
-    math::Vector3 vect;
-
-    // TODO add tactile sensor data publish
-    skinsim_msgs::msgs::TactileData tactileMsg;
 
     skin_mass   = 0.88625;
     skin_spring = 122.24 ;
@@ -149,10 +157,31 @@ public:
       sens_force += skin_spring*(rest_angle - current_angle) - skin_damper * current_velocity ;
     }
 
-    sens_force += sens_force / this->joints.size();
+/*
+ *  // TODO add tactile sensor data publish
+    skinsim_msgs::msgs::TactileData tactileMsg;
+    tactileMsg.set_time( current_time );
     tactileMsg.set_force( sens_force );
 
+    tactileMsg.set_time             ( current_time );
+    tactileMsg.set_patchid          ( 0 );
+    tactileMsg.set_tactelemid       ( 0 );
+    tactileMsg.set_force            ( sens_force   );
+    tactileMsg.set_force_noisy      ( current_time );
+    tactileMsg.set_tactid           ( 0 );
+    tactileMsg.set_tact_ind_force   ( current_time );
+    tactileMsg.set_tact_total_force ( current_time );
+    tactileMsg.set_capacitance      ( current_time );
+    tactileMsg.set_capacitance_noisy( current_time );
+
     tactilePub->Publish(tactileMsg);
+    */
+
+    msgs::Vector3d msg;
+    msg.set_x(current_time);
+    msg.set_y(sens_force);
+    msg.set_z(sens_force);
+    tactilePub->Publish(msg);
 
   }
 
@@ -164,7 +193,7 @@ private:
   physics::Joint_V joints;
 
   physics::ModelPtr model_;
-  event::ConnectionPtr update_connection_;
+  event::ConnectionPtr m_updateConnection;
 
   YAML::Parser parser;
   YAML::Node doc;

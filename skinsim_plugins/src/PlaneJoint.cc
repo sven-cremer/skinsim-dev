@@ -2,6 +2,7 @@
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
+#include <gazebo/msgs/msgs.hh>
 
 #include <boost/filesystem.hpp>
 
@@ -12,6 +13,7 @@
 namespace gazebo
 {
   typedef const boost::shared_ptr<const skinsim_msgs::msgs::TactileData> TactileDataPtr;
+  typedef const boost::shared_ptr<const gazebo::msgs::Vector3d> VectorThreePtr;
 
   struct ControllerData
   {
@@ -53,7 +55,8 @@ namespace gazebo
       gazebo::transport::fini();
     }
 
-    void tactileCallback( TactileDataPtr &msg)
+//    void tactileCallback( TactileDataPtr &msg)
+    void tactileCallback( VectorThreePtr &msg)
     {
       m_lock.lock();
 
@@ -61,8 +64,8 @@ namespace gazebo
         grnd_force = 0;
 //        for (unsigned int i = 0; i < msg->force.size(); ++i)
 //        {
-          sens_force = msg->force_noisy();
-          grnd_force = msg->force();
+          sens_force = msg->y(); // msg->force_noisy();
+          grnd_force = msg->z(); // msg->force();
 //        }
 
       m_lock.unlock();
@@ -96,14 +99,14 @@ namespace gazebo
       ctrType     = ctrSpecs.ctrType     ;
       targetForce = ctrSpecs.targetForce ;
 
-//      this->tactile_sub = this->ros_node->subscribe( "tacData", 1, &PlaneJoint::tactileCallback, this );
-
-      this->node = transport::NodePtr(new transport::Node());
-      this->node->Init("/gazebo");
-      this->tactileSub = this->node->Subscribe("/gazebo/tacData", &PlaneJoint::tactileCallback, this);
 
       this->model_ = _model;
       this->joint_ = this->model_->GetJoint( "plane_joint" );
+
+      this->node = transport::NodePtr(new transport::Node());
+      this->node->Init(model_->GetName());
+      this->tactileSub = this->node->Subscribe("~/tacData", &PlaneJoint::tactileCallback, this);
+
 
       this->update_connection_ = event::Events::ConnectWorldUpdateBegin( boost::bind(&PlaneJoint::UpdateJoint, this));
 
@@ -136,12 +139,14 @@ namespace gazebo
         double ground_force = grnd_force ;
       m_lock.unlock();
 
+
       // Get current time
       m_currentTime = this->model_->GetWorld()->GetSimTime().Double();
 
+      joint_force = this->joint_->GetForce(0);
+
       if( m_currentTime > 1.0 )
       {
-
         // Explicit force controller
         if( ctrType == 0 )
         {
@@ -154,12 +159,12 @@ namespace gazebo
           a_prev   = a ;
           int_err = int_err + a;
 
-  //        this->joint_->SetForce( 0, a*explFctr_Kp );
+
+          //        this->joint_->SetForce( 0, a*explFctr_Kp );
   //        this->joint_->SetForce( 0, a*explFctr_Kp + der_err*explFctr_Kd );
           // TODO need antiwindup
           this->joint_->SetForce( 0, a*explFctr_Kp + int_err*explFctr_Ki + der_err*explFctr_Kd);
   //        this->joint_->SetForce( 0, a*explFctr_Kp + int_err*explFctr_Ki );
-          joint_force = this->joint_->GetForce(0);
         }
 
         // Impedance control
