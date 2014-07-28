@@ -76,7 +76,6 @@ int main(int argc, char** argv)
   std::ifstream fin(configFilePath.c_str());
   YAML::Parser parser(fin);
   YAML::Node doc;
-  fin.close();
 
   parser.GetNextDocument(doc);
 
@@ -103,6 +102,8 @@ int main(int argc, char** argv)
                                                  modelSpecs.spec.d_pos        ,
                                                  modelSpecs.spec.sens_rad     ,
                                                  modelSpecs.spec.space_wid     );
+
+  fin.close();
 
   return 0;
 
