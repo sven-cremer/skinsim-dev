@@ -51,6 +51,8 @@
 // Specs of the controller
 struct ControllerSpec
 {
+  std::string name    ;
+
   double explFctr_Kp  ;
   double explFctr_Ki  ;
   double explFctr_Kd  ;
@@ -66,6 +68,7 @@ struct ControllerSpec
 
 void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
 {
+  node["name"       ] >> ctrSpec.name        ;
   node["explFctr_Kp"] >> ctrSpec.explFctr_Kp ;
   node["explFctr_Ki"] >> ctrSpec.explFctr_Ki ;
   node["explFctr_Kd"] >> ctrSpec.explFctr_Kd ;
@@ -79,6 +82,7 @@ void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
 YAML::Emitter& operator << (YAML::Emitter& out, const ControllerSpec& ctrSpec)
 {
     out << YAML::BeginMap;
+    out << YAML::Key << "name"       ; out << YAML::Value <<  ctrSpec.name        ;
     out << YAML::Key << "explFctr_Kp"; out << YAML::Value <<  ctrSpec.explFctr_Kp ;
     out << YAML::Key << "explFctr_Ki"; out << YAML::Value <<  ctrSpec.explFctr_Ki ;
     out << YAML::Key << "explFctr_Kd"; out << YAML::Value <<  ctrSpec.explFctr_Kd ;

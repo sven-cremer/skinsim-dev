@@ -120,7 +120,7 @@ namespace gazebo
 
       // TODO improve this
       // Experimental data collection
-      std::string filename = pathString + "/data/efc_99_99_99.dat";
+      std::string filename = pathString + "/data/" + ctrSpecs.name + ".dat";
 
       saveToFile.open ( filename.c_str() );
 
