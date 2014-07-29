@@ -22,6 +22,10 @@ echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/skinsim_plug
 ```
 source ~/.bashrc
 ```
+- Build SkinSim
+```
+source buildSkinSim.sh
+```
 
 # Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
