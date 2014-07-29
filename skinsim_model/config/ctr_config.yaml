@@ -1,0 +1,17 @@
+- name              : efc_00_00_00
+
+  explFctr_Kp       : 2
+  explFctr_Ki       : 0.00005
+  explFctr_Kd       : 0.5
+  
+  impCtr_Xnom       : 0.5
+  impCtr_M          : 5
+  impCtr_K          : 24
+  impCtr_D          : 10
+  
+  # Controller type selection
+  # 0 - explicit force control
+  # 1 - impedance control
+  ctrType           : 1
+  
+  targetForce       : 0.01

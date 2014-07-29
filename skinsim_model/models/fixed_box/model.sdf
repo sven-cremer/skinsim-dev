@@ -35,7 +35,7 @@
             <xyz>0 0 1</xyz>
           </axis>
       </joint>
-      <plugin name="mass_joint" filename="libmass_joint.so" /> 
+      <plugin name="mass_joint" filename="libMassJoint.so" /> 
     </model>
 </sdf>
 

@@ -1,0 +1,14 @@
+- name: spring_array
+  spec:
+    # No of elements per side
+    # do nothing if 0 use size_x and size_y
+    - xByX         : 5.0 # 0.0
+      d_pos        : 0.0025 #0.005
+      density      : 1.0
+      size_x       : 0.0525
+      size_y       : 0.0525
+      skin_height  : 0.04
+      tac_height   : 0.03
+      plane_height : 0.02
+      sens_rad     : 1.0
+      space_wid    : 4.0

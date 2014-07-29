@@ -1,0 +1,15 @@
+<launch>
+
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="load_modelfile_path" default="true"/>
+
+  <rosparam file="$(find skinsim_gen)/config/model_params.yaml" command="load" />
+ 
+  <!-- set load_jointfile_path flag -->
+  <group if="$(arg load_modelfile_path)">
+    <param name="sdf_filename"  value="$(find skinsim_model)/models" />
+  </group>
+ 
+  <node name="skinsim_model_generator" pkg="skinsim_gen" type="skinmodel_sdf_generator" respawn="false" />
+  
+</launch>

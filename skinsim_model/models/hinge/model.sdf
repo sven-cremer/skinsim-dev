@@ -1,3 +1,4 @@
+<?xml version="1.0" ?>
 <sdf version='1.4'>
   <model name='hinge'>
     <link name='base_link'>
@@ -95,6 +96,6 @@
             <xyz>0 0 1</xyz>
           </axis>
       </joint>
-      <plugin name="mass_joint" filename="libmass_joint.so" />
+      <plugin name="mass_joint" filename="libMassJoint.so" />
   </model>
 </sdf>

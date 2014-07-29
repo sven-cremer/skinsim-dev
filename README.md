@@ -5,8 +5,23 @@ SkinSim is a multi-modal skin simulation environment based on the Gazebo simulat
 
 # Install
 - clone to catkin workspace eg. ~/catkin_ws/src
-
+```
 git clone https://isura@bitbucket.org/isura/skinsimdev.git
+```
+- Add path to skinsim as SKINSIM_PATH env variable
+```
+export SKINSIM_PATH=~/catkin_ws/src/skinsim
+```
+- Export model and plugin folders
+```
+echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/skinsim_model/models" >> ~/.bashrc
+```
+```
+echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/skinsim_plugins/build" >> ~/.bashrc
+```
+```
+source ~/.bashrc
+```
 
 # Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
@@ -29,4 +44,4 @@ SkinSim tries to adhere to the following style guides:
 
 # Build Status
 
-[![Build Status](https://drone.io/bitbucket.org/nextgensystems/skinsim/status.png)](https://drone.io/bitbucket.org/nextgensystems/skinsim/latest)
+[![Build Status](https://drone.io/bitbucket.org/isura/skinsimdev/status.png)](https://drone.io/bitbucket.org/isura/skinsimdev/latest)
