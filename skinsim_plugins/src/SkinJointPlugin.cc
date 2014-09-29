@@ -70,31 +70,31 @@ public:
 
     fullname = fullname + std::string("/joint_names.yaml");
 
-    m_spring = 122.24 ;
-    m_damper = 1.83   ;
+    sping_ = 122.24 ;
+    damper_ = 1.83   ;
 
-    m_fin.open(fullname.c_str());
+    input_file_.open(fullname.c_str());
 
-    m_parser.Load(m_fin);
-    m_parser.GetNextDocument(m_doc);
+    parser_.Load(input_file_);
+    parser_.GetNextDocument(doc_);
 
     std::string scalar;
-    for (unsigned i = 0; i < m_doc.size(); i++)
+    for (unsigned i = 0; i < doc_.size(); i++)
     {
-      m_doc[i]["Joint"] >> scalar;
-      this->m_jointNames.push_back("spring_" + scalar);
+      doc_[i]["Joint"] >> scalar;
+      this->joint_names_.push_back("spring_" + scalar);
     }
 
-    m_fin.close();
+    input_file_.close();
 
-    this->m_model = _model;
+    this->model_ = _model;
 
     // get pointers to joints from Gazebo
-    this->m_joints.resize(this->m_jointNames.size());
-    for (unsigned int i = 0; i < this->m_joints.size(); ++i)
+    this->joints_.resize(this->joint_names_.size());
+    for (unsigned int i = 0; i < this->joints_.size(); ++i)
     {
-      this->m_joints[i] = this->m_model->GetJoint(this->m_jointNames[i]);
-      if (!this->m_joints[i])
+      this->joints_[i] = this->model_->GetJoint(this->joint_names_[i]);
+      if (!this->joints_[i])
       {
         //ROS_ERROR("SkinSim robot expected joint[%s] not present, plugin not loaded", this->jointNames[i].c_str());
         return;
@@ -105,9 +105,9 @@ public:
     transport::NodePtr node(new transport::Node());
 
     // Initialize the node with the Model name
-    node->Init(m_model->GetName());
+    node->Init(model_->GetName());
 
-    this->m_updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&SkinJointPlugin::UpdateJoint, this));
+    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&SkinJointPlugin::UpdateJoint, this));
   }
 
 public:
@@ -124,35 +124,35 @@ public:
     double current_velocity = 0;
     double sens_force = 0;
 
-    double current_time = this->m_model->GetWorld()->GetSimTime().Double();
+    double current_time = this->model_->GetWorld()->GetSimTime().Double();
 
-    for (unsigned int i = 0; i < this->m_joints.size(); ++i)
+    for (unsigned int i = 0; i < this->joints_.size(); ++i)
     {
-      current_angle = this->m_joints[i]->GetAngle(0).Radian();
-      current_velocity = this->m_joints[i]->GetVelocity(0);
+      current_angle = this->joints_[i]->GetAngle(0).Radian();
+      current_velocity = this->joints_[i]->GetVelocity(0);
 
       // This sets the mass-spring-damper dynamics, currently only spring and damper
-      this->m_joints[i]->SetForce(0, (rest_angle - current_angle) * m_spring - m_damper * current_velocity);
+      this->joints_[i]->SetForce(0, (rest_angle - current_angle) * sping_ - damper_ * current_velocity);
     }
 
   }
 
 private:
 
-  std::vector<std::string> m_jointNames;
+  std::vector<std::string> joint_names_;
 
-  physics::Joint_V m_joints;
+  physics::Joint_V joints_;
 
-  physics::ModelPtr m_model;
-  event::ConnectionPtr m_updateConnection;
+  physics::ModelPtr model_;
+  event::ConnectionPtr update_connection_;
 
-  YAML::Parser  m_parser;
-  YAML::Node    m_doc   ;
-  std::ifstream m_fin   ;
+  YAML::Parser  parser_;
+  YAML::Node    doc_;
+  std::ifstream input_file_;
 
   // Parameters
-  double m_spring;
-  double m_damper;
+  double sping_;
+  double damper_;
 
 };
 

@@ -49,17 +49,17 @@ namespace gazebo
     public: 
     void Load(physics::ModelPtr _model, sdf::ElementPtr)
     {
-      this->ros_node = new ros::NodeHandle("~");
-      this->model = _model;
-      this->joint = this->model->GetJoint("my_mass_joint");
-      this->input_pub = this->ros_node->advertise<skinsim_msgs::inputData>("inputData",1);
+      this->ros_node_ = new ros::NodeHandle("~");
+      this->model_ = _model;
+      this->joint_ = this->model_->GetJoint("my_mass_joint");
+      this->input_pub = this->ros_node_->advertise<skinsim_msgs::inputData>("inputData",1);
       std::string para_ttl_file   = "/ttl_file";
-      count = 1;
+      count_ = 1;
       std::string ttl_file; 
-      if (!this->ros_node->getParam(para_ttl_file, ttl_file)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_ttl_file.c_str()); }
-      fin.open(ttl_file.c_str());
+      if (!this->ros_node_->getParam(para_ttl_file, ttl_file)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_ttl_file.c_str()); }
+      input_file_.open(ttl_file.c_str());
 
-      if (fin)
+      if (input_file_)
       {
         ROS_INFO("Load Success!");
       }
@@ -68,16 +68,16 @@ namespace gazebo
         ROS_ERROR("Load Fail!");
       }
 
-      parser.Load(fin);
-      parser.GetNextDocument(doc);
+      parser_.Load(input_file_);
+      parser_.GetNextDocument(doc_);
 
       double f_value;
-      for (unsigned i = 0; i < doc.size(); i++)
+      for (unsigned i = 0; i < doc_.size(); i++)
       {
-        doc[i]["ttl"] >> f_value;
-        this->ttlValues.push_back(f_value);
+        doc_[i]["ttl"] >> f_value;
+        this->ttl_values_.push_back(f_value);
       }
-      this->updateConnection = event::Events::ConnectWorldUpdateBegin(
+      this->update_connection_ = event::Events::ConnectWorldUpdateBegin(
           boost::bind(&MassValidJoint::OnUpdate, this));
       
     }
@@ -86,40 +86,40 @@ namespace gazebo
     {
       // Apply a small force to the model.
       skinsim_msgs::inputData inputData;
-      double current_time = this->model->GetWorld()->GetSimTime().Double();
-      if(count<this->ttlValues.size())
+      double current_time = this->model_->GetWorld()->GetSimTime().Double();
+      if(count_<this->ttl_values_.size())
       {
-        force = -ttlValues[count];
+        force_ = -ttl_values_[count_];
       }
       else
       {
-        force = -0.05;
+        force_ = -0.05;
       }
-      this->joint->SetForce(0, force);
+      this->joint_->SetForce(0, force_);
 
-      double current_force = this->joint->GetForce(0);
+      double current_force = this->joint_->GetForce(0);
 
-      std::cout<<count<< " ttl_force: "<<this->ttlValues[count]<<"\n";
-      count++;
+      std::cout<<count_<< " ttl_force: "<<this->ttl_values_[count_]<<"\n";
+      count_++;
       inputData.input_force = current_force;
       inputData.time = current_time;
 
 
-      input_pub.publish(inputData); 
+      input_publisher_.publish(inputData); 
     }
 private:
-    physics::JointPtr joint;
-    physics::ModelPtr model;  
-    event::ConnectionPtr updateConnection;
-    ros::NodeHandle* ros_node;
-    double force;
-    int count;
-    ros::Publisher input_pub;
-    std::vector<double> ttlValues;
+    physics::JointPtr joint_;
+    physics::ModelPtr model_;  
+    event::ConnectionPtr update_connection_;
+    ros::NodeHandle* ros_node_;
+    double force_;
+    int count_;
+    ros::Publisher input_publisher_;
+    std::vector<double> ttl_values_;
     
-    YAML::Parser parser;
-    YAML::Node doc;
-    std::ifstream fin;
+    YAML::Parser parser_;
+    YAML::Node doc_;
+    std::ifstream input_file_;
 
   };
 
