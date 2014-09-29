@@ -41,60 +41,62 @@ namespace gazebo
 {
   class MassJoint : public ModelPlugin
   {
-    public: void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
+    public: 
+    void Load(physics::ModelPtr _model, sdf::ElementPtr )
     {
-      this->model = _model;
-      this->joint = this->model->GetJoint("my_mass_joint");
+      this->model_ = _model;
+      this->joint_ = this->model_->GetJoint("my_mass_joint");
       action_t = 0.5;
-      a = 1;
-      force = 0.0;
-      this->updateConnection = event::Events::ConnectWorldUpdateBegin( boost::bind(&MassJoint::OnUpdate, this) );
+      a_ = 1;
+      force_ = 0.0;
+      this->update_connection_ = event::Events::ConnectWorldUpdateBegin( boost::bind(&MassJoint::OnUpdate, this) );
       
     }
 
-    public: void OnUpdate()
+    void OnUpdate()
     {
       // Apply a small force to the model.
-      double current_time = this->model->GetWorld()->GetSimTime().Double();
+      double currentTime = this->model_->GetWorld()->GetSimTime().Double();
 
-      this->joint->SetForce(0, force);
+      this->joint_->SetForce(0, force_);
 
-      double current_force = this->joint->GetForce(0);
+      double currentForce = this->joint_->GetForce(0);
 
-      if(current_time > action_t)
+      if(currentTime > action_t)
       {
-        switch(a)
+        switch(a_)
         {
           case 1:
-            force = -0.14;
+            force_ = -0.14;
             break;
           case 2:
-            force = -1.80;
+            force_ = -1.80;
             break;
           case 3:
-            force = -1.0;
+            force_ = -1.0;
             break;
           case 4:
-            force = -3.25;
+            force_ = -3.25;
             break;
           default:
-            force = -2.50;
-            a = 0;
+            force_ = -2.50;
+            a_ = 0;
           }
-        a++;
+        a_++;
         action_t = action_t + 1;
       }
     }
 
   private:
 
-    physics::JointPtr joint;
-    physics::ModelPtr model;  
-    event::ConnectionPtr updateConnection;
+    physics::JointPtr joint_;
+    physics::ModelPtr model_;
+    event::ConnectionPtr update_connection_;
 
+    // TODO give more meaningful variable names
     double action_t;
-    double force;
-    int a;
+    double force_;
+    int a_;
 
   };
 
