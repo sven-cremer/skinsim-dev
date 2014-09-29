@@ -13,8 +13,6 @@ endif()
 include(FindBoost)
 find_package(Boost ${MIN_BOOST_VERSION} REQUIRED system filesystem regex)
 
-#find_package(Protobuf REQUIRED)
-
 include_directories(include ${GAZEBO_INCLUDE_DIRS}
                             ${SDFormat_INCLUDE_DIRS} )
 
@@ -22,10 +20,6 @@ include_directories ("${PROJECT_SOURCE_DIR}/../skinsim_msgs/build")
 link_directories($ENV{SKINSIM_PATH}/skinsim_msgs/build)
 							
 # Build
-
-# add_library(mass_valid_joint SHARED src/mass_valid_joint.cc)
-# target_link_libraries(mass_valid_joint ${GAZEBO_LIBRARIES} yaml-cpp)
-
 add_library(MassJoint SHARED src/MassJoint.cc)
 target_link_libraries(MassJoint ${GAZEBO_LIBRARIES})
 
