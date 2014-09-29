@@ -34,25 +34,20 @@
 
 #include <string>
 #include <fstream>
-
 #include "ros/ros.h"
-
 #include "gazebo/common/CommonIface.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
-
 #include "skinsim_msgs/inputData.h"
-
 #include <yaml-cpp/yaml.h>
-
 
 namespace gazebo
 {
   class MassValidJoint : public ModelPlugin
   {
     public: 
-    void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
+    void Load(physics::ModelPtr _model, sdf::ElementPtr)
     {
       this->ros_node = new ros::NodeHandle("~");
       this->model = _model;
@@ -81,7 +76,6 @@ namespace gazebo
       {
         doc[i]["ttl"] >> f_value;
         this->ttlValues.push_back(f_value);
-        //std::cout << "Here's the output YAML:\n---" << scalar << "---\n";
       }
       this->updateConnection = event::Events::ConnectWorldUpdateBegin(
           boost::bind(&MassValidJoint::OnUpdate, this));

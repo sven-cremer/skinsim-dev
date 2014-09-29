@@ -29,8 +29,6 @@ include_directories ( ${Boost_INCLUDE_DIRS}
 link_directories( ${Boost_LIBRARY_DIRS} )
 
 # Build
-add_executable(envTest src/envTest.cc)
-
-add_executable(skinmodel_sdf_generator src/skinmodel_sdf_generator.cc)
-target_link_libraries( skinmodel_sdf_generator ${GAZEBO_LIBRARIES} yaml-cpp  ${Boost_LIBRARIES} )
+add_executable(SkinmodelSdfGenerator src/SkinmodelSdfGenerator.cc)
+target_link_libraries( SkinmodelSdfGenerator ${GAZEBO_LIBRARIES} yaml-cpp  ${Boost_LIBRARIES} )
 
