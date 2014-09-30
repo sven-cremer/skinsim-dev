@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project (SkinSim)
+
+LIST( APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake )
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
  
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
