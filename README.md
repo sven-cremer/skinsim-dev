@@ -37,10 +37,10 @@ Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
 # Release Schedule and Roadmap
 A new version of SkinSim will be released 1 month after every major Gazebo release.
 
-- 2014-08-28 - SkinSim 1.0.0 : Gazebo 4.0 : ROS I
-- 2015-02-26 - SkinSim 2.0.0 : Gazebo 5.0 : ROS J
-- 2015-08-27 - SkinSim 3.0.0 : Gazebo 6.0 : 
-- 2016-02-25 - SkinSim 4.0.0 : Gazebo 7.0 : ROS K
+- 2014-09-30 - SkinSim 0.1.0 : Gazebo 4.0 : ROS I
+- 2015-02-26 - SkinSim 1.0.0 : Gazebo 5.0 : ROS J
+- 2015-08-27 - SkinSim 2.0.0 : Gazebo 6.0 : 
+- 2016-02-25 - SkinSim 3.0.0 : Gazebo 7.0 : ROS K
 
 # Coding Style
 
