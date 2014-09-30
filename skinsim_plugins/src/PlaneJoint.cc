@@ -101,7 +101,7 @@ namespace gazebo
 
     public:
 
-    void Load(physics::ModelPtr _model, sdf::ElementPtr)
+    void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
     {
       // Get SkinSim path
       pathString = getenv ("SKINSIM_PATH");
