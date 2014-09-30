@@ -61,7 +61,7 @@ class SkinJointPlugin : public ModelPlugin
 
 public:
 
-  void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+  void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
   {
 
     std::string fullname;
