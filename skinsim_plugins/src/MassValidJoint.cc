@@ -32,75 +32,98 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+#include <string>
+#include <fstream>
+#include "ros/ros.h"
 #include "gazebo/common/CommonIface.hh"
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/Events.hh"
 #include "gazebo/gazebo.hh"
+#include "skinsim_msgs/inputData.h"
+#include <yaml-cpp/yaml.h>
 
 namespace gazebo
 {
-  class MassJoint : public ModelPlugin
+  class MassValidJoint : public ModelPlugin
   {
     public: 
-    void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
+    void Load(physics::ModelPtr _model, sdf::ElementPtr)
     {
+      this->ros_node_ = new ros::NodeHandle("~");
       this->model_ = _model;
       this->joint_ = this->model_->GetJoint("my_mass_joint");
-      action_t = 0.5;
-      a_ = 1;
-      force_ = 0.0;
-      this->update_connection_ = event::Events::ConnectWorldUpdateBegin( boost::bind(&MassJoint::OnUpdate, this) );
+      this->input_pub = this->ros_node_->advertise<skinsim_msgs::inputData>("inputData",1);
+      std::string para_ttl_file   = "/ttl_file";
+      count_ = 1;
+      std::string ttl_file; 
+      if (!this->ros_node_->getParam(para_ttl_file, ttl_file)){ ROS_ERROR("Value not loaded from parameter: %s !)", para_ttl_file.c_str()); }
+      input_file_.open(ttl_file.c_str());
+
+      if (input_file_)
+      {
+        ROS_INFO("Load Success!");
+      }
+      else
+      {
+        ROS_ERROR("Load Fail!");
+      }
+
+      parser_.Load(input_file_);
+      parser_.GetNextDocument(doc_);
+
+      double f_value;
+      for (unsigned i = 0; i < doc_.size(); i++)
+      {
+        doc_[i]["ttl"] >> f_value;
+        this->ttl_values_.push_back(f_value);
+      }
+      this->update_connection_ = event::Events::ConnectWorldUpdateBegin(
+          boost::bind(&MassValidJoint::OnUpdate, this));
       
     }
 
     void OnUpdate()
     {
       // Apply a small force to the model.
-      double currentTime = this->model_->GetWorld()->GetSimTime().Double();
-
+      skinsim_msgs::inputData inputData;
+      double current_time = this->model_->GetWorld()->GetSimTime().Double();
+      if(count_<this->ttl_values_.size())
+      {
+        force_ = -ttl_values_[count_];
+      }
+      else
+      {
+        force_ = -0.05;
+      }
       this->joint_->SetForce(0, force_);
 
-      double currentForce = this->joint_->GetForce(0);
+      double current_force = this->joint_->GetForce(0);
 
-      if(currentTime > action_t)
-      {
-        switch(a_)
-        {
-          case 1:
-            force_ = -0.14;
-            break;
-          case 2:
-            force_ = -1.80;
-            break;
-          case 3:
-            force_ = -1.0;
-            break;
-          case 4:
-            force_ = -3.25;
-            break;
-          default:
-            force_ = -2.50;
-            a_ = 0;
-          }
-        a_++;
-        action_t = action_t + 1;
-      }
+      std::cout<<count_<< " ttl_force: "<<this->ttl_values_[count_]<<"\n";
+      count_++;
+      inputData.input_force = current_force;
+      inputData.time = current_time;
+
+
+      input_publisher_.publish(inputData); 
     }
-
-  private:
-
+private:
     physics::JointPtr joint_;
-    physics::ModelPtr model_;
+    physics::ModelPtr model_;  
     event::ConnectionPtr update_connection_;
-
-    // TODO give more meaningful variable names
-    double action_t;
+    ros::NodeHandle* ros_node_;
     double force_;
-    int a_;
+    int count_;
+    ros::Publisher input_publisher_;
+    std::vector<double> ttl_values_;
+    
+    YAML::Parser parser_;
+    YAML::Node doc_;
+    std::ifstream input_file_;
 
   };
 
 
   // Register this plugin with the simulator
-  GZ_REGISTER_MODEL_PLUGIN(MassJoint)
+  GZ_REGISTER_MODEL_PLUGIN(MassValidJoint)
 }

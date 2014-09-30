@@ -8,8 +8,6 @@ LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../CMake )
 
 set (MIN_OGRE_VERSION 1.7.4 CACHE INTERNAL "Ogre version requirement" FORCE)
 
-# find_package( libyaml-cpp REQUIRED )
-
 # Depend on system install of Gazebo
 FIND_PACKAGE( PkgConfig REQUIRED )
 find_package( gazebo    REQUIRED )
@@ -31,11 +29,6 @@ include_directories ( ${Boost_INCLUDE_DIRS}
 link_directories( ${Boost_LIBRARY_DIRS} )
 
 # Build
-add_executable(envTest src/envTest.cc)
+add_executable(SkinmodelSdfGenerator src/SkinmodelSdfGenerator.cc)
+target_link_libraries( SkinmodelSdfGenerator ${GAZEBO_LIBRARIES} yaml-cpp  ${Boost_LIBRARIES} )
 
-add_executable(skinmodel_sdf_generator src/skinmodel_sdf_generator.cc)
-target_link_libraries( skinmodel_sdf_generator ${GAZEBO_LIBRARIES} yaml-cpp  ${Boost_LIBRARIES} )
-
-# Mesh code
-#add_executable(mesh2pclTest src/mesh2pclTest.cc)
-#target_link_libraries(mesh2pclTest ${catkin_LIBRARIES})

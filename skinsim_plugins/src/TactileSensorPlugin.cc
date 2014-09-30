@@ -77,10 +77,10 @@ public:
 
     fullname = fullname + std::string("/joint_names.yaml");
 
-    fin.open(fullname.c_str());
+    input_file_.open(fullname.c_str());
 
     // FIXME change to gazebo errors msg
-    if (fin)
+    if (input_file_)
     {
       //ROS_INFO("Load Success!");
     }
@@ -89,27 +89,27 @@ public:
       //ROS_ERROR("Load Fail!");
     }
 
-    parser.Load(fin);
-    parser.GetNextDocument(doc);
+    parser_.Load(input_file_);
+    parser_.GetNextDocument(doc_);
 
     std::string scalar;
-    for (unsigned i = 0; i < doc.size(); i++)
+    for (unsigned i = 0; i < doc_.size(); i++)
     {
-      doc[i]["Joint"] >> scalar;
-      this->jointNames.push_back("spring_" + scalar);
+      doc_[i]["Joint"] >> scalar;
+      this->joint_names_.push_back("spring_" + scalar);
       //std::cout << "Here's the output YAML:\n---" << scalar << "---\n";
     }
 
-    fin.close();
+    input_file_.close();
 
     this->model_ = _model;
 
     // get pointers to joints from gazebo
-    this->joints.resize(this->jointNames.size());
-    for (unsigned int i = 0; i < this->joints.size(); ++i)
+    this->joints_.resize(this->joint_names_.size());
+    for (unsigned int i = 0; i < this->joints_.size(); ++i)
     {
-      this->joints[i] = this->model_->GetJoint(this->jointNames[i]);
-      if (!this->joints[i])
+      this->joints_[i] = this->model_->GetJoint(this->joint_names_[i]);
+      if (!this->joints_[i])
       {
         //ROS_ERROR("SkinSim robot expected joint[%s] not present, plugin not loaded", this->jointNames[i].c_str());
         return;
@@ -122,12 +122,10 @@ public:
 //    this->tactilePub = this->node->Advertise<skinsim_msgs::msgs::TactileData>("~/tacData");
     tactilePub = node->Advertise<msgs::Vector3d>("~/tacData");
 
-    this->m_updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&TactileSensorPlugin::UpdateJoint, this));
+    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&TactileSensorPlugin::UpdateJoint, this));
   }
 
   // Called by the world update start event
-public:
-
   void OnUpdate()
   {
 
@@ -144,38 +142,18 @@ public:
 
     double current_time = this->model_->GetWorld()->GetSimTime().Double();
 
-    skin_mass   = 0.88625;
-    skin_spring = 122.24 ;
-    skin_damper = 1.83   ;
+    skin_mass_   = 0.88625;
+    skin_spring_ = 122.24 ;
+    skin_damper_ = 1.83   ;
 
-    for (unsigned int i = 0; i < this->joints.size(); ++i)
+    for (unsigned int i = 0; i < this->joints_.size(); ++i)
     {
-      current_angle = this->joints[i]->GetAngle(0).Radian();
-      current_velocity = this->joints[i]->GetVelocity(0);
+      current_angle = this->joints_[i]->GetAngle(0).Radian();
+      current_velocity = this->joints_[i]->GetVelocity(0);
 
       // This sets the mass-spring-damper dynamics, currently only spring and damper
-      sens_force += skin_spring*(rest_angle - current_angle) - skin_damper * current_velocity ;
+      sens_force += skin_spring_*(rest_angle - current_angle) - skin_damper_ * current_velocity ;
     }
-
-/*
- *  // TODO add tactile sensor data publish
-    skinsim_msgs::msgs::TactileData tactileMsg;
-    tactileMsg.set_time( current_time );
-    tactileMsg.set_force( sens_force );
-
-    tactileMsg.set_time             ( current_time );
-    tactileMsg.set_patchid          ( 0 );
-    tactileMsg.set_tactelemid       ( 0 );
-    tactileMsg.set_force            ( sens_force   );
-    tactileMsg.set_force_noisy      ( current_time );
-    tactileMsg.set_tactid           ( 0 );
-    tactileMsg.set_tact_ind_force   ( current_time );
-    tactileMsg.set_tact_total_force ( current_time );
-    tactileMsg.set_capacitance      ( current_time );
-    tactileMsg.set_capacitance_noisy( current_time );
-
-    tactilePub->Publish(tactileMsg);
-    */
 
     msgs::Vector3d msg;
     msg.set_x(current_time);
@@ -188,30 +166,30 @@ public:
 
 private:
 
-  std::vector<std::string> jointNames;
+  std::vector<std::string> joint_names_;
 
-  physics::Joint_V joints;
+  physics::Joint_V joints_;
 
   physics::ModelPtr model_;
-  event::ConnectionPtr m_updateConnection;
+  event::ConnectionPtr update_connection_;
 
-  YAML::Parser parser;
-  YAML::Node doc;
-  std::ifstream fin;
+  YAML::Parser parser_;
+  YAML::Node doc_;
+  std::ifstream input_file_;
 
   // Parameters
-  double skin_mass;
-  double skin_spring ;
-  double skin_dir_spring;
-  double skin_damper ;
+  double skin_mass_;
+  double skin_spring_ ;
+  double skin_dir_spring_;
+  double skin_damper_ ;
 
-  double x_size ;
-  double y_size ;
+  double x_size_ ;
+  double y_size_ ;
 
-  double x_dt   ;
-  double y_dt   ;
+  double x_dt_   ;
+  double y_dt_   ;
 
-  double skin_max ;
+  double skin_max_ ;
 
 };
 
