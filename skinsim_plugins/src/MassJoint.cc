@@ -42,7 +42,7 @@ namespace gazebo
   class MassJoint : public ModelPlugin
   {
     public: 
-    void Load(physics::ModelPtr _model, sdf::ElementPtr )
+    void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/)
     {
       this->model_ = _model;
       this->joint_ = this->model_->GetJoint("my_mass_joint");
