@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(skinsim_plugins)
+project(plugins)
 
 set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_C_COMPILER "clang")
@@ -16,21 +16,18 @@ find_package(Boost ${MIN_BOOST_VERSION} REQUIRED system filesystem regex)
 include_directories(include ${GAZEBO_INCLUDE_DIRS}
                             ${SDFormat_INCLUDE_DIRS} )
 
-include_directories ("${PROJECT_SOURCE_DIR}/../skinsim_msgs/build")
-link_directories($ENV{SKINSIM_PATH}/skinsim_msgs/build)
+include_directories ("${PROJECT_SOURCE_DIR}/../msgs/build")
+link_directories($ENV{SKINSIM_PATH}/msgs/build)
 							
 # Build
 add_library(MassJoint SHARED src/MassJoint.cc)
 target_link_libraries(MassJoint ${GAZEBO_LIBRARIES})
 
-add_library(PlaneJoint SHARED src/PlaneJoint.cc)
-target_link_libraries(PlaneJoint ${GAZEBO_LIBRARIES} skinsim_msgs )
+#add_library(PlaneJoint SHARED src/PlaneJoint.cc)
+#target_link_libraries(PlaneJoint ${GAZEBO_LIBRARIES} msgs )
 
 add_library(SkinJointPlugin SHARED src/SkinJointPlugin.cc)
-target_link_libraries(SkinJointPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp skinsim_msgs )
+target_link_libraries(SkinJointPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs )
 
 add_library(TactileSensorPlugin SHARED src/TactileSensorPlugin.cc)
-target_link_libraries(TactileSensorPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp skinsim_msgs )
-
-add_executable( yamlTest src/yamlTest.cc )
-target_link_libraries( yamlTest yaml-cpp )
+target_link_libraries(TactileSensorPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs )

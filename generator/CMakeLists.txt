@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(skinsim_gen)
+project(gen)
 
 set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_C_COMPILER "clang")
@@ -29,6 +29,6 @@ include_directories ( ${Boost_INCLUDE_DIRS}
 link_directories( ${Boost_LIBRARY_DIRS} )
 
 # Build
-add_executable(SkinmodelSdfGenerator src/SkinmodelSdfGenerator.cc)
-target_link_libraries( SkinmodelSdfGenerator ${GAZEBO_LIBRARIES} yaml-cpp  ${Boost_LIBRARIES} )
+add_executable(skin_model_generator src/skin_model_generator.cc)
+target_link_libraries( skin_model_generator ${GAZEBO_LIBRARIES} yaml-cpp  ${Boost_LIBRARIES} )
 
