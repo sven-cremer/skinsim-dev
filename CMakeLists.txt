@@ -9,10 +9,9 @@ set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
  
 include_directories("${PROJECT_INCLUDE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}")
-include_directories("./skinsim_msgs")
+include_directories("./msgs")
 
-add_subdirectory(skinsim_msgs)
-add_subdirectory(skinsim_plugins)
-add_subdirectory(skinsim_test)
-add_subdirectory(skinsim_gen)
-
+add_subdirectory(msgs)
+add_subdirectory(plugins)
+add_subdirectory(experimenter)
+add_subdirectory(generator)

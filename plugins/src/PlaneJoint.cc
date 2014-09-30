@@ -42,11 +42,11 @@
 
 #include <SkinSim/ControlSpecYAML.hh>
 
-#include "tactileData.pb.h"
+#include <tactileData.pb.h>
 
 namespace gazebo
 {
-  typedef const boost::shared_ptr<const skinsim_msgs::msgs::TactileData> TactileDataPtr;
+  typedef const boost::shared_ptr<const msgs::msgs::TactileData> TactileDataPtr;
   typedef const boost::shared_ptr<const gazebo::msgs::Vector3d> VectorThreePtr;
 
   struct ControllerData
