@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(skinsim_model)
+project(model)
 
 set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_C_COMPILER "clang")
-
-LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../CMake )
 
 set (MIN_OGRE_VERSION 1.7.4 CACHE INTERNAL "Ogre version requirement" FORCE)
 
@@ -21,8 +19,8 @@ find_package( Boost     COMPONENTS
                         thread
                         REQUIRED )
 
-include_directories ("${PROJECT_SOURCE_DIR}/../skinsim_gen/include")
-include_directories ("${PROJECT_SOURCE_DIR}/../skinsim_plugins/include")
+include_directories ("${PROJECT_SOURCE_DIR}/../generator/include")
+include_directories ("${PROJECT_SOURCE_DIR}/../plugins/include")
 
 include_directories ( ${ODE_INCLUDE_DIRS}
                       ${OPENGL_INCLUDE_DIR}
@@ -44,9 +42,9 @@ if(HAVE_DART)
   link_directories ( ${DARTCore_LIBRARY_DIRS} )
 endif()
 
-add_executable( automatedTest src/automatedTest.cc )
-target_link_libraries( automatedTest ${GAZEBO_LIBRARIES} yaml-cpp ${Boost_LIBRARIES} )
+add_executable( auto_experimenter src/auto_experimenter.cc )
+target_link_libraries( auto_experimenter ${GAZEBO_LIBRARIES} yaml-cpp ${Boost_LIBRARIES} )
 
-add_executable( genExpSpecs src/genExpSpecs.cc )
-target_link_libraries( genExpSpecs ${GAZEBO_LIBRARIES} yaml-cpp ${Boost_LIBRARIES} )
+add_executable( generate_experiment_specification src/generate_experiment_specification.cc )
+target_link_libraries( generate_experiment_specification ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES} yaml-cpp )
 
