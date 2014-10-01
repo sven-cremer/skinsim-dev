@@ -15,6 +15,7 @@ source ~/.bashrc
 cd ~/catkin_ws &&
 catkin_make
 ```
+
 3. run
 ```
 roslaunch skinsim_model skinsim_model.launch
