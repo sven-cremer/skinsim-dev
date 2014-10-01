@@ -16,6 +16,6 @@
 
 3. Happily do following to see your new models:
 	- 
-	~~~~
+	```
 		roslaunch spring_array spring_array.launch
-	~~~~
+	```
