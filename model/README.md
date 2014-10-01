@@ -12,7 +12,7 @@ source ~/.bashrc
 
 2. make
 
-````
+```
 cd ~/catkin_ws &&
 catkin_make
 ```
