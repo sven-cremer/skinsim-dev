@@ -1,9 +1,9 @@
 # SkinSim : multi-modal skin simulation for Gazebo
 
-# About
+##About
 SkinSim is a multi-modal skin simulation environment based on the Gazebo simulator. It provides functionality for building robot models with robotic skin attached and near real-time realistic skin simulation.
 
-# Install
+##Install
 - clone to catkin workspace eg.
 
 		~/catkin_ws/src
@@ -26,11 +26,11 @@ SkinSim is a multi-modal skin simulation environment based on the Gazebo simulat
 		make
 
 
-# Versioning
+##Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
 - Current version : 0.0.0
 
-# Release Schedule and Roadmap
+##Release Schedule and Roadmap
 A new version of SkinSim will be released 1 month after every major Gazebo release.
 
 - 2014-09-30 - SkinSim 0.1.0 : Gazebo 4.0 : ROS I
@@ -38,11 +38,9 @@ A new version of SkinSim will be released 1 month after every major Gazebo relea
 - 2015-08-27 - SkinSim 2.0.0 : Gazebo 6.0 : 
 - 2016-02-25 - SkinSim 3.0.0 : Gazebo 7.0 : ROS K
 
-# Coding Style
+##Coding Style
 
-SkinSim tries to adhere to the
-- [Google C++ Style Guide](http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml).
+SkinSim tries to adhere to the [Google C++ Style Guide](http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml).
 
-# Build Status
-
+##Build Status
 [![Build Status](https://drone.io/bitbucket.org/nextgensystems/skinsim/status.png)](https://drone.io/bitbucket.org/nextgensystems/skinsim/latest)
