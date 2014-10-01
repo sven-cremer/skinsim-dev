@@ -4,7 +4,7 @@
 SkinSim is a multi-modal skin simulation environment based on the Gazebo simulator. It provides functionality for building robot models with robotic skin attached and near real-time realistic skin simulation.
 
 # Install
-- clone to catkin workspace eg. ~/catkin_ws/src
+- clone to catkin workspace eg.``` ~/catkin_ws/src```
 ```
 git clone https://isura@bitbucket.org/nextgensystems/skinsim.git
 ```
