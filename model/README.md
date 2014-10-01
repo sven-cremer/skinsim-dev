@@ -9,14 +9,12 @@ echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/skinsim_model/mo
 echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/skinsim_plugins/build" >> ~/.bashrc
 source ~/.bashrc
 ```
-
 2. make
 
 ```
 cd ~/catkin_ws &&
 catkin_make
 ```
-
 3. run
 
 ```
