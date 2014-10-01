@@ -32,7 +32,8 @@ make
 
 # Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
-- Current version : 0.0.0
+
+- Current version : 0.1.0
 
 # Release Schedule and Roadmap
 A new version of SkinSim will be released 1 month after every major Gazebo release.
@@ -45,6 +46,7 @@ A new version of SkinSim will be released 1 month after every major Gazebo relea
 # Coding Style
 
 SkinSim tries to adhere to the Google style guide:
+
 - Google C++ Style Guide : http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 
 # Build Status
