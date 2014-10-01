@@ -19,12 +19,12 @@ git clone https://isura@bitbucket.org/nextgensystems/skinsim.git
 
 
 - Build SkinSim
-```
-mkdir build
-cd build
-cmake ..
-make
-```
+
+		mkdir build
+		cd build
+		cmake ..
+		make
+
 
 # Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
