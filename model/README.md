@@ -11,10 +11,10 @@ source ~/.bashrc
 ```
 2. make
 
-<code>
+~~~~
 cd ~/catkin_ws &&
 catkin_make
-</code>
+~~~~
 3. run
 
 ```
