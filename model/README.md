@@ -1,6 +1,6 @@
 # Initial README
 
-# Install
+## Install
 
 1. Export model folder
 ~~~~
@@ -10,13 +10,11 @@
 	source ~/.bashrc
 ~~~~
 
-
 2. make
 ~~~~
 	cd ~/catkin_ws &&
 	catkin_make
 ~~~~
-
 
 3. run
 ~~~~
