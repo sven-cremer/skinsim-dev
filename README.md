@@ -40,8 +40,8 @@ A new version of SkinSim will be released 1 month after every major Gazebo relea
 
 # Coding Style
 
-SkinSim tries to adhere to the Google style guide:
-- [Google C++ Style Guide](http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml)
+SkinSim tries to adhere to the
+- [Google C++ Style Guide](http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml).
 
 # Build Status
 
