@@ -10,13 +10,15 @@ echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/skinsim_plug
 source ~/.bashrc
 ~~~~
 
-1. make
+
+2. make
 ~~~~
 cd ~/catkin_ws &&
 catkin_make
 ~~~~
 
-1. run
+
+3. run
 ~~~~
 roslaunch skinsim_model skinsim_model.launch
 ~~~~
