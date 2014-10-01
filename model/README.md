@@ -11,12 +11,14 @@ source ~/.bashrc
 ```
 
 2. make
+
 ````
 cd ~/catkin_ws &&
 catkin_make
 ```
 
 3. run
+
 ```
 roslaunch skinsim_model skinsim_model.launch
 ```
