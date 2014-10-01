@@ -3,7 +3,6 @@
 ## Install
 
 1. Export model folder
-
 ~~~~
     export SKINSIM_PATH=~/catkin_ws/src/skinsim
 	echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/skinsim_model/models" >> ~/.bashrc
