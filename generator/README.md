@@ -15,4 +15,4 @@
 		- ```roslaunch model_generator only_skin_array_model_update.launch```
 
 3. Happily do following to see your new models:
-	- ```roslaunch spring_array spring_array.launch``
+	- ``roslaunch spring_array spring_array.launch``
