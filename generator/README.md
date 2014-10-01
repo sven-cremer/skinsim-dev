@@ -2,7 +2,7 @@
 
 # Generate new models
 
-1. Edit config/model_params.yaml to change model parameters
+1. Edit ```config/model_params.yaml``` to change model parameters
 
 2. You have two options
 	- Generate the joint_names.yaml and the model.sdf inside generated_models folder by doing:
