@@ -17,6 +17,6 @@
 	~~~~
 
 3. run
-	~~~~
-	    roslaunch skinsim_model skinsim_model.launch
-	~~~~
+~~~~
+	roslaunch skinsim_model skinsim_model.launch
+~~~~
