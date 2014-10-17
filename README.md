@@ -38,11 +38,12 @@ A new version of SkinSim will be released 1 month after every major Gazebo relea
 - 2015-08-27 - SkinSim 2.0.0 : Gazebo 6.0 : 
 - 2016-02-25 - SkinSim 3.0.0 : Gazebo 7.0 : ROS K
 
-##Coding Style
+# Coding Style
 
 SkinSim tries to adhere to the Google style guide:
 
 - Google C++ Style Guide : http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 
-##Build Status
+# Build Status
+
 [![Build Status](https://drone.io/bitbucket.org/nextgensystems/skinsim/status.png)](https://drone.io/bitbucket.org/nextgensystems/skinsim/latest)
