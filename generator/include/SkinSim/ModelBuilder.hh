@@ -353,7 +353,7 @@ public:
 
 //    return dir_path.string();
 
-    return pathString + "/skinsim_model";
+    return pathString + "/model";
 
   }
 
@@ -580,7 +580,7 @@ public:
     std::vector <int> search_pts_y;
     std::vector <int> sens_cent_ix;
 
-    std::string path_cent = pathString + "skinsim_model/config/tactile_cent_id.txt";
+    std::string path_cent = pathString + "model/config/tactile_cent_id.txt";
     std::ofstream tact_cent_rec;
     tact_cent_rec.open(path_cent.c_str());
 
@@ -651,7 +651,7 @@ public:
 
     std::vector <int> tact_sens_ix;
 
-    std::string path = pathString + "skinsim_model/config/tactile_id.txt";
+    std::string path = pathString + "model/config/tactile_id.txt";
     std::ofstream tact_rec;
     tact_rec.open(path.c_str());
 

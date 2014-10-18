@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 
   // Read YAML files
   std::string pathString( getenv ("SKINSIM_PATH") );
-  std::string configFilePath = pathString + "/skinsim_gen/config/model_params.yaml";
+  std::string configFilePath = pathString + "/generator/config/model_params.yaml";
   std::ifstream fin(configFilePath.c_str());
   YAML::Parser parser(fin);
   YAML::Node doc;

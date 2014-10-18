@@ -648,9 +648,11 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = ./spring_array \
-			 mesh_manip/src \
-                         mesh_manip/include/mesh_manip \
+INPUT                  = ./experimenter \
+			 generator/src \ generator/include \ 
+                         model/src \ model/include \
+                         plugins/src \ plugins/include \
+                         skinsim_ros/src / skinsim_ros/include
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is

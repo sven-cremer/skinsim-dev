@@ -1,20 +1,23 @@
 # SkinSim : multi-modal skin simulation for Gazebo
 
-##About
+# About
 SkinSim is a multi-modal skin simulation environment based on the Gazebo simulator. It provides functionality for building robot models with robotic skin attached and near real-time realistic skin simulation.
 
-##Install
-- clone to catkin workspace eg.
+# Install
+- Clone to catkin workspace eg. ~/catkin_ws/src
 
-		~/catkin_ws/src
 		git clone https://isura@bitbucket.org/nextgensystems/skinsim.git
 
-	
-- Add path to skinsim as SKINSIM_PATH env variable ```export SKINSIM_PATH=~/catkin_ws/src/skinsim```
+
+- Add path to skinsim as SKINSIM_PATH env variable
+
+		export SKINSIM_PATH=~/catkin_ws/src/skinsim
+
+
 - Export model and plugin folders
 
-		echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/skinsim_model/models" >> ~/.bashrc
-		echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/skinsim_plugins/build" >> ~/.bashrc
+		echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/model/models" >> ~/.bashrc
+		echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/build" >> ~/.bashrc
 		source ~/.bashrc
 
 
@@ -25,13 +28,12 @@ SkinSim is a multi-modal skin simulation environment based on the Gazebo simulat
 		cmake ..
 		make
 
-
-##Versioning
+# Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
 
 - Current version : 0.1.0
 
-##Release Schedule and Roadmap
+# Release Schedule and Roadmap
 A new version of SkinSim will be released 1 month after every major Gazebo release.
 
 - 2014-09-30 - SkinSim 0.1.0 : Gazebo 4.0 : ROS I

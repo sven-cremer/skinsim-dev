@@ -107,7 +107,7 @@ namespace gazebo
       pathString = getenv ("SKINSIM_PATH");
 
       // Read YAML files
-      std::string configFilePath = pathString + "/skinsim_model/config/ctr_config.yaml";
+      std::string configFilePath = pathString + "/model/config/ctr_config.yaml";
       std::ifstream fin(configFilePath.c_str());
 
       YAML::Parser parser(fin);
