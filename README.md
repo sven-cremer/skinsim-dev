@@ -4,31 +4,29 @@
 SkinSim is a multi-modal skin simulation environment based on the Gazebo simulator. It provides functionality for building robot models with robotic skin attached and near real-time realistic skin simulation.
 
 # Install
-- clone to catkin workspace eg. ~/catkin_ws/src
-```
-git clone https://isura@bitbucket.org/nextgensystems/skinsim.git
-```
+- Clone to catkin workspace eg. ~/catkin_ws/src
+
+		git clone https://isura@bitbucket.org/nextgensystems/skinsim.git
+
+
 - Add path to skinsim as SKINSIM_PATH env variable
-```
-export SKINSIM_PATH=~/catkin_ws/src/skinsim
-```
+
+		export SKINSIM_PATH=~/catkin_ws/src/skinsim
+
+
 - Export model and plugin folders
-```
-echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/model/models" >> ~/.bashrc
-```
-```
-echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/build" >> ~/.bashrc
-```
-```
-source ~/.bashrc
-```
+
+		echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/model/models" >> ~/.bashrc
+		echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/build" >> ~/.bashrc
+		source ~/.bashrc
+
+
 - Build SkinSim
-```
-mkdir build
-cd build
-cmake ..
-make
-```
+
+		mkdir build
+		cd build
+		cmake ..
+		make
 
 # Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
