@@ -3,10 +3,7 @@
 SkinSim is a multi-modal skin simulation environment based on the Gazebo simulator. It provides functionality for building robot models with robotic skin attached and near real-time realistic skin simulation.
 
 
-**[[http://rommelAlonzo.bitbucket.org/index.html|Download]]** | 
-**[[http://rommelAlonzo.bitbucket.org/index.html|Documentation]]** |
-**[[http://rommelAlonzo.bitbucket.org/index.html|FAQ]]** |
-**[[ReleaseNotes]]** |  **[[RoadMap]]**
+**[[https://bitbucket.org/rommelAlonzo/skinsim_rommel/downloads|Download]]**
 
 ==Versioning==
 Semanitc versioning 2.0.0 is used in SkinSim. See:**[[http://semver.org|Semver]]**

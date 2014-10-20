@@ -1,6 +1,6 @@
 = Report Bugs =
 
-//Do not "Create page" to report bugs. Use [[/tortoisehg/thg/issues|issue tracker]].//
+//Do not "Create page" to report bugs. Use [[/nextgensystems/skinsim/issues|issue tracker]].//
 
 == Make sure the bug hasn't already been reported ==
 
