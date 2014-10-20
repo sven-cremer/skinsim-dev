@@ -1,0 +1,7 @@
+﻿= Release Notes for SkinSim =
+
+This wiki page contains last minute notes to users about the releases,
+which may not be included in the documentation or README files included
+with the distribution kits.  It also contains change information, for
+users who are interested in what bugs have been fixed, and what features
+have been added in the current version.
