@@ -1,0 +1,7 @@
+= Report Bugs =
+
+//Do not "Create page" to report bugs. Use [[/tortoisehg/thg/issues|issue tracker]].//
+
+== Make sure the bug hasn't already been reported ==
+
+The first step should be to consult the list of **[[FixedBugs]]** that are already fixed on the tip of the stable branch, and are likely already in the [[/nextgensystems/skinsim/downloads|nightly builds]].
