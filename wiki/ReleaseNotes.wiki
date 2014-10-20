@@ -1,4 +1,4 @@
-﻿= Release Notes for TortoiseHg =
+﻿= Release Notes for SkinSim =
 
 This wiki page contains last minute notes to users about the releases,
 which may not be included in the documentation or README files included
