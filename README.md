@@ -4,7 +4,7 @@
 SkinSim is a multi-modal skin simulation environment based on the Gazebo simulator. It provides functionality for building robot models with robotic skin attached and near real-time realistic skin simulation.
 
 # Dependencies
-Requires Gazebo 4 in order to compile. To upgrade, this might be sufficient:
+Requires Gazebo 4 in order to compile. To upgrade hydro version, this might be sufficient:
 ```
 sudo apt-get install ros-hydro-gazebo4-ros-pkgs
 sudo apt-get install ros-hydro-gazebo4-ros-control
@@ -19,7 +19,9 @@ sudo apt-get install libgazebo4-dev
 ```
 Other packages:
 ```
-sudo apt-get install clang
+sudo apt-get install clang  
+sudo apt-get install protobuf-compiler
+#sudo apt-get install protobuf-c-compiler ?
 ```
 
 # Install
