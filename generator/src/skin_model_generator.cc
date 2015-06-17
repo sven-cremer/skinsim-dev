@@ -77,11 +77,19 @@ int main(int argc, char** argv)
   YAML::Parser parser(fin);
   YAML::Node doc;
 
+  /*
   parser.GetNextDocument(doc);
 
   for(unsigned i=0;i<doc.size();i++)
   {
     doc[i] >> modelSpecs;
+  }
+  */
+  doc = YAML::Load(fin);			// FIXME yaml 3.0->5.0
+  std::cout<<"Got here\n";
+  for(unsigned i=0;i<doc.size();i++)
+  {
+	  doc[0] >> modelSpecs;
   }
 
   // FIXME this assumes square patches

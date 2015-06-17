@@ -75,6 +75,7 @@ public:
 
     input_file_.open(fullname.c_str());
 
+	/*
     parser_.Load(input_file_);
     parser_.GetNextDocument(doc_);
 
@@ -83,6 +84,11 @@ public:
     {
       doc_[i]["Joint"] >> scalar;
       this->joint_names_.push_back("spring_" + scalar);
+    }
+    */
+    for (unsigned i = 1; i < 10; i++)
+    {
+      this->joint_names_.push_back("spring_joint_" + boost::to_string(i) );		// FIXME
     }
 
     input_file_.close();

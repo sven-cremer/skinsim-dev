@@ -78,21 +78,21 @@ struct BuildModelSpec
 
 void operator >> (const YAML::Node& node, ModelSpec& spec)
 {
-  node["xByX"        ] >> spec.xByX        ;
-  node["d_pos"       ] >> spec.d_pos       ;
-  node["density"     ] >> spec.density     ;
-  node["size_x"      ] >> spec.size_x      ;
-  node["size_y"      ] >> spec.size_y      ;
-  node["skin_height" ] >> spec.skin_height ;
-  node["tac_height"  ] >> spec.tac_height  ;
-  node["plane_height"] >> spec.plane_height;
-  node["sens_rad"    ] >> spec.sens_rad    ;
-  node["space_wid"   ] >> spec.space_wid   ;
+  spec.xByX   		= node["xByX"        ].as<double>() ;
+  spec.d_pos        = node["d_pos"       ].as<double>() ;
+  spec.density      = node["density"     ].as<double>() ;
+  spec.size_x       = node["size_x"      ].as<double>() ;
+  spec.size_y       = node["size_y"      ].as<double>() ;
+  spec.skin_height  = node["skin_height" ].as<double>() ;
+  spec.tac_height   = node["tac_height"  ].as<double>() ;
+  spec.plane_height = node["plane_height"].as<double>() ;
+  spec.sens_rad     = node["sens_rad"    ].as<double>() ;
+  spec.space_wid    = node["space_wid"   ].as<double>() ;
 }
 
 void operator >> (const YAML::Node& node, BuildModelSpec& buildModelSpec)
 {
-   node["name"] >> buildModelSpec.name;
+   buildModelSpec.name = node["name"].as<std::string>() ;
    const YAML::Node& specs = node["spec"];
    ModelSpec spec;
    specs[0] >> spec;
