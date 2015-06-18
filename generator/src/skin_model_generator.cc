@@ -74,22 +74,13 @@ int main(int argc, char** argv)
   std::string pathString( getenv ("SKINSIM_PATH") );
   std::string configFilePath = pathString + "/generator/config/model_params.yaml";
   std::ifstream fin(configFilePath.c_str());
-  YAML::Parser parser(fin);
+
+  std::cout<<"Loading file: "<<configFilePath<<"\n";
   YAML::Node doc;
-
-  /*
-  parser.GetNextDocument(doc);
-
-  for(unsigned i=0;i<doc.size();i++)
+  doc = YAML::LoadAll(fin);
+  for(std::size_t i=0;i<doc[0].size();i++)
   {
-    doc[i] >> modelSpecs;
-  }
-  */
-  doc = YAML::Load(fin);			// FIXME yaml 3.0->5.0
-  std::cout<<"Got here\n";
-  for(unsigned i=0;i<doc.size();i++)
-  {
-	  doc[0] >> modelSpecs;
+	  doc[0][i] >> modelSpecs;						// FIXME overwrites previous data
   }
 
   // FIXME this assumes square patches

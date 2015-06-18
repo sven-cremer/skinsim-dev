@@ -76,6 +76,21 @@ struct BuildModelSpec
   ModelSpec   spec;
 };
 
+void print(BuildModelSpec b)
+{
+	std::cout<<"Name         : "<<b.name             <<"\n";
+	std::cout<<" xByX        : "<<b.spec.xByX        <<"\n";
+	std::cout<<" d_pos       : "<<b.spec.d_pos       <<"\n";
+	std::cout<<" density     : "<<b.spec.density     <<"\n";
+	std::cout<<" size_x      : "<<b.spec.size_x      <<"\n";
+	std::cout<<" size_y      : "<<b.spec.size_y      <<"\n";
+	std::cout<<" skin_height : "<<b.spec.skin_height <<"\n";
+	std::cout<<" tac_height  : "<<b.spec.tac_height  <<"\n";
+	std::cout<<" plane_height: "<<b.spec.plane_height<<"\n";
+	std::cout<<" sens_rad    : "<<b.spec.sens_rad    <<"\n";
+	std::cout<<" space_wid   : "<<b.spec.space_wid   <<"\n";
+}
+
 void operator >> (const YAML::Node& node, ModelSpec& spec)
 {
   spec.xByX   		= node["xByX"        ].as<double>() ;
@@ -92,11 +107,19 @@ void operator >> (const YAML::Node& node, ModelSpec& spec)
 
 void operator >> (const YAML::Node& node, BuildModelSpec& buildModelSpec)
 {
-   buildModelSpec.name = node["name"].as<std::string>() ;
-   const YAML::Node& specs = node["spec"];
-   ModelSpec spec;
-   specs[0] >> spec;
-   buildModelSpec.spec = spec;
+	try
+	{
+		buildModelSpec.name = node["name"].as<std::string>();
+
+		const YAML::Node& specs = node["spec"];
+		specs[0] >> buildModelSpec.spec ;
+	}
+	catch (const YAML::BadConversion& e)
+	{
+		std::cerr<<"Bad conversion from YAML::Node to BuildModelSpec\n";
+	}
+
+	//print(buildModelSpec);
 }
 
 YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
