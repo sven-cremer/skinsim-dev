@@ -68,15 +68,15 @@ struct ControllerSpec
 
 void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
 {
-  node["name"       ] >> ctrSpec.name        ;
-  node["explFctr_Kp"] >> ctrSpec.explFctr_Kp ;
-  node["explFctr_Ki"] >> ctrSpec.explFctr_Ki ;
-  node["explFctr_Kd"] >> ctrSpec.explFctr_Kd ;
-  node["impCtr_Xnom"] >> ctrSpec.impCtr_Xnom ;
-  node["impCtr_K"   ] >> ctrSpec.impCtr_K    ;
-  node["impCtr_D"   ] >> ctrSpec.impCtr_D    ;
-  node["ctrType"    ] >> ctrSpec.ctrType     ;
-  node["targetForce"] >> ctrSpec.targetForce ;
+  ctrSpec.name        = node["name"       ].as<std::string>() ;
+  ctrSpec.explFctr_Kp = node["explFctr_Kp"].as<double>() ;
+  ctrSpec.explFctr_Ki = node["explFctr_Ki"].as<double>() ;
+  ctrSpec.explFctr_Kd = node["explFctr_Kd"].as<double>() ;
+  ctrSpec.impCtr_Xnom = node["impCtr_Xnom"].as<double>() ;
+  ctrSpec.impCtr_K    = node["impCtr_K"   ].as<double>() ;
+  ctrSpec.impCtr_D    = node["impCtr_D"   ].as<double>() ;
+  ctrSpec.ctrType     = node["ctrType"    ].as<double>() ;
+  ctrSpec.targetForce = node["targetForce"].as<double>() ;
 }
 
 YAML::Emitter& operator << (YAML::Emitter& out, const ControllerSpec& ctrSpec)

@@ -222,8 +222,9 @@ public:
     YAML::Parser parser(fin);
     YAML::Node doc;
 
-    parser.GetNextDocument(doc);
-
+    //parser.GetNextDocument(doc);			// FIXME yaml 3.0->5.0
+    doc = YAML::Load(fin);
+    
     std::string _worldFilename("~");
     bool _paused = false;
     std::string _physics = "ode";
