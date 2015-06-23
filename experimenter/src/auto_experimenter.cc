@@ -219,19 +219,17 @@ public:
     std::string pathString( getenv ("SKINSIM_PATH") );
     std::string configFilePath = pathString + "/skinsim_test/config/mdlSpecs.yaml";
     std::ifstream fin(configFilePath.c_str());
-    YAML::Parser parser(fin);
     YAML::Node doc;
 
-    //parser.GetNextDocument(doc);			// FIXME yaml 3.0->5.0
-    doc = YAML::Load(fin);
+    doc = YAML::LoadAll(fin);
     
     std::string _worldFilename("~");
     bool _paused = false;
     std::string _physics = "ode";
 
-    for(unsigned i=0;i<doc.size();i++)
+    for(unsigned i=0;i<doc[0].size();i++)
     {
-      doc[i] >> modelSpecs;
+      doc[0][i] >> modelSpecs;
 
       // FIXME this assumes square patches
       if( modelSpecs.spec.xByX != 0.0 )
