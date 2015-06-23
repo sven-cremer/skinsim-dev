@@ -75,20 +75,13 @@ public:
 
     input_file_.open(fullname.c_str());
 
-	/*
-    parser_.Load(input_file_);
-    parser_.GetNextDocument(doc_);
-
-    std::string scalar;
-    for (unsigned i = 0; i < doc_.size(); i++)
+    std::cout<<"Loading file: "<<fullname<<"\n";
+    YAML::Node doc;
+    doc = YAML::LoadAll(input_file_);
+    for(std::size_t i=0;i<doc[0].size();i++)
     {
-      doc_[i]["Joint"] >> scalar;
-      this->joint_names_.push_back("spring_" + scalar);
-    }
-    */
-    for (unsigned i = 1; i < 10; i++)
-    {
-      this->joint_names_.push_back("spring_joint_" + boost::to_string(i) );		// FIXME
+    	this->joint_names_.push_back("spring_" + doc[0][i]["Joint"].as<std::string>());						// FIXME overwrites previous data
+    	//std::cout << this->joint_names_[i]<< std::endl;
     }
 
     input_file_.close();
@@ -152,7 +145,6 @@ private:
   physics::ModelPtr model_;
   event::ConnectionPtr update_connection_;
 
-  YAML::Parser  parser_;
   YAML::Node    doc_;
   std::ifstream input_file_;
 
