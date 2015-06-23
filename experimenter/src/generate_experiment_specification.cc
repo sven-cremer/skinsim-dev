@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 
   // Write YAML files
   std::string pathString( getenv ("SKINSIM_PATH") );
-  std::string mdlSpecPath = pathString + "/skinsim_test/config/mdlSpecs.yaml";
+  std::string mdlSpecPath = pathString + "/experimenter/config/mdlSpecs.yaml";
 
   std::ofstream mdlOut(mdlSpecPath.c_str());
 
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
   std::vector<ControllerSpec> ctrSpecs;
 
   // Write YAML files
-  std::string ctrSpecPath = pathString + "/skinsim_test/config/ctrSpecs.yaml";
+  std::string ctrSpecPath = pathString + "/experimenter/config/ctrSpecs.yaml";
 
   std::ofstream ctrOut(ctrSpecPath.c_str());
 
