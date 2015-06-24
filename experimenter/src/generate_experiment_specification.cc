@@ -87,6 +87,7 @@ int main(int argc, char** argv)
   }
   mdlYAMLEmitter << YAML::EndSeq;
 
+  std::cout<<"Saving model specs to file: "<<mdlSpecPath<<"\n";
   mdlOut << mdlYAMLEmitter.c_str();;
   mdlOut.close();
 
@@ -122,6 +123,7 @@ int main(int argc, char** argv)
   {
      ctrYAMLEmitter << ctrSpecs;
   }
+  std::cout<<"Saving ctr specs to file: "<<ctrSpecPath<<"\n";
   ctrYAMLEmitter << YAML::EndSeq;
 
   ctrOut << ctrYAMLEmitter.c_str();;

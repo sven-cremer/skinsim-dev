@@ -2,8 +2,8 @@
   spec:
     # No of elements per side
     # do nothing if 0 use size_x and size_y
-    - xByX         : 10.0 # 0.0
-      d_pos        : 0.12 #0.005
+    - xByX         : 7.0 # 0.0
+      d_pos        : 0.25 #0.005
       density      : 3.0
       size_x       : 0.0525
       size_y       : 0.0525
