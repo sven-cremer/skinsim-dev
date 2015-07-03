@@ -13,40 +13,40 @@ wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 
 # Install Gazebo
 sudo apt-get update
-sudo apt-get install gazebo3
+#sudo apt-get install gazebo3
 
 # Install dependencies
-sudo apt-get install libgazebo-dev
-sudo apt-get install libboost-all-dev
-sudo apt-get install clang
-sudo apt-get install libeigen3-dev
+#sudo apt-get install libgazebo-dev
+#sudo apt-get install libboost-all-dev
+#sudo apt-get install clang
+#sudo apt-get install libeigen3-dev
 
 # Download yaml-cpp v. 2.5 from the Google code site
-    wget http://yaml-cpp.googlecode.com/files/yaml-cpp-0.2.5.tar.gz
+#    wget http://yaml-cpp.googlecode.com/files/yaml-cpp-0.2.5.tar.gz
  
     # Unpack and install yaml-cpp
-    tar xvf yaml-cpp-0.2.5.tar.gz
-    cd yaml-cpp-0.2.5/ && mkdir build && cd build
-    cmake ..
-    make -j8
-    sudo make install
-    sudo ldconfig /usr/local/lib/
+#    tar xvf yaml-cpp-0.2.5.tar.gz
+#    cd yaml-cpp-0.2.5/ && mkdir build && cd build
+#    cmake ..
+#    make -j8
+#    sudo make install
+#    sudo ldconfig /usr/local/lib/
  
     # Clean up
-    cd ../.. && rm -rf yaml-cpp-0.2.5 && rm yaml-cpp-0.2.5.tar.gz
+#    cd ../.. && rm -rf yaml-cpp-0.2.5 && rm yaml-cpp-0.2.5.tar.gz
 
 # Build skinsim_plugins
-cd skinsim_plugins
-mkdir build
-cd build
-cmake ../
-make -j8
+#cd skinsim_plugins
+#mkdir build
+#cd build
+#cmake ../
+#make -j8
 
 # Build skinsim_test
-cd ../../skinsim_test
-mkdir build
-cd build
-cmake ../
-make -j8
+#cd ../../skinsim_test
+#mkdir build
+#cd build
+#cmake ../
+#make -j8
 
 
