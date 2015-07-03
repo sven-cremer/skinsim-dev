@@ -74,4 +74,4 @@ SkinSim tries to adhere to the Google style guide:
 
 # Build Status
 
-[![Build Status](https://drone.io/bitbucket.org/nextgensystems/skinsim/status.png)](https://drone.io/bitbucket.org/nextgensystems/skinsim/latest)
+[![Build Status](https://drone.io/bitbucket.org/rommelAlonzo/skinsim/status.png)](https://drone.io/bitbucket.org/rommelAlonzo/skinsim/latest)
