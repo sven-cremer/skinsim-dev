@@ -7,10 +7,12 @@ SkinSim is a multi-modal skin simulation environment based on the Gazebo simulat
 
 == Dependencies ==
 Requires Gazebo 4 in order to compile. To upgrade hydro version, this might be sufficient:
+
 ```
 sudo apt-get install ros-hydro-gazebo4-ros-pkgs
 sudo apt-get install ros-hydro-gazebo4-ros-control
 ```
+
 If not, follow http://gazebosim.org/tutorials?tut=install_ubuntu&ver=4.0&cat=install:
 ```
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'  
