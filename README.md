@@ -4,9 +4,15 @@
 SkinSim is a multi-modal skin simulation environment based on the Gazebo simulator. It provides functionality for building robot models with robotic skin attached and near real-time realistic skin simulation.
 
 # Dependencies
-SkinSim 0.2 uses Gazebo 5 which is supported in Ubuntu 14.04 (Trusty). The following needs to be installed:
+SkinSim 0.2 uses Gazebo 5 which is supported in Ubuntu 14.04 (Trusty): 
 ```
+sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'
+wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+sudo apt-get update
 sudo apt-get install libgazebo5-dev
+```
+The following also needs to be installed:
+```
 sudo apt-get install clang  
 sudo apt-get install protobuf-compiler
 ```
