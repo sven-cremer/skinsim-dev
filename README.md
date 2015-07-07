@@ -16,9 +16,9 @@ http://wiki.ros.org/jade/Installation
 ```
 # Install
 - Clone to catkin workspace (for example ~/catkin_ws/src)  
-```  
-git clone https://<user-name>@bitbucket.org/nextgensystems/skinsim.git
-```
+
+		git clone https://<user-name>@bitbucket.org/nextgensystems/skinsim.git
+
 
 - Add path to skinsim as SKINSIM_PATH env variable
 
@@ -65,16 +65,16 @@ A new version of SkinSim will be released 1 month after every major Gazebo relea
 - 2014-09-30 - SkinSim 0.1.0 : Gazebo 4.0 : ROS I
 - 2015-07-01 - SkinSim 0.2.0 : Gazebo 5.0 : ROS J
 - 2015-09-01 - SkinSim 0.3.0 : Gazebo 5.0 : ROS J
- - Classes for different skin models
- - Classes for different sensor models - noise models etc.
- - Classes for different sensor data encoding types
- - Automated testing framework
- - Refactoring/Review
+    - Classes for different skin models
+    - Classes for different sensor models - noise models etc.
+    - Classes for different sensor data encoding types
+    - Automated testing framework
+    - Refactoring/Review
 - 2015-12-01 - SkinSim 0.4.0 : Gazebo 5.0 : ROS J
- - Automatic skin placement on 3D surfaces
- - Standard tactile message types
+    - Automatic skin placement on 3D surfaces
+    - Standard tactile message types
 - 2016-03-01 - SkinSim 1.0.0 : Gazebo 6.0 : ROS J
- - Robot tailor GUI
+    - Robot tailor GUI
 - 2016-05-01 - SkinSim 2.0.0 : Gazebo 7.0 : ROS K
 
 # Coding Style
