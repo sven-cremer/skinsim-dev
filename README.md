@@ -50,9 +50,12 @@ and source the bashrc file again.
 
 # Example programs
 
-- *skin_model_generator*: generates Gazebo models based on the configurtions inside generator/config/model_params.yaml 
-- *generate_experiment_specification*: generates files used by experimenter
-- *auto_experimenter*: runs auto experimenter (currently no data is saved) 
+- *skin_model_generator*
+    - generates Gazebo models based on the configurtions inside generator/config/model_params.yaml 
+- *generate_experiment_specification*
+    - generates files used by experimenter
+- *auto_experimenter*
+    - runs auto experimenter (currently no data is saved) 
 
 # Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
@@ -85,4 +88,4 @@ SkinSim tries to adhere to the Google style guide:
 
 # Build Status
 
-[![Build Status](https://drone.io/bitbucket.org/rommelAlonzo/skinsim/status.png)](https://drone.io/bitbucket.org/rommelAlonzo/skinsim/latest)
+[![Build Status](https://drone.io/bitbucket.org/nextgensystems/skinsim/status.png)](https://drone.io/bitbucket.org/nextgensystems/skinsim/latest)
