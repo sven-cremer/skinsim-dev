@@ -55,6 +55,12 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+  std::string paramFilename = "model_params.yaml";
+  if(argc>1)
+  {
+	  paramFilename = argv[1];
+  }
+
   BuildModelSpec modelSpecs;
 
   double xByX         = 0.0 ;
@@ -71,9 +77,14 @@ int main(int argc, char** argv)
   double space_wid    = 3.0 ;
 
   // Read YAML files
-  std::string pathString( getenv ("SKINSIM_PATH") );
-  std::string configFilePath = pathString + "/generator/config/model_params.yaml";
+  std::string pathString( getenv ("SKINSIM_GEN_CONFIG_PATH"));
+  std::string configFilePath = pathString + "/" + paramFilename;
   std::ifstream fin(configFilePath.c_str());
+  if(!fin.is_open())
+  {
+	  std::cerr << "File doesn't exist" << std::endl;
+	  return 1;
+  }
 
   std::cout<<"Loading file: "<<configFilePath<<"\n";
   YAML::Node doc;
