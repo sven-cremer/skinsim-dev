@@ -56,7 +56,9 @@ class SkinSimModelBuilder
 private:
   std::ostringstream m_sdfStream;
   sdf::SDF m_sdfParsed;
-  std::string pathString;
+  std::string modelPath;
+  std::string worldPath;
+  std::string skinSimPath;
 
   void generateSDFHeader()
   {
@@ -79,7 +81,7 @@ private:
 public:
   SkinSimModelBuilder( )
   {
-    initSkinSimModelBuilder();
+    initSkinSimModelBuilder("default");
   }
 
   SkinSimModelBuilder(  std::string model_name            ,
@@ -93,7 +95,7 @@ public:
                           double sens_rad                   ,
                           double space_wid                   )
   {
-    initSkinSimModelBuilder();
+    initSkinSimModelBuilder(model_name);
     createModelFiles( model_name            ,
                       xByX                  ,
                       density               ,
@@ -111,10 +113,20 @@ public:
 
   }
 
-  void initSkinSimModelBuilder()
+  void initSkinSimModelBuilder(std::string model_name)
   {
     // Set SkinSim path
-    pathString = getenv ("SKINSIM_PATH");
+    modelPath = std::string(getenv ("SKINSIM_MODEL_PATH")) + "/" + model_name + "/";
+    boost::filesystem::path dir(modelPath);
+    if(!boost::filesystem::create_directory(dir))
+    {
+    	std::cerr << "Failure to generate model directory" << std::endl;
+
+    }
+
+    worldPath = std::string(getenv ("SKINSIM_WORLD_PATH")) + "/";
+
+    skinSimPath = getenv ("SKINSIM_PATH");
     generateSDFHeader();
   }
 
@@ -321,56 +333,12 @@ public:
                 << "  </plugin>";
   }
 
-  std::string getDirPath( std::string & model_name )
-  {
-//    boost::filesystem::path dir_path ( sdf_filename );
-
-//    try
-//    {
-//      if (boost::filesystem::exists(dir_path))    // does p actually exist?
-//      {
-//        if (boost::filesystem::is_regular_file(dir_path))        // is p a regular file?
-//        {
-//          dir_path = dir_path.branch_path();
-//          dir_path = dir_path.branch_path();
-//        }
-//
-//        if (boost::filesystem::is_directory(dir_path))      // is p a directory?
-//        {
-//          boost::filesystem::path dir(dir_path / model_name);
-//          dir_path = dir_path.branch_path();
-//          if(boost::filesystem::create_directory(dir))
-//          {
-//            //ROS_WARN_STREAM( "Success" );
-//          }
-//        }
-//      }
-//    }
-//    catch (const boost::filesystem::filesystem_error& ex)
-//    {
-//      //ROS_ERROR_STREAM( ex.what() );
-//    }
-
-//    return dir_path.string();
-
-    return pathString + "/model";
-
-  }
-
-  std::string genModelDirectory( std::string & model_name )
-  {
-    std::string filepath = getDirPath( model_name ) + "/models/" + model_name + "/";
-    boost::filesystem::path dir(filepath);
-    if(boost::filesystem::create_directory(dir))
-    {
-      //ROS_WARN_STREAM( "Success" );
-    }
-    return filepath;
-  }
-
   std::string genWorldDirectory( std::string & model_name )
   {
-    std::string filepath = getDirPath( model_name ) + "/worlds/";
+
+	std::cout << "genWorldDirectory():Begin" << std::endl;
+    std::string filepath = getenv ("SKINSIM_WORLD_PATH");
+    std::cout << "genWorldDirectory():Exit" << std::endl;
     return filepath;
   }
 
@@ -378,7 +346,7 @@ public:
   {
     generateModelEnd();
 
-    std::string filename = genModelDirectory( model_name ) + model_name + ".sdf";
+    std::string filename = modelPath + model_name + ".sdf";
 
     m_sdfParsed.SetFromString( m_sdfStream.str() );
     m_sdfParsed.Write( filename );
@@ -405,7 +373,7 @@ public:
                 << "  </description>                          \n"
                 << "</model>                                  \n";
 
-    std::string filename = genModelDirectory( model_name ) + "model.config";
+    std::string filename = modelPath + "model.config";
     saveFile( filename, modelConfig );
   }
 
@@ -457,7 +425,7 @@ public:
                 << "</world>                                                        \n"
                 << "</gazebo>                                                       \n";
 
-    std::string filename = genWorldDirectory( model_name ) + model_name + ".world";
+    std::string filename = worldPath + model_name + ".world";
     saveFile( filename, modelConfig );
   }
 
@@ -501,10 +469,8 @@ public:
     base_specular << 0.1, 0.1, 0.1, 1.0 ;
     base_emissive = Eigen::Vector4d::Zero();
 
-    std::string modelDirectory = genModelDirectory( model_name );
-
-    std::string joint_config_filename = modelDirectory + "joint_names.yaml";
-    std::string tactile_id_filename   = modelDirectory + "tactile_id.yaml";
+    std::string joint_config_filename = modelPath + "joint_names.yaml";
+    std::string tactile_id_filename   = modelPath + "tactile_id.yaml";
 
     YAML::Emitter out;
     std::ofstream fout(joint_config_filename.c_str());
@@ -580,7 +546,7 @@ public:
     std::vector <int> search_pts_y;
     std::vector <int> sens_cent_ix;
 
-    std::string path_cent = pathString + "model/config/tactile_cent_id.txt";
+    std::string path_cent = skinSimPath + "model/config/tactile_cent_id.txt";
     std::ofstream tact_cent_rec;
     tact_cent_rec.open(path_cent.c_str());
 
@@ -651,7 +617,7 @@ public:
 
     std::vector <int> tact_sens_ix;
 
-    std::string path = pathString + "model/config/tactile_id.txt";
+    std::string path = skinSimPath + "model/config/tactile_id.txt";
     std::ofstream tact_rec;
     tact_rec.open(path.c_str());
 
