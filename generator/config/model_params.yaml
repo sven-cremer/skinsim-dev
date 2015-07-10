@@ -3,7 +3,7 @@
     # No of elements per side
     # do nothing if 0 use size_x and size_y
     - xByX         : 15.0 				# 0.0 		Creates matrix of skin elements of size mentioned
-      d_pos        : 0.10			 		#0.005		Size of the diameter of each skin element
+      d_pos        : 0.0			 		#0.005		Size of the diameter of each skin element
       density      : 3.0					# Not used
       size_x       : 0.0525				#	size of the skin element (xbyX * d_pos) in X direction
       size_y       : 0.0525				#	size of the skin element (xbyX * d_pos) in Y direction
