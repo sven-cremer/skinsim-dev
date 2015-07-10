@@ -2,13 +2,13 @@
   spec:
     # No of elements per side
     # do nothing if 0 use size_x and size_y
-    - xByX         : 5.0 				# 0.0 		Creates matrix of skin elements of size mentioned
-      d_pos        : 0.5		 		#0.005		Size of the diameter of each skin element
-      density      : 3.0
-      size_x       : 0.0525
-      size_y       : 0.0525
-      skin_height  : 0.2
-      tac_height   : 0.05
-      plane_height : 0.001
-      sens_rad     : 1.0
-      space_wid    : 4.0
+    - xByX         : 15.0 				# 0.0 		Creates matrix of skin elements of size mentioned
+      d_pos        : 0.10			 		#0.005		Size of the diameter of each skin element
+      density      : 3.0					# Not used
+      size_x       : 0.0525				#	size of the skin element (xbyX * d_pos) in X direction
+      size_y       : 0.0525				#	size of the skin element (xbyX * d_pos) in Y direction
+      skin_height  : 0.2					#	The height of the skin layer
+      tac_height   : 0.05					# Not used
+      plane_height : 0.001				#	The height of the white plane from the ground
+      sens_rad     : 1.0					# The radius of the sensors underneath the skin layer (for which skin layer is marked in red)
+      space_wid    : 5.0					# The space between each sensor underneath the skin layer (for which there are spaces between the rows an 																	#	columns of skin elements)
