@@ -11,4 +11,4 @@
       tac_height   : 0.05					# Not used
       plane_height : 0.001				#	The height of the white plane from the ground
       sens_rad     : 1.0					# The radius of the sensors underneath the skin layer (for which skin layer is marked in red)
-      space_wid    : 5.0					# The space between each sensor underneath the skin layer (for which there are spaces between the rows an 																	#	columns of skin elements)
+      space_wid    : 5.0					# The space between each sensor underneath the skin layer (for which there are spaces between the rows and columns of skin elements)
