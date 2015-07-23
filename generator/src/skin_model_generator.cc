@@ -57,18 +57,21 @@ int main(int argc, char** argv)
 {
   BuildModelSpec modelSpecs;
 
-  double xByX         = 0.0 ;
+  double xByX         			= 0.0 ;
 
-  double density      = 0.0 ;
-  double size_x       = 1.5 ;
-  double size_y       = 1.5 ;
+  double thick_board 	        = 0.2 ;
+  double density      	        = 0.0 ;
+  double size_x                 = 1.5 ;
+  double size_y                 = 1.5 ;
 
-  double skin_height  = 1.3 ;
-  double plane_height = 0.4 ;
-  double d_pos        = 0.5 ;
+  double skin_height            = 1.3 ;
+  double plane_height           = 0.4 ;
+  double skin_element_diameter                  = 0.5 ;
 
-  double sens_rad     = 1.0 ;
-  double space_wid    = 3.0 ;
+  double tactile_length         = 1.0 ;
+  double tactile_separation    	= 3.0 ;
+
+  double tactile_height         = 0.05;		//Added Tac_Height
 
   // Read YAML files
   std::string pathString( getenv ("SKINSIM_PATH") );
@@ -78,29 +81,33 @@ int main(int argc, char** argv)
   std::cout<<"Loading file: "<<configFilePath<<"\n";
   YAML::Node doc;
   doc = YAML::LoadAll(fin);
+  std::cout<<"File Loaded"<<"\n";
   for(std::size_t i=0;i<doc[0].size();i++)
   {
+	  std::cout<<"Spec Loaded: "<< doc[0][i] <<"\n";
 	  doc[0][i] >> modelSpecs;						// FIXME overwrites previous data
   }
 
   // FIXME this assumes square patches
   if( modelSpecs.spec.xByX != 0.0 )
   {
-    modelSpecs.spec.size_x = modelSpecs.spec.d_pos*modelSpecs.spec.xByX ;
-    modelSpecs.spec.size_y = modelSpecs.spec.d_pos*modelSpecs.spec.xByX ;
+    modelSpecs.spec.size_x = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
+    modelSpecs.spec.size_y = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
   }
 
   // Create model files
-  SkinSimModelBuilder skinSimModelBuilderObject( modelSpecs.name              ,
-                                                 modelSpecs.spec.xByX         ,
-                                                 modelSpecs.spec.density      ,
-                                                 modelSpecs.spec.size_x       ,
-                                                 modelSpecs.spec.size_y       ,
-                                                 modelSpecs.spec.skin_height  ,
-                                                 modelSpecs.spec.plane_height ,
-                                                 modelSpecs.spec.d_pos        ,
-                                                 modelSpecs.spec.sens_rad     ,
-                                                 modelSpecs.spec.space_wid     );
+  SkinSimModelBuilder skinSimModelBuilderObject( modelSpecs.name                        ,
+                                                 modelSpecs.spec.xByX                   ,
+												 modelSpecs.spec.thick_board            ,
+                                                 modelSpecs.spec.density                ,
+                                                 modelSpecs.spec.size_x                 ,
+                                                 modelSpecs.spec.size_y                 ,
+                                                 modelSpecs.spec.skin_height            ,
+                                                 modelSpecs.spec.plane_height           ,
+												 modelSpecs.spec.tactile_height	        ,
+                                                 modelSpecs.spec.skin_element_diameter  ,
+                                                 modelSpecs.spec.tactile_length         ,
+                                                 modelSpecs.spec.tactile_separation     );
 
   fin.close();
 

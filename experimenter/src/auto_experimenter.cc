@@ -240,23 +240,25 @@ void runTests()
 		// FIXME this assumes square patches
 		if( modelSpecs.spec.xByX != 0.0 )
 		{
-			modelSpecs.spec.size_x = modelSpecs.spec.d_pos*modelSpecs.spec.xByX ;
-			modelSpecs.spec.size_y = modelSpecs.spec.d_pos*modelSpecs.spec.xByX ;
+			modelSpecs.spec.size_x = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
+			modelSpecs.spec.size_y = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
 		}
 
 		std::cout << std::endl << "Experiment number: " << i + 1 << " out of " << doc[0].size() << std::endl;
 
 		// Create model files
 		SkinSimModelBuilder skinSimModelBuilderObject( modelSpecs.name              ,
-				modelSpecs.spec.xByX         ,
-				modelSpecs.spec.density      ,
-				modelSpecs.spec.size_x       ,
-				modelSpecs.spec.size_y       ,
-				modelSpecs.spec.skin_height  ,
-				modelSpecs.spec.plane_height ,
-				modelSpecs.spec.d_pos        ,
-				modelSpecs.spec.sens_rad     ,
-				modelSpecs.spec.space_wid     );
+				modelSpecs.spec.xByX                   ,
+				modelSpecs.spec.thick_board            ,
+				modelSpecs.spec.density                ,
+				modelSpecs.spec.size_x                 ,
+				modelSpecs.spec.size_y                 ,
+				modelSpecs.spec.skin_height            ,
+				modelSpecs.spec.plane_height           ,
+				modelSpecs.spec.tactile_height	       ,
+				modelSpecs.spec.skin_element_diameter  ,
+				modelSpecs.spec.tactile_length         ,
+				modelSpecs.spec.tactile_separation     );
 
 		delete this->server;
 		this->server = NULL;
@@ -266,9 +268,9 @@ void runTests()
 		std::string expName = "efc_"                                                        +
 				boost::lexical_cast<std::string>( Ne )                        +
 				"_"                                                           +
-				boost::lexical_cast<std::string>( modelSpecs.spec.sens_rad  ) +
+				boost::lexical_cast<std::string>( modelSpecs.spec.tactile_length  ) +
 				"_"                                                           +
-				boost::lexical_cast<std::string>( modelSpecs.spec.space_wid )  ;
+				boost::lexical_cast<std::string>( modelSpecs.spec.tactile_separation )  ;
 
 		saveControlSpec( expName );
 
