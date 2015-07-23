@@ -4,50 +4,64 @@
 SkinSim is a multi-modal skin simulation environment based on the Gazebo simulator. It provides functionality for building robot models with robotic skin attached and near real-time realistic skin simulation.
 
 # Dependencies
-Requires Gazebo 4 in order to compile. To upgrade hydro version, this might be sufficient:
+SkinSim 0.2 uses Gazebo 5 which is supported in Ubuntu 14.04 (Trusty): 
 ```
-sudo apt-get install ros-hydro-gazebo4-ros-pkgs
-sudo apt-get install ros-hydro-gazebo4-ros-control
-```
-If not, follow http://gazebosim.org/tutorials?tut=install_ubuntu&ver=4.0&cat=install:
-```
-sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'  
-wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - 
+sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'
+wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 sudo apt-get update
-sudo apt-get install gazebo4
-sudo apt-get install libgazebo4-dev
+sudo apt-get install libgazebo5-dev
 ```
-Other packages:
+The following also needs to be installed:
 ```
 sudo apt-get install clang  
 sudo apt-get install protobuf-compiler
-#sudo apt-get install protobuf-c-compiler ?
 ```
-
+ROS Jade is optional:
+```
+http://wiki.ros.org/jade/Installation
+```
 # Install
-- Clone to catkin workspace eg. ~/catkin_ws/src
+- Clone to catkin workspace (for example ~/catkin_ws/src)  
 
-		git clone https://isura@bitbucket.org/nextgensystems/skinsim.git
+		git clone https://<user-name>@bitbucket.org/nextgensystems/skinsim.git
 
 
 - Add path to skinsim as SKINSIM_PATH env variable
 
-		export SKINSIM_PATH=~/catkin_ws/src/skinsim
+		echo "export SKINSIM_PATH=~/catkin_ws/src/skinsim" >> ~/.bashrc
 
 
 - Export model and plugin folders
 
 		echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/model/models" >> ~/.bashrc
-		echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/build" >> ~/.bashrc
+		echo "export GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH:$SKINSIM_PATH/build" >> ~/.bashrc
+and source the bashrc file
+
 		source ~/.bashrc
 
 
 - Build SkinSim
 
+		cd ~/catkin_ws/src/skinsim
 		mkdir build
 		cd build
 		cmake ..
 		make
+
+- Add the build folder to the path environment variable
+
+		echo "export PATH=$SKINSIM_PATH/build:$PATH" >> ~/.bashrc
+and source the bashrc file again.
+
+
+# Example programs
+
+- *skin_model_generator*
+    - generates Gazebo models based on the configurtions inside generator/config/model_params.yaml 
+- *generate_experiment_specification*
+    - generates files used by experimenter
+- *auto_experimenter*
+    - runs auto experimenter (currently no data is saved) 
 
 # Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
@@ -58,9 +72,19 @@ Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
 A new version of SkinSim will be released 1 month after every major Gazebo release.
 
 - 2014-09-30 - SkinSim 0.1.0 : Gazebo 4.0 : ROS I
-- 2015-02-26 - SkinSim 1.0.0 : Gazebo 5.0 : ROS J
-- 2015-08-27 - SkinSim 2.0.0 : Gazebo 6.0 : 
-- 2016-02-25 - SkinSim 3.0.0 : Gazebo 7.0 : ROS K
+- 2015-07-01 - SkinSim 0.2.0 : Gazebo 5.0 : ROS J
+- 2015-09-01 - SkinSim 0.3.0 : Gazebo 5.0 : ROS J
+    - Classes for different skin models
+    - Classes for different sensor models - noise models etc.
+    - Classes for different sensor data encoding types
+    - Automated testing framework
+    - Refactoring/Review
+- 2015-12-01 - SkinSim 0.4.0 : Gazebo 5.0 : ROS J
+    - Automatic skin placement on 3D surfaces
+    - Standard tactile message types
+- 2016-03-01 - SkinSim 1.0.0 : Gazebo 6.0 : ROS J
+    - Robot tailor GUI
+- 2016-05-01 - SkinSim 2.0.0 : Gazebo 7.0 : ROS K
 
 # Coding Style
 

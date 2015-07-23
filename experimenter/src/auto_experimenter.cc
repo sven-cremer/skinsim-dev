@@ -93,218 +93,234 @@ protected: transport::NodePtr node;
 protected: transport::SubscriberPtr statsSub;
 
 public:
-  SkinSimTestingFramework()
-  {
-    this->server = NULL;
+SkinSimTestingFramework()
+{
+	std::cout << "SkinSim Testing Framework Constructor" << std::endl;
+	this->server = NULL;
 
-    this->node = transport::NodePtr(new transport::Node());
-    this->node->Init();
-    this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
-  }
+//	this->node = transport::NodePtr(new transport::Node());
+//	this->node->Init();
+//	this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
+//	std::cout << "Initialized Transport Node" << std::endl;
+}
 
-  void OnStats(ConstWorldStatisticsPtr &_msg)
-  {
-    this->simTime = msgs::Convert(_msg->sim_time());
-    this->realTime = msgs::Convert(_msg->real_time());
-    this->pauseTime = msgs::Convert(_msg->pause_time());
-    this->paused = _msg->paused();
-
-
-    this->serverRunning = true;
-  }
-  
-  void SetPause(bool _pause)
-  {
-    physics::pause_worlds(_pause);
-  }
-  
-  void Unload()
-  {
-    gzdbg << "ServerFixture::Unload" << std::endl;
-    this->serverRunning = false;
-    if (this->node)
-      this->node->Fini();
-
-    if (this->server)
-    {
-      this->server->Stop();
-
-      if (this->serverThread)
-      {
-        this->serverThread->join();
-      }
-    }
-
-    delete this->serverThread;
-    this->serverThread = NULL;
-  }
-
-  void RunServer(const std::string &_worldFilename, bool _paused, const std::string &_physics)
-  {
-    this->server = new Server();
-    this->server->PreLoad();
-    if (_physics.length())
-      this->server->LoadFile(_worldFilename,  _physics);
-    else
-      this->server->LoadFile(_worldFilename);
-
-    if (!rendering::get_scene(
-          gazebo::physics::get_world()->GetName()))
-    {
-      rendering::create_scene(
-          gazebo::physics::get_world()->GetName(), false, true);
-    }
-
-    this->server->SetParams( m_gazeboParams );
-
-    this->SetPause(_paused);
-
-    this->server->Run();
-
-    this->server->Fini();
-
-    delete this->server;
-    this->server = NULL;
-  }
-  
-  void saveControlSpec( std::string expName )
-  {
-    // Write YAML files
-    std::string pathString( getenv ("SKINSIM_PATH") );
-    std::string ctrSpecPath = pathString + "/skinsim_model/config/ctr_config.yaml";
-    std::ofstream ctrOut(ctrSpecPath.c_str());
-
-    YAML::Emitter ctrYAMLEmitter;
-
-    ControllerSpec ctrSpec;
-
-    ctrSpec.name         = expName ;
-    ctrSpec.explFctr_Kp  = 2       ;
-    ctrSpec.explFctr_Ki  = 0.00005 ;
-    ctrSpec.explFctr_Kd  = 0.5     ;
-    ctrSpec.impCtr_Xnom  = 0.5     ;
-    ctrSpec.impCtr_M     = 5       ;
-    ctrSpec.impCtr_K     = 24      ;
-    ctrSpec.impCtr_D     = 10      ;
-    ctrSpec.ctrType      = 1       ;
-    ctrSpec.targetForce  = 0.01    ;
-
-    // Save controller specs
-    ctrYAMLEmitter << YAML::BeginSeq;
-    ctrYAMLEmitter << ctrSpec;
-    ctrYAMLEmitter << YAML::EndSeq;
-
-    ctrOut << ctrYAMLEmitter.c_str();;
-    ctrOut.close();
-  }
-
-  void runTests()
-  {
-    BuildModelSpec modelSpecs;
-
-    double xByX         = 0.0 ;
-
-    double density      = 0.0 ;
-    double size_x       = 1.5 ;
-    double size_y       = 1.5 ;
-
-    double skin_height  = 1.3 ;
-    double plane_height = 0.4 ;
-    double d_pos        = 0.5 ;
-
-    double sens_rad     = 1.0 ;
-    double space_wid    = 3.0 ;
-
-    // Read YAML files
-    std::string pathString( getenv ("SKINSIM_PATH") );
-    std::string configFilePath = pathString + "/skinsim_test/config/mdlSpecs.yaml";
-    std::ifstream fin(configFilePath.c_str());
-    YAML::Parser parser(fin);
-    YAML::Node doc;
-
-    parser.GetNextDocument(doc);
-
-    std::string _worldFilename("~");
-    bool _paused = false;
-    std::string _physics = "ode";
-
-    for(unsigned i=0;i<doc.size();i++)
-    {
-      doc[i] >> modelSpecs;
-
-      // FIXME this assumes square patches
-      if( modelSpecs.spec.xByX != 0.0 )
-      {
-        modelSpecs.spec.size_x = modelSpecs.spec.d_pos*modelSpecs.spec.xByX ;
-        modelSpecs.spec.size_y = modelSpecs.spec.d_pos*modelSpecs.spec.xByX ;
-      }
-      
-      std::cout << std::endl << "Experiment number: " << i + 1 << std::endl;
-
-      // Create model files
-      SkinSimModelBuilder skinSimModelBuilderObject( modelSpecs.name              ,
-                                                     modelSpecs.spec.xByX         ,
-                                                     modelSpecs.spec.density      ,
-                                                     modelSpecs.spec.size_x       ,
-                                                     modelSpecs.spec.size_y       ,
-                                                     modelSpecs.spec.skin_height  ,
-                                                     modelSpecs.spec.plane_height ,
-                                                     modelSpecs.spec.d_pos        ,
-                                                     modelSpecs.spec.sens_rad     ,
-                                                     modelSpecs.spec.space_wid     );
-
-      delete this->server;
-      this->server = NULL;
-
-      double Ne = modelSpecs.spec.xByX * modelSpecs.spec.xByX;
-
-      std::string expName = "efc_"                                                        +
-                            boost::lexical_cast<std::string>( Ne )                        +
-                            "_"                                                           +
-                            boost::lexical_cast<std::string>( modelSpecs.spec.sens_rad  ) +
-                            "_"                                                           +
-                            boost::lexical_cast<std::string>( modelSpecs.spec.space_wid )  ;
-
-      saveControlSpec( expName );
-
-      // Point to newly created world file location
-      _worldFilename = pathString + "/skinsim_model/worlds/" + modelSpecs.name + ".world";
-
-      m_gazeboParams["iterations"] = "5000";
-
-      // Create, load, and run the server in its own thread
-      this->serverThread = new boost::thread(
-         boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
-                     _paused, _physics));
-
-      // Wait for the server to come up
-      // Use a 60 second timeout.
-      int waitCount = 0, maxWaitCount = 6000;
-      while ((!this->server || !this->server->GetInitialized()) &&
-             ++waitCount < maxWaitCount)
-        common::Time::MSleep(100);
-      gzdbg << "ServerFixture load in "
-             << static_cast<double>(waitCount)/10.0
-             << " seconds, timeout after "
-             << static_cast<double>(maxWaitCount)/10.0
-             << " seconds\n";
-      
-      while( physics::worlds_running() )
-      {
-        common::Time::MSleep(100);
-
-      }
-
-      std::cout << std::endl << "Time: " << simTime.sec << " sec " << simTime.nsec << " nsec " << std::endl;
+void OnStats(ConstWorldStatisticsPtr &_msg)
+{
+	this->simTime = msgs::Convert(_msg->sim_time());
+	this->realTime = msgs::Convert(_msg->real_time());
+	this->pauseTime = msgs::Convert(_msg->pause_time());
+	this->paused = _msg->paused();
 
 
-      Unload();
+	this->serverRunning = true;
+}
 
-    }
+void SetPause(bool _pause)
+{
+	physics::pause_worlds(_pause);
+}
 
-    delete this->server;
+void Unload()
+{
+	gzdbg << "ServerFixture::Unload" << std::endl;
+	this->serverRunning = false;
+	if (this->node)
+		this->node->Fini();
 
-  }
+	if (this->server)
+	{
+		this->server->Stop();
+
+		if (this->serverThread)
+		{
+			this->serverThread->join();
+		}
+	}
+
+	delete this->serverThread;
+	this->serverThread = NULL;
+}
+
+void RunServer(const std::string &_worldFilename, bool _paused, const std::string &_physics)
+{
+
+	std::cout << "SkinSimTestingFramework::RunServer()" << std::endl;
+	this->server = new Server();
+	this->server->PreLoad();
+	if (_physics.length())
+		this->server->LoadFile(_worldFilename,  _physics);
+	else
+		this->server->LoadFile(_worldFilename);
+
+	if (!rendering::get_scene(
+			gazebo::physics::get_world()->GetName()))
+	{
+		rendering::create_scene(
+				gazebo::physics::get_world()->GetName(), false, true);
+	}
+
+	this->server->SetParams( m_gazeboParams );
+
+	this->SetPause(_paused);
+
+	this->server->Run();
+
+	this->server->Fini();
+
+	delete this->server;
+	this->server = NULL;
+}
+
+void saveControlSpec( std::string expName )
+{
+	// Write YAML files
+	std::string pathString( getenv ("SKINSIM_PATH") );
+	std::string ctrSpecPath = pathString + "/model/config/ctr_config.yaml";
+	std::ofstream ctrOut(ctrSpecPath.c_str());
+
+	YAML::Emitter ctrYAMLEmitter;
+
+	ControllerSpec ctrSpec;
+
+	ctrSpec.name         = expName ;
+	ctrSpec.explFctr_Kp  = 2       ;
+	ctrSpec.explFctr_Ki  = 0.00005 ;
+	ctrSpec.explFctr_Kd  = 0.5     ;
+	ctrSpec.impCtr_Xnom  = 0.5     ;
+	ctrSpec.impCtr_M     = 5       ;
+	ctrSpec.impCtr_K     = 24      ;
+	ctrSpec.impCtr_D     = 10      ;
+	ctrSpec.ctrType      = 1       ;
+	ctrSpec.targetForce  = 0.01    ;
+
+	// Save controller specs
+	ctrYAMLEmitter << YAML::BeginSeq;
+	ctrYAMLEmitter << ctrSpec;
+	ctrYAMLEmitter << YAML::EndSeq;
+
+	ctrOut << ctrYAMLEmitter.c_str();;
+	ctrOut.close();
+}
+
+void runTests()
+{
+	std::cout << "TestingFramework::runTests()" << std::endl;
+
+	BuildModelSpec modelSpecs;
+
+	double xByX         = 0.0 ;
+
+	double density      = 0.0 ;
+	double size_x       = 1.5 ;
+	double size_y       = 1.5 ;
+
+	double skin_height  = 1.3 ;
+	double plane_height = 0.4 ;
+	double d_pos        = 0.5 ;
+
+	double sens_rad     = 1.0 ;
+	double space_wid    = 3.0 ;
+
+	// Read YAML files
+	std::string pathString( getenv ("SKINSIM_PATH") );
+	std::string configFilePath = pathString + "/experimenter/config/mdlSpecs.yaml";
+	std::ifstream fin(configFilePath.c_str());
+	YAML::Node doc;
+	std::cout<<"Loading file: "<<configFilePath<<"\n";
+	doc = YAML::LoadAll(fin);
+
+	std::string _worldFilename("~");
+	bool _paused = false;
+	std::string _physics = "ode";
+
+	for(unsigned i=0;i<doc[0].size();i++)
+	{
+		doc[0][i] >> modelSpecs;
+
+		// FIXME this assumes square patches
+		if( modelSpecs.spec.xByX != 0.0 )
+		{
+			modelSpecs.spec.size_x = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
+			modelSpecs.spec.size_y = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
+		}
+
+		std::cout << std::endl << "Experiment number: " << i + 1 << " out of " << doc[0].size() << std::endl;
+
+		// Create model files
+		SkinSimModelBuilder skinSimModelBuilderObject( modelSpecs.name              ,
+				modelSpecs.spec.xByX                   ,
+				modelSpecs.spec.thick_board            ,
+				modelSpecs.spec.density                ,
+				modelSpecs.spec.size_x                 ,
+				modelSpecs.spec.size_y                 ,
+				modelSpecs.spec.skin_height            ,
+				modelSpecs.spec.plane_height           ,
+				modelSpecs.spec.tactile_height	       ,
+				modelSpecs.spec.skin_element_diameter  ,
+				modelSpecs.spec.tactile_length         ,
+				modelSpecs.spec.tactile_separation     );
+
+		delete this->server;
+		this->server = NULL;
+
+		double Ne = modelSpecs.spec.xByX * modelSpecs.spec.xByX;
+
+		std::string expName = "efc_"                                                        +
+				boost::lexical_cast<std::string>( Ne )                        +
+				"_"                                                           +
+				boost::lexical_cast<std::string>( modelSpecs.spec.tactile_length  ) +
+				"_"                                                           +
+				boost::lexical_cast<std::string>( modelSpecs.spec.tactile_separation )  ;
+
+		saveControlSpec( expName );
+
+		// Point to newly created world file location
+		_worldFilename = pathString + "/model/worlds/" + modelSpecs.name + ".world";
+
+		m_gazeboParams["iterations"] = "5000";
+
+		std::cout << "Initializing World" << std::endl;
+		// Create, load, and run the server in its own thread
+		this->serverThread = new boost::thread(
+				boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
+						_paused, _physics));
+
+		/********/
+		this->node = transport::NodePtr(new transport::Node());
+		this->node->Init();
+		this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
+		std::cout << "Initialized Transport Node" << std::endl;
+		/*******/
+
+		std::cout << "Waiting for world completion" << std::endl;
+		// Wait for the server to come up
+		// Use a 60 second timeout.
+		int waitCount = 0, maxWaitCount = 6000;
+		while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )
+				common::Time::MSleep(100);
+
+				std::cout << "ServerFixture load in "
+				<< static_cast<double>(waitCount)/10.0
+				<< " seconds, timeout after "
+				<< static_cast<double>(maxWaitCount)/10.0
+				<< " seconds\n" ;
+
+		while( physics::worlds_running() )
+		{
+			common::Time::MSleep(100);
+
+		}
+
+		std::cout << std::endl << "Time: " << simTime.sec << " sec " << simTime.nsec << " nsec " << std::endl;
+
+
+		Unload();
+
+	}
+
+	delete this->server;
+
+}
 
 };
 
@@ -313,10 +329,10 @@ public:
 int main(int argc, char** argv)
 {
 
-  SkinSimTestingFramework skinSimTestingFrameworkObject;
-  skinSimTestingFrameworkObject.runTests();
+	SkinSimTestingFramework skinSimTestingFrameworkObject;
+	skinSimTestingFrameworkObject.runTests();
 
-  return 0;
+	return 0;
 
 }
 

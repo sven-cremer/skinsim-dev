@@ -82,28 +82,32 @@ public:
     initSkinSimModelBuilder();
   }
 
-  SkinSimModelBuilder(  std::string model_name            ,
-                          double xByX                       ,
-                          double density                    ,
-                          double size_x                     ,
-                          double size_y                     ,
-                          double skin_height                ,
-                          double plane_height               ,
-                          double d_pos                      ,
-                          double sens_rad                   ,
-                          double space_wid                   )
+  SkinSimModelBuilder(  std::string model_name                        ,
+                          double xByX                                 ,
+						  double thick_board				          ,
+                          double density                              ,
+                          double size_x                               ,
+                          double size_y                               ,
+                          double skin_height                          ,
+                          double plane_height                         ,
+						  double tactile_height					      ,
+                          double skin_element_diameter                ,
+                          double tactile_length                       ,
+                          double tactile_separation                   )
   {
     initSkinSimModelBuilder();
-    createModelFiles( model_name            ,
-                      xByX                  ,
-                      density               ,
-                      size_x                ,
-                      size_y                ,
-                      skin_height           ,
-                      plane_height          ,
-                      d_pos                 ,
-                      sens_rad              ,
-                      space_wid              );
+    createModelFiles( model_name                      ,
+                      xByX                            ,
+					  thick_board			          ,
+                      density                         ,
+                      size_x                          ,
+                      size_y                          ,
+                      skin_height                     ,
+                      plane_height                    ,
+					  tactile_height			      ,
+                      skin_element_diameter           ,
+					  tactile_length                  ,
+					  tactile_separation              );
   }
 
   ~SkinSimModelBuilder()
@@ -469,16 +473,18 @@ public:
     saveToFile.close();
   }
 
-  void createModelFiles( std::string model_name            ,
-                           double xByX                       ,
-                           double density                    ,
-                           double size_x                     ,
-                           double size_y                     ,
-                           double skin_height                ,
-                           double plane_height               ,
-                           double d_pos                      ,
-                           double sens_rad                   ,
-                           double space_wid                   )
+  void createModelFiles( std::string model_name                        ,
+                           double xByX                                 ,
+						   double thick_board				           ,
+                           double density                              ,
+                           double size_x                               ,
+                           double size_y                               ,
+                           double skin_height                          ,
+                           double plane_height                         ,
+						   double tactile_height				       ,
+                           double skin_element_diameter                ,
+                           double tactile_length                       ,
+                           double tactile_separation                   )
   {
     Eigen::Vector4d skin_ambient ;
     Eigen::Vector4d skin_diffuse ;
@@ -526,7 +532,10 @@ public:
     generateModelStart( model_name, pose );
 
     pose << 0, 0, plane_height, 0, 0, 0;
-    box_size << 1.5*size_x, 1.5*size_y, d_pos/10;
+
+//    box_size << 1.5*size_x, 1.5*size_y, skin_element_diameter/10;		//Removing the height as a parameter of d_pose
+
+    box_size << 1.5*size_x, 1.5*size_y, thick_board;		//Added the width as a parameter from Yaml File
 
     addLink( "plane",
              20,
@@ -559,9 +568,9 @@ public:
                    0,
                    0 );*/
 
-    double skin_no = (double)(size_x/d_pos)*(size_y/d_pos);
-    int x_skin_len = (int)(size_x/d_pos);
-    int y_skin_len = (int)(size_y/d_pos);
+    double skin_no = (double)(size_x/skin_element_diameter)*(size_y/skin_element_diameter);
+    int x_skin_len = (int)(size_x/skin_element_diameter);
+    int y_skin_len = (int)(size_y/skin_element_diameter);
     int skin_ix [y_skin_len][x_skin_len];
     int ix = 1;
 
@@ -585,14 +594,14 @@ public:
     tact_cent_rec.open(path_cent.c_str());
 
     // ---------down ------------
-    for(int iy=cent_y; iy<=(y_skin_len-1); iy=iy+space_wid)
+    for(int iy=cent_y; iy<=(y_skin_len-1); iy=iy+tactile_separation)
     {
-      if((iy+sens_rad)<=(y_skin_len-1))
+      if((iy+tactile_length)<=(y_skin_len-1))
       {
         // --- left ----
-        for(int ix=cent_x;ix>=0;ix=ix-space_wid)
+        for(int ix=cent_x;ix>=0;ix=ix-tactile_separation)
         {
-          if((ix-sens_rad)>=0)
+          if((ix-tactile_length)>=0)
           {
             search_pts_x.push_back(ix);
             search_pts_y.push_back(iy);
@@ -601,9 +610,9 @@ public:
           }
         }
         // --- right ----
-        for(int ix=(cent_x+space_wid);ix<=(x_skin_len-1);ix=ix+space_wid)
+        for(int ix=(cent_x+tactile_separation);ix<=(x_skin_len-1);ix=ix+tactile_separation)
         {
-          if((ix+sens_rad)<=(x_skin_len-1))
+          if((ix+tactile_length)<=(x_skin_len-1))
           {
             search_pts_x.push_back(ix);
             search_pts_y.push_back(iy);
@@ -615,14 +624,14 @@ public:
     }
 
     // ---------upper ------------
-    for(int iy=(cent_y-space_wid); iy>=0; iy=iy-space_wid)
+    for(int iy=(cent_y-tactile_separation); iy>=0; iy=iy-tactile_separation)
     {
-      if((iy-sens_rad)>=0)
+      if((iy-tactile_length)>=0)
       {
         // --- left ----
-        for(int ix=cent_x;ix>=0;ix=ix-space_wid)
+        for(int ix=cent_x;ix>=0;ix=ix-tactile_separation)
         {
-          if((ix-sens_rad)>=0)
+          if((ix-tactile_length)>=0)
           {
             search_pts_x.push_back(ix);
             search_pts_y.push_back(iy);
@@ -631,9 +640,9 @@ public:
           }
         }
         // --- right ----
-        for(int ix=(cent_x+space_wid);ix<=(x_skin_len-1);ix=ix+space_wid)
+        for(int ix=(cent_x+tactile_separation);ix<=(x_skin_len-1);ix=ix+tactile_separation)
         {
-          if((ix+sens_rad)<=(x_skin_len-1))
+          if((ix+tactile_length)<=(x_skin_len-1))
           {
             search_pts_x.push_back(ix);
             search_pts_y.push_back(iy);
@@ -664,7 +673,7 @@ public:
       {
         for(int j = 0; j<=(x_skin_len-1);j++)
         {
-          if((abs(i - tact_cent_y)<=sens_rad)&&(abs(j - tact_cent_x)<=sens_rad))
+          if((abs(i - tact_cent_y)<=tactile_length)&&(abs(j - tact_cent_x)<=tactile_length))
           {
             tact_sens_ix.push_back(skin_ix[i][j]);
             tact_rec << skin_ix[i][j]<<' ';
@@ -681,8 +690,8 @@ public:
 
     std::sort(tact_sens_ix.begin(), tact_sens_ix.end(), std::greater<int>());
 
-    double pos_x = -(size_x-d_pos)/2;
-    double pos_y = (size_y-d_pos)/2;
+    double pos_x = -(size_x-skin_element_diameter)/2;
+    double pos_y = (size_y-skin_element_diameter)/2;
 
     out << YAML::BeginSeq;
 
@@ -715,8 +724,8 @@ public:
 
       }
 
-      pose << pos_x, pos_y, skin_height, 0, 0, 0;
-      radius = d_pos/2;
+      pose << pos_x, pos_y, (skin_height + plane_height + tactile_height + (skin_element_diameter/2)), 0, 0, 0;		//Skin_hight changed to skin_height + tac_height + plane height+ radius of skin to avoid collision
+      radius = skin_element_diameter/2;
 
       addLink( "spring_" + convert.str(),
                0.00235,
@@ -739,12 +748,12 @@ public:
 
   //    std::cout << pos_x << " " << pos_y << "\n";
 
-      pos_x = pos_x + d_pos;
+      pos_x = pos_x + skin_element_diameter;
 
       if( pos_x > size_x/2)
       {
-        pos_x = -(size_x-d_pos)/2;
-        pos_y = pos_y - d_pos;
+        pos_x = -(size_x-skin_element_diameter)/2;
+        pos_y = pos_y - skin_element_diameter;
         //std::cout << " y_id \n";
       }
 

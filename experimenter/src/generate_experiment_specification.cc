@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 
   // Write YAML files
   std::string pathString( getenv ("SKINSIM_PATH") );
-  std::string mdlSpecPath = pathString + "/skinsim_test/config/mdlSpecs.yaml";
+  std::string mdlSpecPath = pathString + "/experimenter/config/mdlSpecs.yaml";
 
   std::ofstream mdlOut(mdlSpecPath.c_str());
 
@@ -71,11 +71,11 @@ int main(int argc, char** argv)
     tempMdlSpecs.spec.size_x       = 0.0525 ;
     tempMdlSpecs.spec.size_y       = 0.0525 ;
     tempMdlSpecs.spec.skin_height  = 0.04 ;
-    tempMdlSpecs.spec.tac_height   = 0.03;
+    tempMdlSpecs.spec.tactile_height   = 0.03;
     tempMdlSpecs.spec.plane_height = 0.4 ;
-    tempMdlSpecs.spec.d_pos        = 0.0025 ;
-    tempMdlSpecs.spec.sens_rad     = 1.0 ;
-    tempMdlSpecs.spec.space_wid    = 4.0 ;
+    tempMdlSpecs.spec.skin_element_diameter        = 0.0025 ;
+    tempMdlSpecs.spec.tactile_length     = 1.0 ;
+    tempMdlSpecs.spec.tactile_separation    = 4.0 ;
     mdlSpecs.push_back( tempMdlSpecs ) ;
   }
 
@@ -87,6 +87,7 @@ int main(int argc, char** argv)
   }
   mdlYAMLEmitter << YAML::EndSeq;
 
+  std::cout<<"Saving model specs to file: "<<mdlSpecPath<<"\n";
   mdlOut << mdlYAMLEmitter.c_str();;
   mdlOut.close();
 
@@ -95,7 +96,7 @@ int main(int argc, char** argv)
   std::vector<ControllerSpec> ctrSpecs;
 
   // Write YAML files
-  std::string ctrSpecPath = pathString + "/skinsim_test/config/ctrSpecs.yaml";
+  std::string ctrSpecPath = pathString + "/experimenter/config/ctrSpecs.yaml";
 
   std::ofstream ctrOut(ctrSpecPath.c_str());
 
@@ -122,6 +123,7 @@ int main(int argc, char** argv)
   {
      ctrYAMLEmitter << ctrSpecs;
   }
+  std::cout<<"Saving ctr specs to file: "<<ctrSpecPath<<"\n";
   ctrYAMLEmitter << YAML::EndSeq;
 
   ctrOut << ctrYAMLEmitter.c_str();;

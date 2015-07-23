@@ -53,21 +53,22 @@ struct ModelSpec
 {
   // No of elements per side
   // do nothing if 0 use size_x and size_y
-  double xByX         ; // : 5.0 # 0.0
+  double xByX                  ; // : 5.0 # 0.0
 
-  double d_pos        ; // : 0.0025 #0.005
-  double density      ; // : 1.0
+  double thick_board           ;
+  double skin_element_diameter ; // : 0.0025 #0.005
+  double density               ; // : 1.0
 
-  double size_x       ; // : 0.0525
-  double size_y       ; // : 0.0525
+  double size_x                ; // : 0.0525
+  double size_y                ; // : 0.0525
 
-  double skin_height  ; // : 0.04
-  double tac_height   ; // : 0.03
+  double skin_height           ; // : 0.04
+  double tactile_height        ; // : 0.03
 
-  double plane_height ; // : 0.02
+  double plane_height          ; // : 0.02
 
-  double sens_rad     ; // : 1.0
-  double space_wid    ; // : 4.0
+  double tactile_length        ; // : 1.0
+  double tactile_separation    ; // : 4.0
 };
 
 struct BuildModelSpec
@@ -76,42 +77,68 @@ struct BuildModelSpec
   ModelSpec   spec;
 };
 
+void print(BuildModelSpec b)
+{
+	std::cout<<"Name                    : "<<b.name                        <<"\n";
+	std::cout<<" xByX                   : "<<b.spec.xByX                   <<"\n";
+	std::cout<<" height_board           : "<<b.spec.thick_board            <<"\n";
+	std::cout<<" skin_element_diameter  : "<<b.spec.skin_element_diameter  <<"\n";
+	std::cout<<" density                : "<<b.spec.density                <<"\n";
+	std::cout<<" size_x                 : "<<b.spec.size_x                 <<"\n";
+	std::cout<<" size_y                 : "<<b.spec.size_y                 <<"\n";
+	std::cout<<" skin_height            : "<<b.spec.skin_height            <<"\n";
+	std::cout<<" tactile_height         : "<<b.spec.tactile_height         <<"\n";
+	std::cout<<" plane_height           : "<<b.spec.plane_height           <<"\n";
+	std::cout<<" tactile_length         : "<<b.spec.tactile_length         <<"\n";
+	std::cout<<" tactile_separation     : "<<b.spec.tactile_separation     <<"\n";
+}
+
 void operator >> (const YAML::Node& node, ModelSpec& spec)
 {
-  node["xByX"        ] >> spec.xByX        ;
-  node["d_pos"       ] >> spec.d_pos       ;
-  node["density"     ] >> spec.density     ;
-  node["size_x"      ] >> spec.size_x      ;
-  node["size_y"      ] >> spec.size_y      ;
-  node["skin_height" ] >> spec.skin_height ;
-  node["tac_height"  ] >> spec.tac_height  ;
-  node["plane_height"] >> spec.plane_height;
-  node["sens_rad"    ] >> spec.sens_rad    ;
-  node["space_wid"   ] >> spec.space_wid   ;
+  spec.xByX   		          = node["xByX"                 ].as<double>() ;
+  spec.thick_board	          = node["thick_board"          ].as<double>() ;
+  spec.skin_element_diameter  = node["skin_element_diameter"].as<double>() ;
+  spec.density                = node["density"              ].as<double>() ;
+  spec.size_x                 = node["size_x"               ].as<double>() ;
+  spec.size_y                 = node["size_y"               ].as<double>() ;
+  spec.skin_height            = node["skin_height"          ].as<double>() ;
+  spec.tactile_height         = node["tactile_height"       ].as<double>() ;
+  spec.plane_height           = node["plane_height"         ].as<double>() ;
+  spec.tactile_length         = node["tactile_length"       ].as<double>() ;
+  spec.tactile_separation     = node["tactile_separation"   ].as<double>() ;
 }
 
 void operator >> (const YAML::Node& node, BuildModelSpec& buildModelSpec)
 {
-   node["name"] >> buildModelSpec.name;
-   const YAML::Node& specs = node["spec"];
-   ModelSpec spec;
-   specs[0] >> spec;
-   buildModelSpec.spec = spec;
+	try
+	{
+		buildModelSpec.name = node["name"].as<std::string>();
+
+		const YAML::Node& specs = node["spec"];
+		specs[0] >> buildModelSpec.spec ;
+	}
+	catch (const YAML::BadConversion& e)
+	{
+		std::cerr<<"Bad conversion from YAML::Node to BuildModelSpec\n";
+	}
+
+	//print(buildModelSpec);
 }
 
 YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
 {
     out << YAML::BeginMap;
-    out << YAML::Key << "xByX"        ; out << YAML::Value <<  spec.xByX        ;
-    out << YAML::Key << "d_pos"       ; out << YAML::Value <<  spec.d_pos       ;
-    out << YAML::Key << "density"     ; out << YAML::Value <<  spec.density     ;
-    out << YAML::Key << "size_x"      ; out << YAML::Value <<  spec.size_x      ;
-    out << YAML::Key << "size_y"      ; out << YAML::Value <<  spec.size_y      ;
-    out << YAML::Key << "skin_height" ; out << YAML::Value <<  spec.skin_height ;
-    out << YAML::Key << "tac_height"  ; out << YAML::Value <<  spec.tac_height  ;
-    out << YAML::Key << "plane_height"; out << YAML::Value <<  spec.plane_height;
-    out << YAML::Key << "sens_rad"    ; out << YAML::Value <<  spec.sens_rad    ;
-    out << YAML::Key << "space_wid"   ; out << YAML::Value <<  spec.space_wid   ;
+    out << YAML::Key << "xByX"                   ; out << YAML::Value <<  spec.xByX                  ;
+    out << YAML::Key << "thick_board"            ; out << YAML::Value <<  spec.thick_board           ;
+    out << YAML::Key << "skin_element_diameter"  ; out << YAML::Value <<  spec.skin_element_diameter ;
+    out << YAML::Key << "density"                ; out << YAML::Value <<  spec.density               ;
+    out << YAML::Key << "size_x"                 ; out << YAML::Value <<  spec.size_x                ;
+    out << YAML::Key << "size_y"                 ; out << YAML::Value <<  spec.size_y                ;
+    out << YAML::Key << "skin_height"            ; out << YAML::Value <<  spec.skin_height           ;
+    out << YAML::Key << "tactile_height"         ; out << YAML::Value <<  spec.tactile_height        ;
+    out << YAML::Key << "plane_height"           ; out << YAML::Value <<  spec.plane_height          ;
+    out << YAML::Key << "tactile_length"         ; out << YAML::Value <<  spec.tactile_length        ;
+    out << YAML::Key << "tactile_separation"     ; out << YAML::Value <<  spec.tactile_separation    ;
     out << YAML::EndMap;
     return out;
 }
