@@ -8,8 +8,8 @@
       density                      : 3.0					# Not used
       size_x                       : 0.0525				#	size of the skin element (xbyX * d_pos) in X direction
       size_y                       : 0.0525				#	size of the skin element (xbyX * d_pos) in Y direction
-      skin_height                  : 0.2					#	The height of the skin layer
+      skin_height                  : 0.01					#	The height of the skin layer
       tactile_height               : 0.05					# Not used
       plane_height                 : 0.001				#	The height of the white plane from the ground
-      tactile_length               : 1.0					# The radius of the sensors underneath the skin layer (for which skin layer is marked in red)
-      tactile_separation           : 5.0					# The space between each sensor underneath the skin layer (for which there are spaces between the rows and columns of skin elements)
+      tactile_length               : 0.1   				# The radius of the sensors underneath the skin layer (for which skin layer is marked in red)
+      tactile_separation           : 2.0					# The space between each sensor underneath the skin layer (for which there are spaces between the rows and columns of skin elements)

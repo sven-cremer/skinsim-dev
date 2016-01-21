@@ -1,0 +1,43 @@
+<?xml version='1.0'?>                                           
+<gazebo version='1.3'>                                          
+<world name='default'>                                          
+                                                                
+<include>                                                       
+  <uri>model://ground_plane</uri>                               
+</include>                                                      
+                                                                
+<include>                                                       
+  <uri>model://sun</uri>                                        
+</include>                                                      
+                                                                
+<include>                                                       
+  <uri>model://spring_array20</uri>                       
+</include>                                                      
+                                                                
+<physics type='ode'>                                            
+  <gravity>0.0 0.0 -9.8</gravity>                               
+  <ode>                                                         
+    <solver>                                                    
+      <iters>150</iters>                                        
+    </solver>                                                   
+    <constraints>                                               
+      <cfm>0.2</cfm>                                            
+    </constraints>                                              
+  </ode>                                                        
+</physics>                                                      
+                                                                
+                                                                
+<include>                                                       
+  <uri>model://box</uri>                                        
+  <pose>0 0 0.055 0 0 0</pose>                                  
+</include>                                                      
+                                                                
+<gui fullscreen='0'>                                            
+  <camera name='user_camera'>                                   
+    <pose>0.130675 -0.121126 0.095229 0 0.347643 2.35619</pose> 
+    <view_controller>orbit</view_controller>                    
+  </camera>                                                     
+</gui>                                                          
+                                                                
+</world>                                                        
+</gazebo>                                                       

@@ -71,7 +71,7 @@ public:
     fullname = fullname + std::string("/joint_names.yaml");
 
     sping_ = 122.24 ;
-    damper_ = 1.83   ;
+    damper_ = 1.83  ;
 
     input_file_.open(fullname.c_str());
 

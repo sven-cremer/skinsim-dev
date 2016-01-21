@@ -1,9 +1,10 @@
-- name: testSpec
-  explFctr_Kp: 0
-  explFctr_Ki: 0
-  explFctr_Kd: 0
-  impCtr_Xnom: 0
-  impCtr_K: 0
-  impCtr_D: 0
-  ctrType: 0
-  targetForce: 0
+-
+  - name: efc_00_00_00
+    explFctr_Kp: 2
+    explFctr_Ki: 5e-05
+    explFctr_Kd: 0.5
+    impCtr_Xnom: 0.5
+    impCtr_K: 24
+    impCtr_D: 10
+    ctrType: 1
+    targetForce: 0.01

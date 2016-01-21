@@ -18,7 +18,7 @@
   <gravity>0.0 0.0 0.0</gravity>
   <ode>
     <solver>
-      <iters>150</iters>
+      <iters>300</iters>
     </solver>
   </ode>
 </physics>

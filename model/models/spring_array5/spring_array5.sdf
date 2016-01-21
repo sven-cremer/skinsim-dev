@@ -1,0 +1,1210 @@
+<sdf version='1.5'>
+  <model name='spring_array5'>
+    <pose>0 0 0 0 -0 0</pose>
+    <link name='plane'>
+      <pose>0 0 0.4 0 -0 0</pose>
+      <inertial>
+        <mass>20</mass>
+      </inertial>
+      <collision name='collision'>
+        <geometry>
+          <box>
+            <size>0.01875 0.01875 0.00025</size>
+          </box>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>0.01875 0.01875 0.00025</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='plane_joint' type='prismatic'>
+      <parent>world</parent>
+      <child>plane</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>1e+16</lower>
+          <upper>-1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_1'>
+      <pose>-0.005 0.005 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_1' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_1</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_2'>
+      <pose>-0.0025 0.005 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_2' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_2</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_3'>
+      <pose>0 0.005 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_3' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_3</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_4'>
+      <pose>0.0025 0.005 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_4' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_4</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_5'>
+      <pose>0.005 0.005 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_5' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_5</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_6'>
+      <pose>-0.005 0.0025 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_6' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_6</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_7'>
+      <pose>-0.0025 0.0025 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_7' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_7</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_8'>
+      <pose>0 0.0025 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_8' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_8</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_9'>
+      <pose>0.0025 0.0025 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_9' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_9</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_10'>
+      <pose>0.005 0.0025 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_10' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_10</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_11'>
+      <pose>-0.005 0 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_11' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_11</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_12'>
+      <pose>-0.0025 0 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_12' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_12</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_13'>
+      <pose>0 0 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_13' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_13</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_14'>
+      <pose>0.0025 0 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_14' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_14</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_15'>
+      <pose>0.005 0 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_15' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_15</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_16'>
+      <pose>-0.005 -0.0025 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_16' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_16</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_17'>
+      <pose>-0.0025 -0.0025 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_17' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_17</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_18'>
+      <pose>0 -0.0025 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_18' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_18</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_19'>
+      <pose>0.0025 -0.0025 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_19' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_19</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_20'>
+      <pose>0.005 -0.0025 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_20' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_20</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_21'>
+      <pose>-0.005 -0.005 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_21' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_21</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_22'>
+      <pose>-0.0025 -0.005 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_22' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_22</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_23'>
+      <pose>0 -0.005 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_23' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_23</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_24'>
+      <pose>0.0025 -0.005 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_24' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_24</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <link name='spring_25'>
+      <pose>0.005 -0.005 0.04 0 -0 0</pose>
+      <inertial>
+        <mass>0.00235</mass>
+      </inertial>
+      <collision name='sphere_collision'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='visual'>
+        <geometry>
+          <sphere>
+            <radius>0.00125</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
+      </visual>
+    </link>
+    <joint name='spring_joint_25' type='prismatic'>
+      <parent>plane</parent>
+      <child>spring_25</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+        </limit>
+        <use_parent_model_frame>1</use_parent_model_frame>
+      </axis>
+    </joint>
+    <plugin name='skinsimTactileSensor' filename='libTactileSensorPlugin.so'>
+      <file_name>spring_array5</file_name>
+    </plugin>
+    <plugin name='skinsimSkinJoint' filename='libSkinJointPlugin.so'>
+      <file_name>spring_array5</file_name>
+    </plugin>
+    <plugin name='skinsimPlaneJoint' filename='libPlaneJoint.so'>
+      <file_name>spring_array5</file_name>
+    </plugin>
+  </model>
+</sdf>

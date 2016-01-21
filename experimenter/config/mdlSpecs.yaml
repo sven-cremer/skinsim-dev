@@ -1,228 +1,247 @@
 - name: spring_array5
   spec:
     - xByX: 5
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array10
   spec:
     - xByX: 10
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array15
   spec:
     - xByX: 15
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array20
   spec:
     - xByX: 20
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array25
   spec:
     - xByX: 25
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array30
   spec:
     - xByX: 30
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array35
   spec:
     - xByX: 35
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array40
   spec:
     - xByX: 40
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array45
   spec:
     - xByX: 45
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array50
   spec:
     - xByX: 50
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array55
   spec:
     - xByX: 55
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array60
   spec:
     - xByX: 60
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array65
   spec:
     - xByX: 65
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array70
   spec:
     - xByX: 70
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array75
   spec:
     - xByX: 75
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array80
   spec:
     - xByX: 80
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array85
   spec:
     - xByX: 85
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array90
   spec:
     - xByX: 90
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
 - name: spring_array95
   spec:
     - xByX: 95
-      d_pos: 0.0025
+      thick_board: 1.02271588689138e-321
+      skin_element_diameter: 0.0025
       density: 1
       size_x: 0.0525
       size_y: 0.0525
       skin_height: 0.04
-      tac_height: 0.03
+      tactile_height: 0.03
       plane_height: 0.4
-      sens_rad: 1
-      space_wid: 4
+      tactile_length: 1
+      tactile_separation: 4
