@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<sdf version='1.4'>
+    <model name='cylinder'>
+		<link name='link'>
+      <pose>0 0 0.5 0 -0 0</pose>
+      <inertial>
+        <mass>1</mass>
+        <inertia>
+          <ixx>0.145833</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.145833</iyy>
+          <iyz>0</iyz>
+          <izz>0</izz>
+        </inertia>
+      </inertial>
+      <collision name='collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+      </collision>
+      <visual name='visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+            <cylinder>
+              <radius>0.2</radius>
+              <length>1</length>
+            </cylinder>
+          </geometry>
+      </visual>
+      <velocity_decay>
+        <linear>0</linear>
+        <angular>0</angular>
+      </velocity_decay>
+    </link>
+			<joint name = "my_mass_joint" type="prismatic">
+        <parent>world</parent>
+          <child>link</child>
+          <axis>
+            <xyz>0 0 1</xyz>
+          </axis>
+      </joint>
+      <plugin name="mass_joint" filename="libMassJoint.so" />
+    </model>
+</sdf>
+

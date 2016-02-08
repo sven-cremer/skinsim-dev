@@ -15,7 +15,7 @@
 </include>
 
 <physics type="ode">
-  <gravity>0.0 0.0 0.0</gravity>
+  <gravity>0.0 0.0 -9.8</gravity>
   <ode>
     <solver>
       <iters>300</iters>
@@ -24,8 +24,8 @@
 </physics>
 
 <include>
-  <uri>model://robot_hand</uri>
-  <pose>0 0 2.8 0 0 -1.571</pose>
+  <uri>model://cylinder</uri>
+  <pose>0 0 2.8 0 0 0</pose>
 </include>
 
 </world>
