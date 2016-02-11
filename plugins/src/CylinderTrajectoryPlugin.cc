@@ -32,11 +32,13 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Sumit Kumar Das
+/*
+ * CylinderTrajectoryPlugin.cc
  *
- * SkinJointForceDistributionPlugin.cc
- *  Created on: Nov 11, 2015
+ *  Created on: Feb 10, 2016
+ *      Author: sumit
  */
+
 
 #include <fstream>
 #include <string>
@@ -52,46 +54,26 @@
 
 #include <boost/filesystem.hpp>
 
-#include "SkinSim/ModelPath.hh"
-
 namespace gazebo
 {
-	class SkinJointForceDistributionPlugin : public ModelPlugin
+	class CylinderTrajectoryPlugin : public ModelPlugin
 	{
-
 	public:
-
 		void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 		{
+			this->model_ 					= 	_model;
 
-			std::string fullname;
-
-			getModelConfigPath( fullname, _sdf );
-
-			fullname 				    = 	fullname + std::string("/joint_names.yaml");
-
-			sping_ 					    = 	12.24 ;
-			damper_ 				    = 	2.83  ;
-
-			input_file_.open(fullname.c_str());
-
-			std::cout<<"Loading file: "<<fullname<<"\n";
-			YAML::Node doc;
-			doc 						= 	YAML::LoadAll(input_file_);
-			for(std::size_t i=0;i<doc[0].size();i++)
-			{
-				this->joint_names_.push_back("spring_" + doc[0][i]["Joint"].as<std::string>());						// FIXME overwrites previous data
-//				std::cout << this->joint_names_[i]<< std::endl;
-			}
-
-			input_file_.close();
-
-			this->model_ 				= 	_model;
-
-			// get pointers to joints from Gazebo
 			this->joints_.resize(this->model_->GetJointCount());
-			this->joints_ 				= 	this->model_->GetJoints();
+			this->joints_ 					= 	this->model_->GetJoints();
 
+
+			//Initialize Joint Control
+			this->jt						=	new physics::JointController(this->model_);
+			this->joints_[0]->SetEffortLimit(0,-100);
+			this->jt->AddJoint(this->joints_[0]);
+			joints 							= 	this->jt->GetJoints();
+
+			std::cout<<joints.begin()->first<<std::endl	;
 
 			// Create a new transport node
 			transport::NodePtr node(new transport::Node());
@@ -99,55 +81,47 @@ namespace gazebo
 			// Initialize the node with the Model name
 			node->Init(model_->GetName());
 
-			this->update_connection_ 	= 	event::Events::ConnectWorldUpdateBegin(boost::bind(&SkinJointForceDistributionPlugin::UpdateJoint, this));
-		}
+			this->jt->SetJointPosition(this->joints.begin()->first, 20);
 
+			this->update_connection_ 	= 	event::Events::ConnectWorldUpdateBegin(boost::bind(&CylinderTrajectoryPlugin::UpdateJoint, this));
+		}
 	public:
-		void OnUpdate()
-		{
-		}
-
-		void UpdateJoint()
-		{
-			double rest_angle 		 	= 	0;
-
-			double current_angle 		= 	0;
-			double current_force 	 	= 	0;
-			double current_velocity  	= 	0;
-			double sens_force 			= 	0;
-
-			double current_time 		= 	this->model_->GetWorld()->GetSimTime().Double();
-
-			for (unsigned int i = 0; i < this->joints_.size(); ++i)
+			void OnUpdate()
 			{
-					current_angle 	        = 	this->joints_[i]->GetAngle(0).Radian();
-					current_velocity 	    = 	this->joints_[i]->GetVelocity(0);
-
-					// This sets the mass-spring-damper dynamics, currently only spring and damper
-					this->joints_[i]->SetForce(0, ((rest_angle - current_angle) * sping_) - (damper_ * current_velocity));
 			}
 
-		}
+			void UpdateJoint()
+			{
+				this->joints_[0]->SetForce(0,-10);
+				this->joint_forces			= 	this->jt->GetVelocities();
+				std::cout<<this->joint_forces.size()<<std::endl;
+
+//				if (position > .01)
+//				{
+//					this->jt->SetJointPosition(this->joints.begin()->second, position);
+//					joint_forces			= 	this->jt->GetPositions();
+//					//std::cout<<joint_forces.size()<<std::endl;
+//					position = position - .01;
+//				}
+//				else
+//				{
+//					this->jt->SetJointPosition(this->joints.begin()->second, position);
+//					std::cout<<position<<std::endl;
+//				}
+//				std::cout<<joint_forces.begin()->first<<std::endl;
+			}
 
 	private:
+		physics::JointController *jt;
+		std::map<std::string, physics::JointPtr> joints;
+		std::map<std::string, double> joint_forces;
 
-		std::vector<std::string> joint_names_;
-
+		double position = 5.00;
 		physics::Joint_V joints_;
-
 		physics::ModelPtr model_;
 		event::ConnectionPtr update_connection_;
-
-		YAML::Node    doc_;
-		std::ifstream input_file_;
-
-		// Parameters
-		double sping_;
-		double damper_;
-
 	};
 
-// Register this plugin with the simulator
-GZ_REGISTER_MODEL_PLUGIN (SkinJointForceDistributionPlugin)
-
+	// Register this plugin with the simulator
+	GZ_REGISTER_MODEL_PLUGIN (CylinderTrajectoryPlugin)
 }
