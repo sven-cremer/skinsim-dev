@@ -3,9 +3,9 @@
 <sdf version='1.4'>
     <model name='cylinder'>
 		<link name='link'>
-	      <pose>0 0 0.5 0 0 0</pose>
+	      <pose>10 0 0.5 0 0 0</pose>
 	      <inertial>
-              <mass>2</mass>
+              <mass>1</mass>
         	  <inertia>
 		          <ixx>0.145833</ixx>
 		          <ixy>0</ixy>

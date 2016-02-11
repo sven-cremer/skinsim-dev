@@ -68,12 +68,12 @@ namespace gazebo
 
 
 			//Initialize Joint Control
-			this->jt						=	new physics::JointController(this->model_);
-			this->joints_[0]->SetEffortLimit(0,-100);
-			this->jt->AddJoint(this->joints_[0]);
-			joints 							= 	this->jt->GetJoints();
-
-			std::cout<<joints.begin()->first<<std::endl	;
+//			this->jt						=	new physics::Joint(this->joints_[0]);
+//			this->joints_[0]->SetEffortLimit(0,-100);
+//			this->jt->AddJoint(this->joints_[0]);
+//			joints 							= 	this->jt->GetJoints();
+//
+//			std::cout<<joints.begin()->first<<std::endl	;
 
 			// Create a new transport node
 			transport::NodePtr node(new transport::Node());
@@ -81,7 +81,7 @@ namespace gazebo
 			// Initialize the node with the Model name
 			node->Init(model_->GetName());
 
-			this->jt->SetJointPosition(this->joints.begin()->first, 20);
+//			this->jt->SetJointPosition(this->joints.begin()->first, 20);
 
 			this->update_connection_ 	= 	event::Events::ConnectWorldUpdateBegin(boost::bind(&CylinderTrajectoryPlugin::UpdateJoint, this));
 		}
@@ -92,31 +92,42 @@ namespace gazebo
 
 			void UpdateJoint()
 			{
-				this->joints_[0]->SetForce(0,-10);
-				this->joint_forces			= 	this->jt->GetVelocities();
-				std::cout<<this->joint_forces.size()<<std::endl;
-
-//				if (position > .01)
+//				this->joints_[0]->SetForce(0,-10);
+//				this->joint_forces			= 	this->jt->GetVelocities();
+//				std::cout<<this->joint_forces.size()<<std::endl;
+				this->bd2 = this->model_->GetLink("link")->GetWorldForce();
+				std::cout<<this->bd2.z<<std::endl;
+//				if (position >= 0)
 //				{
-//					this->jt->SetJointPosition(this->joints.begin()->second, position);
-//					joint_forces			= 	this->jt->GetPositions();
-//					//std::cout<<joint_forces.size()<<std::endl;
+//					this->joints_[0]->SetPosition(0,position);
+////					joint_forces			= 	this->jt->GetPositions();
+//					this->model_->GetLink("link")->SetForce(math::Vector3(0,0,1));
+//
+//					this->jtwr = this->joints_[0]->GetForceTorque(2);
+//					this->bd2 = this->model_->GetLink("link")->GetWorldForce();
+//					std::cout<<this->bd2.z<<std::endl;
 //					position = position - .01;
 //				}
 //				else
 //				{
-//					this->jt->SetJointPosition(this->joints.begin()->second, position);
-//					std::cout<<position<<std::endl;
+//					this->bd2 = this->model_->GetLink("link")->GetWorldForce();
+//					std::cout<<this->bd2.z<<std::endl;
+//					//this->joints_[0]->SetPosition(0, position);
+////					std::cout<<position<<std::endl;
 //				}
 //				std::cout<<joint_forces.begin()->first<<std::endl;
 			}
 
 	private:
-		physics::JointController *jt;
+		physics::Joint *jt;
+		physics::JointWrench jtwr;
+		math::Vector3 bd2;
+
+
 		std::map<std::string, physics::JointPtr> joints;
 		std::map<std::string, double> joint_forces;
 
-		double position = 5.00;
+		double position = 10.00;
 		physics::Joint_V joints_;
 		physics::ModelPtr model_;
 		event::ConnectionPtr update_connection_;
