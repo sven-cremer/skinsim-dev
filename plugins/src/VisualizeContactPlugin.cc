@@ -69,23 +69,104 @@
 
 #include <boost/filesystem.hpp>
 
+#include <string>
+
+#include <gazebo/gazebo.hh>
+#include <gazebo/sensors/sensors.hh>
+#include <gazebo/rendering/rendering.hh>
+
 #include "SkinSim/ModelPath.hh"
 
 namespace gazebo
 {
-	class VisualizeContactPlugin : public ModelPlugin
+	class VisualizeContactPlugin : public SensorPlugin
 	{
 	public:
 
-		void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
-		{
-			std::cout<<"done"<<std::endl;
-		}
+		/// \brief Constructor.
+		public: VisualizeContactPlugin();
+
+		/// \brief Destructor.
+		public: virtual ~VisualizeContactPlugin();
+
+		/// \brief Load the sensor plugin.
+		/// \param[in] _sensor Pointer to the sensor that loaded this plugin.
+		/// \param[in] _sdf SDF element that describes the plugin.
+		public: virtual void Load(sensors::SensorPtr _sensor, sdf::ElementPtr _sdf);
+
+		/// \brief Callback that receives the contact sensor's update signal.
+		private: virtual void OnUpdate();
+
+		/// \brief Pointer to the contact sensor
+		private: sensors::ContactSensorPtr parentSensor;
+
+		/// \brief Connection that maintains a link between the contact sensor's
+		/// updated signal and the OnUpdate callback.
+		private: event::ConnectionPtr updateConnection;
+
+		private: transport::NodePtr node;
 
 
 	};
+
+	VisualizeContactPlugin::VisualizeContactPlugin() : SensorPlugin()
+	{
+	}
+
+	VisualizeContactPlugin::~VisualizeContactPlugin()
+	{
+	}
+
+	void VisualizeContactPlugin::Load(sensors::SensorPtr _sensor, sdf::ElementPtr /*_sdf*/)
+	{
+	  // Get the parent sensor.
+	  this->parentSensor =
+	    boost::dynamic_pointer_cast<sensors::ContactSensor>(_sensor);
+
+	  // Make sure the parent sensor is valid.
+	  if (!this->parentSensor)
+	  {
+	    gzerr << "ContactPlugin requires a ContactSensor.\n";
+	    return;
+	  }
+
+	  // Connect to the sensor update event.
+	  this->updateConnection = this->parentSensor->ConnectUpdated(
+	      boost::bind(&VisualizeContactPlugin::OnUpdate, this));
+
+	  // Make sure the parent sensor is active.
+	  this->parentSensor->SetActive(true);
+	}
+
+	void VisualizeContactPlugin::OnUpdate()
+	{
+	  // Get all the contacts.
+	  msgs::Contacts contacts;
+	  contacts = this->parentSensor->GetContacts();
+
+//	  for (unsigned int i = 0; i < contacts.contact_size(); ++i)
+//	  {
+
+//	    std::cout << "Collision between[" << contacts.contact(i).collision1()
+//	              << "] and [" << contacts.contact(i).collision2() << "]\n";
+
+//	    for (unsigned int j = 0; j < contacts.contact(i).position_size(); ++j)
+//	    {
+//	      std::cout << j << "  Position:"
+//	                << contacts.contact(i).position(j).x() << " "
+//	                << contacts.contact(i).position(j).y() << " "
+//	                << contacts.contact(i).position(j).z() << "\n";
+//	      std::cout << "   Normal:"
+//	                << contacts.contact(i).normal(j).x() << " "
+//	                << contacts.contact(i).normal(j).y() << " "
+//	                << contacts.contact(i).normal(j).z() << "\n";
+//	      std::cout << "   Depth:" << contacts.contact(i).depth(j) << "\n";
+//	    }
+//	  }
+	}
+
 	// Register this plugin with the simulator
-	GZ_REGISTER_MODEL_PLUGIN (VisualizeContactPlugin)
+	GZ_REGISTER_SENSOR_PLUGIN (VisualizeContactPlugin)
 }
 
 

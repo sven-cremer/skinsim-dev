@@ -82,7 +82,7 @@ namespace gazebo
 			node->Init(model_->GetName());
 
 //			this->jt->SetJointPosition(this->joints.begin()->first, 20);
-
+			this->joints_[0]->SetPosition(0,position);
 			this->update_connection_ 	= 	event::Events::ConnectWorldUpdateBegin(boost::bind(&CylinderTrajectoryPlugin::UpdateJoint, this));
 		}
 	public:
@@ -95,8 +95,8 @@ namespace gazebo
 //				this->joints_[0]->SetForce(0,-10);
 //				this->joint_forces			= 	this->jt->GetVelocities();
 //				std::cout<<this->joint_forces.size()<<std::endl;
-				this->bd2 = this->model_->GetLink("link")->GetWorldForce();
-				std::cout<<this->bd2.z<<std::endl;
+				this->bd2 = this->model_->GetLink("cylinder_link")->GetWorldForce();
+//				std::cout<<this->bd2.z << "/n ----- /n"<<std::endl;
 //				if (position >= 0)
 //				{
 //					this->joints_[0]->SetPosition(0,position);
@@ -127,7 +127,7 @@ namespace gazebo
 		std::map<std::string, physics::JointPtr> joints;
 		std::map<std::string, double> joint_forces;
 
-		double position = 10.00;
+		double position = 2.00;
 		physics::Joint_V joints_;
 		physics::ModelPtr model_;
 		event::ConnectionPtr update_connection_;

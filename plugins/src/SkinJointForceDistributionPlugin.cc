@@ -70,8 +70,8 @@ namespace gazebo
 
 			fullname 				    = 	fullname + std::string("/joint_names.yaml");
 
-			sping_ 					    = 	12.24 ;
-			damper_ 				    = 	2.83  ;
+			sping_ 					    = 	1.24 ;
+			damper_ 				    = 	1.83  ;
 
 			input_file_.open(fullname.c_str());
 
