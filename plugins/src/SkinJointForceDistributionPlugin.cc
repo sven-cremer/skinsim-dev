@@ -92,7 +92,6 @@ namespace gazebo
 			this->joints_.resize(this->model_->GetJointCount());
 			this->joints_ 				= 	this->model_->GetJoints();
 
-
 			// Create a new transport node
 			transport::NodePtr node(new transport::Node());
 
@@ -115,18 +114,40 @@ namespace gazebo
 			double current_force 	 	= 	0;
 			double current_velocity  	= 	0;
 			double sens_force 			= 	0;
+			int    counter_spring 		=	0;
 
 			double current_time 		= 	this->model_->GetWorld()->GetSimTime().Double();
-
+			if (this->start)
+			{
+				this->initState.resize(this->joints_.size());
+				for (unsigned int i = 0; i < this->joints_.size(); ++i)
+				{
+					this->initState[i]        	= 	this->joints_[i]->GetAngle(0).Radian();
+				}
+				this->start = false;
+			}
 			for (unsigned int i = 0; i < this->joints_.size(); ++i)
 			{
 					current_angle 	        = 	this->joints_[i]->GetAngle(0).Radian();
 					current_velocity 	    = 	this->joints_[i]->GetVelocity(0);
-
+					if (this->joints_[i]->GetName() != "plane_joint")
+					{
+						if (fabs(this->initState[i] - current_angle) > .02)
+						{
+							counter_spring += 1;
+							std::cout<<1;
+						}
+						else
+						{
+							std::cout<<0;
+						}
+						if (i % 15 == 0)
+							std::cout<<std::endl;
+					}
 					// This sets the mass-spring-damper dynamics, currently only spring and damper
 					this->joints_[i]->SetForce(0, ((rest_angle - current_angle) * sping_) - (damper_ * current_velocity));
 			}
-
+			std::cout<<std::endl<<std::endl;
 		}
 
 	private:
@@ -144,6 +165,8 @@ namespace gazebo
 		// Parameters
 		double sping_;
 		double damper_;
+		std::vector<double> initState;
+		bool start = true;
 
 	};
 

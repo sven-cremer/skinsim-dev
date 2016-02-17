@@ -127,7 +127,7 @@ namespace gazebo
 		std::map<std::string, physics::JointPtr> joints;
 		std::map<std::string, double> joint_forces;
 
-		double position = 2.00;
+		double position = 5.00;
 		physics::Joint_V joints_;
 		physics::ModelPtr model_;
 		event::ConnectionPtr update_connection_;
