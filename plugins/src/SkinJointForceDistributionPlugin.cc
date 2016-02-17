@@ -65,32 +65,25 @@ namespace gazebo
 		{
 
 			std::string fullname;
-
 			getModelConfigPath( fullname, _sdf );
-
-			fullname 				    = 	fullname + std::string("/joint_names.yaml");
-
-			sping_ 					    = 	1.24 ;
-			damper_ 				    = 	1.83  ;
-
+			fullname 				    	=	fullname + std::string("/joint_names.yaml");
 			input_file_.open(fullname.c_str());
 
+			// Open the yaml file to get joint names
 			std::cout<<"Loading file: "<<fullname<<"\n";
 			YAML::Node doc;
-			doc 						= 	YAML::LoadAll(input_file_);
+			doc 							= 	YAML::LoadAll(input_file_);
 			for(std::size_t i=0;i<doc[0].size();i++)
 			{
 				this->joint_names_.push_back("spring_" + doc[0][i]["Joint"].as<std::string>());						// FIXME overwrites previous data
-//				std::cout << this->joint_names_[i]<< std::endl;
 			}
-
 			input_file_.close();
 
-			this->model_ 				= 	_model;
 
 			// get pointers to joints from Gazebo
+			this->model_ 					= 	_model;
 			this->joints_.resize(this->model_->GetJointCount());
-			this->joints_ 				= 	this->model_->GetJoints();
+			this->joints_ 					= 	this->model_->GetJoints();
 
 			// Create a new transport node
 			transport::NodePtr node(new transport::Node());
@@ -98,7 +91,8 @@ namespace gazebo
 			// Initialize the node with the Model name
 			node->Init(model_->GetName());
 
-			this->update_connection_ 	= 	event::Events::ConnectWorldUpdateBegin(boost::bind(&SkinJointForceDistributionPlugin::UpdateJoint, this));
+			// Define Callback function
+			this->update_connection_ 		= 	event::Events::ConnectWorldUpdateBegin(boost::bind(&SkinJointForceDistributionPlugin::UpdateJoint, this));
 		}
 
 	public:
@@ -108,44 +102,49 @@ namespace gazebo
 
 		void UpdateJoint()
 		{
-			double rest_angle 		 	= 	0;
+			double rest_angle 		 		= 	0;
+			double current_angle 			= 	0;
+			double current_force 	 		= 	0;
+			double current_velocity  		= 	0;
+			double sens_force 				= 	0;
+			int    counter_spring 			=	0;
 
-			double current_angle 		= 	0;
-			double current_force 	 	= 	0;
-			double current_velocity  	= 	0;
-			double sens_force 			= 	0;
-			int    counter_spring 		=	0;
+			this->spring_ 					=	1.24 ;
+			this->damper_ 				    =	1.83  ;
 
-			double current_time 		= 	this->model_->GetWorld()->GetSimTime().Double();
+			double current_time 			= 	this->model_->GetWorld()->GetSimTime().Double();
 			if (this->start)
 			{
 				this->initState.resize(this->joints_.size());
 				for (unsigned int i = 0; i < this->joints_.size(); ++i)
 				{
-					this->initState[i]        	= 	this->joints_[i]->GetAngle(0).Radian();
+					this->initState[i]   	= 	this->joints_[i]->GetAngle(0).Radian();
 				}
 				this->start = false;
 			}
 			for (unsigned int i = 0; i < this->joints_.size(); ++i)
 			{
-					current_angle 	        = 	this->joints_[i]->GetAngle(0).Radian();
-					current_velocity 	    = 	this->joints_[i]->GetVelocity(0);
-					if (this->joints_[i]->GetName() != "plane_joint")
+				current_angle 	        = 	this->joints_[i]->GetAngle(0).Radian();
+				current_velocity 	    = 	this->joints_[i]->GetVelocity(0);
+				if (this->joints_[i]->GetName() != "plane_joint")
+				{
+					if (fabs(this->initState[i] - current_angle) > .02)
 					{
-						if (fabs(this->initState[i] - current_angle) > .02)
-						{
-							counter_spring += 1;
-							std::cout<<1;
-						}
-						else
-						{
-							std::cout<<0;
-						}
-						if (i % 15 == 0)
-							std::cout<<std::endl;
+//						counter_spring 	+= 	1;
+//						std::cout<<1<< " ";
+						std::cout<<round(this->joints_[i]->GetForce(0) * 100)<< " ";
 					}
-					// This sets the mass-spring-damper dynamics, currently only spring and damper
-					this->joints_[i]->SetForce(0, ((rest_angle - current_angle) * sping_) - (damper_ * current_velocity));
+					else
+					{
+//						std::cout<<0<< " ";
+						std::cout<<round(this->joints_[i]->GetForce(0)* 100)<< " ";
+					}
+					if (i % 15 == 0)
+						std::cout<<std::endl;
+				}
+
+				// This sets the mass-spring-damper dynamics, currently only spring and damper
+				this->joints_[i]->SetForce(0, ((rest_angle - current_angle) * spring_) - (damper_ * current_velocity));
 			}
 			std::cout<<std::endl<<std::endl;
 		}
@@ -153,17 +152,14 @@ namespace gazebo
 	private:
 
 		std::vector<std::string> joint_names_;
-
 		physics::Joint_V joints_;
-
 		physics::ModelPtr model_;
 		event::ConnectionPtr update_connection_;
-
 		YAML::Node    doc_;
 		std::ifstream input_file_;
 
 		// Parameters
-		double sping_;
+		double spring_;
 		double damper_;
 		std::vector<double> initState;
 		bool start = true;
