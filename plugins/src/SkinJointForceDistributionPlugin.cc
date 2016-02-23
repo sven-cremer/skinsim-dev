@@ -39,6 +39,7 @@
  */
 
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -66,13 +67,14 @@ namespace gazebo
 
 			std::string fullname;
 			getModelConfigPath( fullname, _sdf );
-			fullname 				    	=	fullname + std::string("/joint_names.yaml");
+			this->out_path 					    =	fullname;
+			fullname 				    	    =	fullname + std::string("/joint_names.yaml");
 			input_file_.open(fullname.c_str());
 
 			// Open the yaml file to get joint names
 			std::cout<<"Loading file: "<<fullname<<"\n";
 			YAML::Node doc;
-			doc 							= 	YAML::LoadAll(input_file_);
+			doc 								= 	YAML::LoadAll(input_file_);
 			for(std::size_t i=0;i<doc[0].size();i++)
 			{
 				this->joint_names_.push_back("spring_" + doc[0][i]["Joint"].as<std::string>());						// FIXME overwrites previous data
@@ -81,18 +83,21 @@ namespace gazebo
 
 
 			// get pointers to joints from Gazebo
-			this->model_ 					= 	_model;
+			this->model_ 						= 	_model;
 			this->joints_.resize(this->model_->GetJointCount());
-			this->joints_ 					= 	this->model_->GetJoints();
+			this->joints_ 						= 	this->model_->GetJoints();
+
 
 			// Create a new transport node
 			transport::NodePtr node(new transport::Node());
 
 			// Initialize the node with the Model name
 			node->Init(model_->GetName());
+			this->start 						=	true;
+			this->first_collison 				=	true;
 
 			// Define Callback function
-			this->update_connection_ 		= 	event::Events::ConnectWorldUpdateBegin(boost::bind(&SkinJointForceDistributionPlugin::UpdateJoint, this));
+			this->update_connection_ 			= 	event::Events::ConnectWorldUpdateBegin(boost::bind(&SkinJointForceDistributionPlugin::UpdateJoint, this));
 		}
 
 	public:
@@ -100,53 +105,134 @@ namespace gazebo
 		{
 		}
 
+		void GetCollisionBoundary()
+		{
+			int counter 						=	0;
+			this->collision_x 					=	0;
+			this->collision_y 					=	0;
+			double x_max 						=	-9999;
+			double x_min 						=	9999;
+			double y_max 						=	-9999;
+			double y_min 						=	9999;
+			double deform_max 					=	-9999;
+			for (unsigned int i = 0; i < this->joints_.size(); ++i)
+			{
+				if (fabs(this->initState[i] - this->joints_[i]->GetAngle(0).Radian()) > .02)
+				{
+					this->collision_x 			+=	this->joints_[i]->GetWorldPose().pos.x;
+					this->collision_y 			+=	this->joints_[i]->GetWorldPose().pos.y;
+					counter 					+=	1;
+
+					if (this->joints_[i]->GetWorldPose().pos.x > x_max)
+						x_max 					=	this->joints_[i]->GetWorldPose().pos.x;
+					if (this->joints_[i]->GetWorldPose().pos.x < x_min)
+						x_min 					=	this->joints_[i]->GetWorldPose().pos.x;
+					if (this->joints_[i]->GetWorldPose().pos.y > y_max)
+						y_max 					=	this->joints_[i]->GetWorldPose().pos.y;
+					if (this->joints_[i]->GetWorldPose().pos.y < y_min)
+						y_min 					=	this->joints_[i]->GetWorldPose().pos.y;
+					if ((fabs(this->initState[i] - this->joints_[i]->GetAngle(0).Radian())) > deform_max)
+						deform_max 				=	(fabs(this->initState[i] - this->joints_[i]->GetAngle(0).Radian()));
+				}
+			}
+			this->collision_x 					=	round(this->collision_x/counter);
+			this->collision_y 					=	round(this->collision_x/counter);
+			this->collision_rad 				=	((x_max - x_min) + (y_max + y_min)) / 2;
+			this->collision_force 				= 	deform_max*this->spring_;
+
+			std::cout <<  this->collision_x << "	"<< this->collision_y<< "	" <<this->collision_rad << "	"<< this->collision_force<<std::endl;
+		}
+
 		void UpdateJoint()
 		{
-			double rest_angle 		 		= 	0;
-			double current_angle 			= 	0;
-			double current_force 	 		= 	0;
-			double current_velocity  		= 	0;
-			double sens_force 				= 	0;
-			int    counter_spring 			=	0;
+			double rest_angle 		 		    = 	0;
+			double max_vel 						=	0;
+			double current_angle 			    = 	0;
+			double current_force 	 		    = 	0;
+			double current_velocity  		    = 	0;
+			double sens_force 				    = 	0;
+			int    counter_spring 			    =	0;
+			std::string data_path 			    =	this->out_path + std::string("/data.csv");
 
-			this->spring_ 					=	1.24 ;
-			this->damper_ 				    =	1.83  ;
+			this->spring_ 					    =	1.24 ;
+			this->damper_ 				        =	1.23  ;
 
-			double current_time 			= 	this->model_->GetWorld()->GetSimTime().Double();
+			double current_time 			    = 	this->model_->GetWorld()->GetSimTime().Double();
+			this->out_datafile.open (data_path.c_str(), std::ios::out | std::ios::ate | std::ios::app | std::ios::binary) ;
+
+			// Initialization step for the very first world-itiration
 			if (this->start)
 			{
 				this->initState.resize(this->joints_.size());
 				for (unsigned int i = 0; i < this->joints_.size(); ++i)
 				{
-					this->initState[i]   	= 	this->joints_[i]->GetAngle(0).Radian();
+					this->initState[i]   		= 	this->joints_[i]->GetAngle(0).Radian();
+					this->out_datafile << this->joints_[i]->GetAngle(0).Radian() << " , ";
 				}
 				this->start = false;
+				this->out_datafile << std::endl;
 			}
+
 			for (unsigned int i = 0; i < this->joints_.size(); ++i)
 			{
-				current_angle 	        = 	this->joints_[i]->GetAngle(0).Radian();
-				current_velocity 	    = 	this->joints_[i]->GetVelocity(0);
-				if (this->joints_[i]->GetName() != "plane_joint")
+				if(fabs(max_vel) < fabs(this->joints_[i]->GetVelocity(0)))
+					max_vel 					=	this->joints_[i]->GetVelocity(0);
+			}
+
+			this->out_datafile << " "<< " , ";
+			for (unsigned int i = 0; i < this->joints_.size(); ++i)
+			{
+				current_angle 	        	    = 	this->joints_[i]->GetAngle(0).Radian();
+				current_velocity 	    	    = 	this->joints_[i]->GetVelocity(0);
+			    math::Pose loc 		 		    =	this->joints_[i]->GetWorldPose();
+			    this->force_ 					=	((rest_angle - current_angle) * spring_) - (damper_ * current_velocity);
+
+			    if (this->joints_[i]->GetName() != "plane_joint")
 				{
 					if (fabs(this->initState[i] - current_angle) > .02)
 					{
-//						counter_spring 	+= 	1;
+						if(this->first_collison)
+						{
+							GetCollisionBoundary();
+							this->first_collison=	false;
+						}
+
+						this->joints_[i]->SetForce(0, this->force_);
+						this->out_datafile << this->force_<< " , ";
+
+//						counter_spring 			+= 	1;
 //						std::cout<<1<< " ";
-						std::cout<<round(this->joints_[i]->GetForce(0) * 100)<< " ";
+//						std::cout<<round(this->joints_[i]->GetForce(0) * 10)<< " ";
+//						std::cout<<round(loc.pos.y)<< " ";
+					}
+					else if ( ! this->first_collison)
+					{
+						double a				=	this->collision_force - (damper_*max_vel);
+						double c 				=	1;
+						double b				=	pow((loc.pos.x - this->collision_x),2) + pow((loc.pos.y - this->collision_y),2);
+						double exp_force 		= 	-(a*exp(-b/(pow(c,2))));
+						this->joints_[i]->SetForce(0, exp_force);
+						this->out_datafile << exp_force<< " , ";
+//						std::cout<<0<< " ";
+//						std::cout<<round(this->joints_[i]->GetForce(0)* 10)<< " ";
+//						std::cout<<round(loc.pos.y)<< " ";
 					}
 					else
 					{
-//						std::cout<<0<< " ";
-						std::cout<<round(this->joints_[i]->GetForce(0)* 100)<< " ";
+						this->joints_[i]->SetForce(0, this->force_);
+						this->out_datafile << this->force_<< " , ";
 					}
-					if (i % 15 == 0)
-						std::cout<<std::endl;
-				}
+//					if (i % 15 == 0)
+//						std::cout<<std::endl;
 
-				// This sets the mass-spring-damper dynamics, currently only spring and damper
-				this->joints_[i]->SetForce(0, ((rest_angle - current_angle) * spring_) - (damper_ * current_velocity));
+
+					// This sets the mass-spring-damper dynamics, currently only spring and damper
+				}
 			}
-			std::cout<<std::endl<<std::endl;
+
+//			std::cout<<std::endl<<std::endl;
+			this->out_datafile << std::endl;
+			this->out_datafile.close();
 		}
 
 	private:
@@ -157,12 +243,22 @@ namespace gazebo
 		event::ConnectionPtr update_connection_;
 		YAML::Node    doc_;
 		std::ifstream input_file_;
+		std::ofstream out_datafile;
+		std::string out_path;
 
-		// Parameters
+		// Joint Parameters
 		double spring_;
 		double damper_;
+		double force_;
 		std::vector<double> initState;
-		bool start = true;
+		bool start;
+		bool first_collison;
+
+		// Collision Parameters
+		double collision_x;
+		double collision_y;
+		double collision_rad;
+		double collision_force;
 
 	};
 
