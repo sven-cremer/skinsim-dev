@@ -61,7 +61,7 @@ private:
   void generateSDFHeader()
   {
     m_sdfStream << "<?xml version='1.0' ?>\n"
-                << "<sdf version='1.4'>\n";;
+                << "<sdf version='1.4'>\n";
   }
 
   void generateModelEnd()
@@ -155,7 +155,21 @@ public:
                 << "              <mu2>0.0</mu2>\n"
                 << "            </ode>\n"
                 << "          </friction>\n"
-                << "        </surface>\n";
+				<< "		  <bounce>\n"
+				<< "        	<restitution_coefficient>0</restitution_coefficient>\n"
+				<< "       		<threshold>0</threshold>\n"
+				<< "	     </bounce>\n"
+				<< "   	     <contact>\n"
+				<< "       		<ode>\n"
+				<< "		   		<soft_cfm>0.2</soft_cfm>\n"
+				<< "       	   		<soft_erp>0.200000</soft_erp>\n"
+				<< "       	   		<kp>1.2</kp>\n"
+				<< "       	   		<kd>5000000000000000.000000</kd>\n"
+				<< "      	   		<max_vel>0.01</max_vel>\n"
+				<< "       	   		<min_depth>0</min_depth>\n"
+				<< "       	 	</ode>\n"
+				<< "   	     </contact>\n"
+    			<< "       </surface>\n";
   }
 
   void addMaterial( Eigen::Vector4d & ambient ,
@@ -174,6 +188,7 @@ public:
   void addCollision( std::string collision_name,  double radius )
   {
     m_sdfStream << "    <collision name='" + collision_name + "'>\n";
+    m_sdfStream << "		<pose>0.000000 0.000000 0.0 0.000000 -0.000000 0.000000</pose>\n";
                 addGeometry( radius );
                 addSurface();
     m_sdfStream << "    </collision>\n";
@@ -182,6 +197,7 @@ public:
   void addCollision( std::string collision_name, Eigen::Vector3d & box_size )
   {
     m_sdfStream << "    <collision name='" + collision_name + "'>\n";
+    m_sdfStream << "		<pose>0.000000 0.000000 0.0 0.000000 -0.000000 0.000000</pose>\n";
                 addGeometry( box_size );
                 addSurface();
     m_sdfStream << "    </collision>\n";
@@ -238,6 +254,8 @@ public:
                  Eigen::Vector4d & emissive  )
   {
     m_sdfStream << "  <link name='" + link_name + "'>\n"
+    			<< "	<self_collide>0</self_collide>\n"
+    			<< "    <gravity>0</gravity>\n"
                 << "    <pose>"<< pose.transpose() << "</pose>\n";
 
                 addInertia( mass );
@@ -248,7 +266,6 @@ public:
                            diffuse ,
                            specular,
                            emissive );
-
     m_sdfStream << "   </link>\n";
   }
 
@@ -264,6 +281,8 @@ public:
                  Eigen::Vector4d & emissive  )
   {
     m_sdfStream << "  <link name='" + link_name + "'>\n"
+    			<< "	<self_collide>0</self_collide>\n"
+    			<< "    <gravity>0</gravity>\n"
                 << "    <pose>"<< pose.transpose() << "</pose>\n";
 
                 addInertia( mass );
@@ -274,7 +293,6 @@ public:
                            diffuse ,
                            specular,
                            emissive );
-
     m_sdfStream << "   </link>\n";
   }
 
@@ -290,8 +308,10 @@ public:
                 << "      <axis>\n"
                 << "        <xyz>" << axis.transpose() << "</xyz>\n"
                 << "        <limit>\n"
-                << "          <lower>" << -1e+16 << "</lower>\n"
-                << "          <upper>" <<  1e+16 << "</upper>\n"
+                << "          <lower>" << -5 << "</lower>\n"
+                << "          <upper>" <<  5 << "</upper>\n"
+				<< " 		  <effort>"<<0.000000<<"</effort>\n"
+				<< "          <velocity>"<<4.000000<<"</velocity>\n"
                 << "        </limit>\n"
                 << "      </axis>\n"
                 << "  </joint>\n";
@@ -556,8 +576,8 @@ public:
                    "world",
                    "plane",
                    axis,
-                   -1e+16,
-                   1e+16 );
+                   -5,
+                   5 );
 
     //environment is moving
     /*test.addPlaneJoint( "plane_joint",
@@ -729,7 +749,7 @@ public:
 
       addLink( "spring_" + convert.str(),
                0.00235,
-               "sphere_collision",
+               "sphere_collision_" + convert.str(),
                "visual",
                radius,
                pose,
