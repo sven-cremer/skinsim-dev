@@ -32,5 +32,11 @@ target_link_libraries(SkinJointPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES}
 add_library(SkinJointForceDistributionPlugin SHARED src/SkinJointForceDistributionPlugin.cc)
 target_link_libraries(SkinJointForceDistributionPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs )
 
+add_library(VisualizeContactPlugin SHARED src/VisualizeContactPlugin.cc)
+target_link_libraries(VisualizeContactPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs )
+
+add_library(CylinderTrajectoryPlugin SHARED src/CylinderTrajectoryPlugin.cc)
+target_link_libraries(CylinderTrajectoryPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs )
+
 #add_library(TactileSensorPlugin SHARED src/TactileSensorPlugin.cc)
 #target_link_libraries(TactileSensorPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs )
