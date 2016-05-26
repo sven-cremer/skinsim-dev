@@ -57,6 +57,9 @@ private:
   std::ostringstream m_sdfStream;
   sdf::SDF m_sdfParsed;
   std::string pathString;
+  double sizex;
+  double sizey;
+  double sizez;
 
   void generateSDFHeader()
   {
@@ -80,6 +83,9 @@ public:
   SkinSimModelBuilder( )
   {
     initSkinSimModelBuilder();
+    sizex 							=	0;
+	sizey 							=	0;
+	sizez 							=	0;
   }
 
   SkinSimModelBuilder(  std::string model_name                        ,
@@ -95,6 +101,9 @@ public:
                           double tactile_length                       ,
                           double tactile_separation                   )
   {
+	sizex 							=	size_x;
+	sizey 							=	size_y;
+	sizez 							=	thick_board;
     initSkinSimModelBuilder();
     createModelFiles( model_name                      ,
                       xByX                            ,
@@ -164,7 +173,7 @@ public:
 				<< "		   		<soft_cfm>0.2</soft_cfm>\n"
 				<< "       	   		<soft_erp>0.200000</soft_erp>\n"
 				<< "       	   		<kp>1.2</kp>\n"
-				<< "       	   		<kd>5000000000000000.000000</kd>\n"
+				<< "       	   		<kd>5000000.000000</kd>\n"
 				<< "      	   		<max_vel>0.01</max_vel>\n"
 				<< "       	   		<min_depth>0</min_depth>\n"
 				<< "       	 	</ode>\n"
@@ -235,12 +244,34 @@ public:
     m_sdfStream << "    </visual>\n";
   }
 
-  void addInertia( double mass )
+  void addInertiaBox( double mass, Eigen::Vector3d & box_size )
   {
     m_sdfStream << "    <inertial>\n"
                 << "      <mass>"<< mass <<"</mass>\n"
+				<< "		<inertia>\n"
+				<< "			<ixx>" << (long double)(1*mass*((sizey*sizey) + (sizez*sizez)))/12<< "</ixx>\n"
+				<< "			<ixy>0.0</ixy>\n"
+				<< "			<ixz>0.0</ixz>\n"
+				<< "			<iyy>" << (long double)(1*mass*((sizex*sizex) + (sizez*sizez)))/12<< "</iyy>\n"
+				<< "			<iyz>0.0</iyz>\n"
+				<< "			<izz>" << (long double)(1*mass*((sizey*sizey) + (sizex*sizex)))/12<< "</izz>\n"
+				<< "		</inertia>\n"
                 << "    </inertial>\n";
   }
+  void addInertiaSphere( double mass, double radius )
+	{
+	  m_sdfStream << "    <inertial>\n"
+				  << "      <mass>"<< mass <<"</mass>\n"
+				  << "		<inertia>\n"
+				  << "			<ixx>" << (long double)(2*mass*radius*radius)/5<< "</ixx>\n"
+				  << "			<ixy>0.0</ixy>\n"
+				  << "			<ixz>0.0</ixz>\n"
+				  << "			<iyy>" << (long double)(2*mass*radius*radius)/5<< "</iyy>\n"
+				  << "			<iyz>0.0</iyz>\n"
+				  << "			<izz>" << (long double)(2*mass*radius*radius)/5<< "</izz>\n"
+				  << "		</inertia>\n"
+				  << "    </inertial>\n";
+	}
 
   void addLink( std::string link_name,
                  double mass,
@@ -258,7 +289,7 @@ public:
     			<< "    <gravity>0</gravity>\n"
                 << "    <pose>"<< pose.transpose() << "</pose>\n";
 
-                addInertia( mass );
+    			addInertiaSphere( mass , radius );
                 addCollision( collision_name, radius );
                 addVisual( visual_name,
                            radius,
@@ -285,7 +316,7 @@ public:
     			<< "    <gravity>0</gravity>\n"
                 << "    <pose>"<< pose.transpose() << "</pose>\n";
 
-                addInertia( mass );
+    			addInertiaBox( mass , box_size);
                 addCollision( collision_name, box_size );
                 addVisual( visual_name,
                            box_size,
