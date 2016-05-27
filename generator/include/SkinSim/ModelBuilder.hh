@@ -791,11 +791,11 @@ public:
 
       axis << 0, 0, 1;
 
-//      addJoint( "spring_joint_" + convert.str(),
-//                "prismatic",
-//                "plane",
-//                "spring_" + convert.str(),
-//                axis );
+      addJoint( "spring_joint_" + convert.str(),
+                "prismatic",
+                "plane",
+                "spring_" + convert.str(),
+                axis );
 
   //    std::cout << pos_x << " " << pos_y << "\n";
 
