@@ -50,7 +50,6 @@
 #include <gazebo/gazebo.hh>
 
 #include <yaml-cpp/yaml.h>
-
 #include <boost/filesystem.hpp>
 
 #include "SkinSim/ModelPath.hh"
@@ -114,10 +113,9 @@ namespace gazebo
 			double x_min 						=	9999;
 			double y_max 						=	-9999;
 			double y_min 						=	9999;
-			double deform_max 					=	-9999;
 			for (unsigned int i = 0; i < this->joints_.size(); ++i)
 			{
-				if (fabs(this->initState[i] - this->joints_[i]->GetAngle(0).Radian()) > .02)
+				if (fabs(this->initState[i] - this->joints_[i]->GetAngle(0).Radian()) > .02)	//the value .02 changes when the size of skin elements change
 				{
 					this->collision_x 			+=	this->joints_[i]->GetWorldPose().pos.x;
 					this->collision_y 			+=	this->joints_[i]->GetWorldPose().pos.y;
@@ -131,22 +129,20 @@ namespace gazebo
 						y_max 					=	this->joints_[i]->GetWorldPose().pos.y;
 					if (this->joints_[i]->GetWorldPose().pos.y < y_min)
 						y_min 					=	this->joints_[i]->GetWorldPose().pos.y;
-					if ((fabs(this->initState[i] - this->joints_[i]->GetAngle(0).Radian())) > deform_max)
-						deform_max 				=	(fabs(this->initState[i] - this->joints_[i]->GetAngle(0).Radian()));
 				}
 			}
 			this->collision_x 					=	round(this->collision_x/counter);
 			this->collision_y 					=	round(this->collision_x/counter);
-			this->collision_rad 				=	((x_max - x_min) + (y_max + y_min)) / 2;
-			this->collision_force 				= 	deform_max*this->spring_;
+			this->collision_rad 				=	((x_max - x_min) + (y_max - y_min)) / 2;
 
-			std::cout <<  this->collision_x << "	"<< this->collision_y<< "	" <<this->collision_rad << "	"<< this->collision_force<<std::endl;
+			std::cout <<  this->collision_x << "	"<< this->collision_y<< "	" <<this->collision_rad <<std::endl;
 		}
 
 		void UpdateJoint()
 		{
 			double rest_angle 		 		    = 	0;
 			double max_vel 						=	0;
+			double max_deform 					=	0;
 			double current_angle 			    = 	0;
 			double current_force 	 		    = 	0;
 			double current_velocity  		    = 	0;
@@ -155,7 +151,7 @@ namespace gazebo
 			std::string data_path 			    =	this->out_path + std::string("/data.csv");
 
 			this->spring_ 					    =	1.24 ;
-			this->damper_ 				        =	1.23  ;
+			this->damper_ 				        =	1.23 ;
 
 			double current_time 			    = 	this->model_->GetWorld()->GetSimTime().Double();
 			this->out_datafile.open (data_path.c_str(), std::ios::out | std::ios::ate | std::ios::app | std::ios::binary) ;
@@ -169,6 +165,14 @@ namespace gazebo
 					this->initState[i]   		= 	this->joints_[i]->GetAngle(0).Radian();
 					this->out_datafile << this->joints_[i]->GetAngle(0).Radian() << " , ";
 				}
+
+				this->out_datafile << std::endl;
+
+				for (unsigned int i = 0; i < this->joints_.size(); ++i)
+				{
+					this->out_datafile << this->joints_[i]->GetWorldPose().pos.x << " , "<< this->joints_[i]->GetWorldPose().pos.y << " , ";
+				}
+
 				this->start = false;
 				this->out_datafile << std::endl;
 			}
@@ -177,6 +181,8 @@ namespace gazebo
 			{
 				if(fabs(max_vel) < fabs(this->joints_[i]->GetVelocity(0)))
 					max_vel 					=	this->joints_[i]->GetVelocity(0);
+				if(fabs(max_deform) < fabs(this->initState[i] - this->joints_[i]->GetAngle(0).Radian()))
+					max_deform 					=	fabs(this->initState[i] - this->joints_[i]->GetAngle(0).Radian());
 			}
 
 			this->out_datafile << " "<< " , ";
@@ -189,7 +195,7 @@ namespace gazebo
 
 			    if (this->joints_[i]->GetName() != "plane_joint")
 				{
-					if (fabs(this->initState[i] - current_angle) > .02)
+					if (fabs(this->initState[i] - current_angle) > .03)
 					{
 						if(this->first_collison)
 						{
@@ -198,7 +204,7 @@ namespace gazebo
 						}
 
 						this->joints_[i]->SetForce(0, this->force_);
-						this->out_datafile << this->force_<< " , ";
+						this->out_datafile << fabs(this->initState[i] - current_angle)<< " , ";
 
 //						counter_spring 			+= 	1;
 //						std::cout<<1<< " ";
@@ -207,12 +213,12 @@ namespace gazebo
 					}
 					else if ( ! this->first_collison)
 					{
-						double a				=	this->collision_force - (damper_*max_vel);
+						double a				=	(max_deform*spring_) - (damper_*max_vel);
 						double c 				=	1;
 						double b				=	pow((loc.pos.x - this->collision_x),2) + pow((loc.pos.y - this->collision_y),2);
 						double exp_force 		= 	-(a*exp(-b/(pow(c,2))));
-						this->joints_[i]->SetForce(0, exp_force);
-						this->out_datafile << exp_force<< " , ";
+						this->joints_[i]->SetForce(0, 100*exp_force);
+						this->out_datafile << fabs(this->initState[i] - current_angle)<< " , ";
 //						std::cout<<0<< " ";
 //						std::cout<<round(this->joints_[i]->GetForce(0)* 10)<< " ";
 //						std::cout<<round(loc.pos.y)<< " ";
@@ -220,7 +226,7 @@ namespace gazebo
 					else
 					{
 						this->joints_[i]->SetForce(0, this->force_);
-						this->out_datafile << this->force_<< " , ";
+						this->out_datafile << fabs(this->initState[i] - current_angle)<< " , ";
 					}
 //					if (i % 15 == 0)
 //						std::cout<<std::endl;
@@ -258,7 +264,6 @@ namespace gazebo
 		double collision_x;
 		double collision_y;
 		double collision_rad;
-		double collision_force;
 
 	};
 
