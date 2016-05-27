@@ -249,12 +249,12 @@ public:
     m_sdfStream << "    <inertial>\n"
                 << "      <mass>"<< mass <<"</mass>\n"
 				<< "		<inertia>\n"
-				<< "			<ixx>" << (long double)(1*mass*((2.25*sizex*sizex) + (sizez*sizez)))/12<< "</ixx>\n"
+				<< "			<ixx>" << (long double)(1*mass*((sizex*sizex) + (sizez*sizez)))/12<< "</ixx>\n"
 				<< "			<ixy>0.0</ixy>\n"
 				<< "			<ixz>0.0</ixz>\n"
-				<< "			<iyy>" << (long double)(1*mass*((2.25*sizey*sizey) + (sizez*sizez)))/12<< "</iyy>\n"
+				<< "			<iyy>" << (long double)(1*mass*((sizey*sizey) + (sizez*sizez)))/12<< "</iyy>\n"
 				<< "			<iyz>0.0</iyz>\n"
-				<< "			<izz>" << (long double)(1*mass*((2.25*sizey*sizey) + (2.25*sizex*sizex)))/12<< "</izz>\n"
+				<< "			<izz>" << (long double)(1*mass*((sizey*sizey) + (sizex*sizex)))/12<< "</izz>\n"
 				<< "		</inertia>\n"
                 << "    </inertial>\n";
   }
@@ -263,12 +263,12 @@ public:
 	  m_sdfStream << "    <inertial>\n"
 				  << "      <mass>"<< mass <<"</mass>\n"
 				  << "		<inertia>\n"
-				  << "			<ixx>" << (long double)(2*mass*radius*radius)/5<< "</ixx>\n"
+				  << "			<ixx>" << (long double)(2*mass*radius*0.95*radius*0.95)/5<< "</ixx>\n"
 				  << "			<ixy>0.0</ixy>\n"
 				  << "			<ixz>0.0</ixz>\n"
-				  << "			<iyy>" << (long double)(2*mass*radius*radius)/5<< "</iyy>\n"
+				  << "			<iyy>" << (long double)(2*mass*radius*0.95*radius*0.95)/5<< "</iyy>\n"
 				  << "			<iyz>0.0</iyz>\n"
-				  << "			<izz>" << (long double)(2*mass*radius*radius)/5<< "</izz>\n"
+				  << "			<izz>" << (long double)(2*mass*radius*0.95*radius*0.95)/5<< "</izz>\n"
 				  << "		</inertia>\n"
 				  << "    </inertial>\n";
 	}
@@ -603,13 +603,13 @@ public:
     axis << 0, 0, 1;
 
     // Create a "fixed" joint by giving it +/- zero limits 			// TODO: make world a varaible name
-    addPlaneJoint( "plane_joint",
-                   "prismatic",
-                   "world",
-                   "plane",
-                   axis,
-                   -0,
-                   0 );
+//    addPlaneJoint( "plane_joint",
+//                   "prismatic",
+//                   "world",
+//                   "plane",
+//                   axis,
+//                   -0,
+//                   0 );
 
     //environment is moving
     /*test.addPlaneJoint( "plane_joint",
@@ -827,7 +827,7 @@ public:
     ////////////////////
 
 //    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
-    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
+//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
 //    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
 //    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
 
