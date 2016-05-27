@@ -132,7 +132,7 @@ public:
   {
     m_sdfStream << "      <geometry>\n"
                 << "        <sphere>\n"
-                << "          <radius>" << radius << "</radius>\n"
+                << "          <radius>" << radius*0.95 << "</radius>\n"
                 << "        </sphere>\n"
                 << "      </geometry>\n";
   }
@@ -161,11 +161,11 @@ public:
 				<< "	     </bounce>\n"
 				<< "   	     <contact>\n"
 				<< "       		<ode>\n"
-				<< "		   		<soft_cfm>0.2</soft_cfm>\n"
+				<< "		   		<soft_cfm>0</soft_cfm>\n"
 				<< "       	   		<soft_erp>0.200000</soft_erp>\n"
-				<< "       	   		<kp>1.2</kp>\n"
-				<< "       	   		<kd>5000000000000000.000000</kd>\n"
-				<< "      	   		<max_vel>0.01</max_vel>\n"
+				<< "       	   		<kp>10000000000000.000000</kp>\n"
+				<< "       	   		<kd>100000000000.000000</kd>\n"
+				<< "      	   		<max_vel>-1</max_vel>\n"
 				<< "       	   		<min_depth>0</min_depth>\n"
 				<< "       	 	</ode>\n"
 				<< "   	     </contact>\n"
@@ -308,10 +308,8 @@ public:
                 << "      <axis>\n"
                 << "        <xyz>" << axis.transpose() << "</xyz>\n"
                 << "        <limit>\n"
-                << "          <lower>" << -5 << "</lower>\n"
-                << "          <upper>" <<  5 << "</upper>\n"
-				<< " 		  <effort>"<<0.000000<<"</effort>\n"
-				<< "          <velocity>"<<4.000000<<"</velocity>\n"
+                << "          <lower>" << -0.5 << "</lower>\n"
+                << "          <upper>" <<  2.0 << "</upper>\n"
                 << "        </limit>\n"
                 << "      </axis>\n"
                 << "  </joint>\n";
@@ -547,7 +545,7 @@ public:
     double radius;
 
     pose.resize(6,1);
-    pose << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    pose << 0.0, 0.0, 0.05, 0.0, 0.0, 0.0;		// Pose of spring board model
 
     generateModelStart( model_name, pose );
 
@@ -555,8 +553,9 @@ public:
 
 //    box_size << 1.5*size_x, 1.5*size_y, skin_element_diameter/10;		//Removing the height as a parameter of d_pose
 
-    box_size << 1.5*size_x, 1.5*size_y, thick_board;		//Added the width as a parameter from Yaml File
+    box_size << 1.0*size_x, 1.0*size_y, thick_board;		//Added the width as a parameter from Yaml File
 
+    // TODO make "plane" a variable, try using "r_forearm_roll_link" instead with the PR2
     addLink( "plane",
              20,
              "collision",
@@ -570,14 +569,14 @@ public:
 
     axis << 0, 0, 1;
 
-    //robot is moving
+    // Create a "fixed" joint by giving it +/- zero limits 			// TODO: make world a varaible name
     addPlaneJoint( "plane_joint",
                    "prismatic",
                    "world",
                    "plane",
                    axis,
-                   -5,
-                   5 );
+                   -0,
+                   0 );
 
     //environment is moving
     /*test.addPlaneJoint( "plane_joint",
@@ -795,9 +794,9 @@ public:
     ////////////////////
 
 //    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
-//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
+    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
 //    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
-    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
+//    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
 
     saveSDFFile(    model_name );
     saveConfigFile( model_name );
