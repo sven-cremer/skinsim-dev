@@ -2,14 +2,14 @@
   spec:
     # No of elements per side
     # do nothing if 0 use size_x and size_y
-    - xByX                         : 15.0 				# 0.0 		Creates matrix of skin elements of size mentioned
-      skin_element_diameter        : 0.10			 	# 0.005		Size of the diameter of each skin element
-      thick_board                  : 0.01         			# Thickness of the white board
+    - xByX                         : 8.0 				# Creates matrix of skin elements (has to be less than 10)
+      skin_element_diameter        : 0.01			 	# Diameter of each skin element [meters]
+      thick_board                  : 0.002         		# Thickness of the white board [meters]
       density                      : 3.0				# Not used
-      size_x                       : 0.0525				# size of the skin element (xbyX * d_pos) in X direction
-      size_y                       : 0.0525				#	size of the skin element (xbyX * d_pos) in Y direction
-      skin_height                  : 0.05				#	The height of the skin layer
-      tactile_height               : 0.05				# Not used
-      plane_height                 : 0.001				#	The height of the white plane from the ground
-      tactile_length               : 0.9   				# The radius of the sensors underneath the skin layer (for which skin layer is marked in red)
-      tactile_separation           : 2.0				# The space between each sensor underneath the skin layer (for which there are spaces between the rows and columns of skin elements)
+      size_x                       : 0.0525				# size of the skin element (xbyX * d_pos) in X direction ?
+      size_y                       : 0.0525				# size of the skin element (xbyX * d_pos) in Y direction ?
+      skin_height                  : 0.001				# The height of the skin layer ?
+      tactile_height               : 0.01				# Distance between board and skin layer [meters]
+      plane_height                 : 0.001				# The height of the white plane from the ground
+      tactile_length               : 0.9   				# The radius of the sensors underneath the skin layer (for which skin layer is marked in red) ?
+      tactile_separation           : 2.0				# The space between each sensor underneath the skin layer (for which there are spaces between the rows and columns of skin elements) ?
