@@ -555,6 +555,7 @@ public:
 
     box_size << 1.0*size_x, 1.0*size_y, thick_board;		//Added the width as a parameter from Yaml File
 
+    // TODO make "plane" a variable, try using "r_forearm_roll_link" instead with the PR2
     addLink( "plane",
              20,
              "collision",
@@ -568,14 +569,14 @@ public:
 
     axis << 0, 0, 1;
 
-    //robot is moving
+    // Create a "fixed" joint by giving it +/- zero limits 			// TODO: make world a varaible name
     addPlaneJoint( "plane_joint",
                    "prismatic",
                    "world",
                    "plane",
                    axis,
-                   -5,
-                   5 );
+                   -0,
+                   0 );
 
     //environment is moving
     /*test.addPlaneJoint( "plane_joint",
@@ -793,9 +794,9 @@ public:
     ////////////////////
 
 //    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
-//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
+    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
 //    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
-    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
+//    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
 
     saveSDFFile(    model_name );
     saveConfigFile( model_name );
