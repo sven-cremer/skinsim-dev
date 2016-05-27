@@ -249,12 +249,12 @@ public:
     m_sdfStream << "    <inertial>\n"
                 << "      <mass>"<< mass <<"</mass>\n"
 				<< "		<inertia>\n"
-				<< "			<ixx>" << (long double)(1*mass*((sizey*sizey) + (sizez*sizez)))/12<< "</ixx>\n"
+				<< "			<ixx>" << (long double)(1*mass*((2.25*sizex*sizex) + (sizez*sizez)))/12<< "</ixx>\n"
 				<< "			<ixy>0.0</ixy>\n"
 				<< "			<ixz>0.0</ixz>\n"
-				<< "			<iyy>" << (long double)(1*mass*((sizex*sizex) + (sizez*sizez)))/12<< "</iyy>\n"
+				<< "			<iyy>" << (long double)(1*mass*((2.25*sizey*sizey) + (sizez*sizez)))/12<< "</iyy>\n"
 				<< "			<iyz>0.0</iyz>\n"
-				<< "			<izz>" << (long double)(1*mass*((sizey*sizey) + (sizex*sizex)))/12<< "</izz>\n"
+				<< "			<izz>" << (long double)(1*mass*((2.25*sizey*sizey) + (2.25*sizex*sizex)))/12<< "</izz>\n"
 				<< "		</inertia>\n"
                 << "    </inertial>\n";
   }
@@ -589,7 +589,7 @@ public:
     box_size << 1.5*size_x, 1.5*size_y, thick_board;		//Added the width as a parameter from Yaml File
 
     addLink( "plane",
-             20,
+             .5,
              "collision",
              "visual",
              box_size,
@@ -791,11 +791,11 @@ public:
 
       axis << 0, 0, 1;
 
-      addJoint( "spring_joint_" + convert.str(),
-                "prismatic",
-                "plane",
-                "spring_" + convert.str(),
-                axis );
+//      addJoint( "spring_joint_" + convert.str(),
+//                "prismatic",
+//                "plane",
+//                "spring_" + convert.str(),
+//                axis );
 
   //    std::cout << pos_x << " " << pos_y << "\n";
 
