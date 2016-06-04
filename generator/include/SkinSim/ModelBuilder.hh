@@ -57,9 +57,6 @@ private:
   std::ostringstream m_sdfStream;
   sdf::SDF m_sdfParsed;
   std::string pathString;
-  double sizex;
-  double sizey;
-  double sizez;
 
   void generateSDFHeader()
   {
@@ -83,9 +80,6 @@ public:
   SkinSimModelBuilder( )
   {
     initSkinSimModelBuilder();
-    sizex 							=	0;
-	sizey 							=	0;
-	sizez 							=	0;
   }
 
   SkinSimModelBuilder(  std::string model_name                        ,
@@ -101,9 +95,6 @@ public:
                           double tactile_length                       ,
                           double tactile_separation                   )
   {
-	sizex 							=	size_x;
-	sizey 							=	size_y;
-	sizez 							=	thick_board;
     initSkinSimModelBuilder();
     createModelFiles( model_name                      ,
                       xByX                            ,
@@ -244,34 +235,12 @@ public:
     m_sdfStream << "    </visual>\n";
   }
 
-  void addInertiaBox( double mass, Eigen::Vector3d & box_size )
+  void addInertia( double mass )
   {
     m_sdfStream << "    <inertial>\n"
                 << "      <mass>"<< mass <<"</mass>\n"
-				<< "		<inertia>\n"
-				<< "			<ixx>" << (long double)(1*mass*((sizex*sizex) + (sizez*sizez)))/12<< "</ixx>\n"
-				<< "			<ixy>0.0</ixy>\n"
-				<< "			<ixz>0.0</ixz>\n"
-				<< "			<iyy>" << (long double)(1*mass*((sizey*sizey) + (sizez*sizez)))/12<< "</iyy>\n"
-				<< "			<iyz>0.0</iyz>\n"
-				<< "			<izz>" << (long double)(1*mass*((sizey*sizey) + (sizex*sizex)))/12<< "</izz>\n"
-				<< "		</inertia>\n"
                 << "    </inertial>\n";
   }
-  void addInertiaSphere( double mass, double radius )
-	{
-	  m_sdfStream << "    <inertial>\n"
-				  << "      <mass>"<< mass <<"</mass>\n"
-				  << "		<inertia>\n"
-				  << "			<ixx>" << (long double)(2*mass*radius*0.95*radius*0.95)/5<< "</ixx>\n"
-				  << "			<ixy>0.0</ixy>\n"
-				  << "			<ixz>0.0</ixz>\n"
-				  << "			<iyy>" << (long double)(2*mass*radius*0.95*radius*0.95)/5<< "</iyy>\n"
-				  << "			<iyz>0.0</iyz>\n"
-				  << "			<izz>" << (long double)(2*mass*radius*0.95*radius*0.95)/5<< "</izz>\n"
-				  << "		</inertia>\n"
-				  << "    </inertial>\n";
-	}
 
   void addLink( std::string link_name,
                  double mass,
@@ -289,7 +258,7 @@ public:
     			<< "    <gravity>0</gravity>\n"
                 << "    <pose>"<< pose.transpose() << "</pose>\n";
 
-    			addInertiaSphere( mass , radius );
+                addInertia( mass );
                 addCollision( collision_name, radius );
                 addVisual( visual_name,
                            radius,
@@ -316,7 +285,7 @@ public:
     			<< "    <gravity>0</gravity>\n"
                 << "    <pose>"<< pose.transpose() << "</pose>\n";
 
-    			addInertiaBox( mass , box_size);
+                addInertia( mass );
                 addCollision( collision_name, box_size );
                 addVisual( visual_name,
                            box_size,
@@ -339,12 +308,21 @@ public:
                 << "      <axis>\n"
                 << "        <xyz>" << axis.transpose() << "</xyz>\n"
                 << "        <limit>\n"
-                << "          <lower>" << -5 << "</lower>\n"
-                << "          <upper>" <<  5 << "</upper>\n"
-				<< " 		  <effort>"<<0.000000<<"</effort>\n"
-				<< "          <velocity>"<<4.000000<<"</velocity>\n"
+                << "          <lower>" << -0.5 << "</lower>\n"
+                << "          <upper>" <<  2.0 << "</upper>\n"
                 << "        </limit>\n"
                 << "      </axis>\n"
+				<< "    <sensor name='contact_" + joint_name + "' type='force_torque'>"
+				<< "		<topic> test_ "+ joint_name + " </topic>"
+				<< "		<update_rate> 5 </update_rate>"
+				<< "  		<always_on>true</always_on>"
+				<< "		<visualize>true</visualize>"
+//				<< " 		<noise>"
+//				<< "        	<type>gaussian</type>"
+//				<< "            <mean>0.0</mean>"
+//				<< "            <stddev>0.01</stddev>"
+//				<< " 		</noise>"
+				<< "   	</sensor>"
                 << "  </joint>\n";
   }
 
@@ -590,7 +568,7 @@ public:
 
     // TODO make "plane" a variable, try using "r_forearm_roll_link" instead with the PR2
     addLink( "plane",
-             .5,
+             20,
              "collision",
              "visual",
              box_size,
@@ -603,13 +581,13 @@ public:
     axis << 0, 0, 1;
 
     // Create a "fixed" joint by giving it +/- zero limits 			// TODO: make world a varaible name
-//    addPlaneJoint( "plane_joint",
-//                   "prismatic",
-//                   "world",
-//                   "plane",
-//                   axis,
-//                   -0,
-//                   0 );
+    addPlaneJoint( "plane_joint",
+                   "prismatic",
+                   "world",
+                   "plane",
+                   axis,
+                   -0,
+                   0 );
 
     //environment is moving
     /*test.addPlaneJoint( "plane_joint",
@@ -830,6 +808,7 @@ public:
 //    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
 //    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
 //    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
+    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin_V2.so", model_name );
 
     saveSDFFile(    model_name );
     saveConfigFile( model_name );

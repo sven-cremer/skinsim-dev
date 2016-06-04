@@ -97,24 +97,24 @@ namespace gazebo
 //				std::cout<<this->joint_forces.size()<<std::endl;
 				this->bd2 = this->model_->GetLink("cylinder_link")->GetWorldForce();
 //				std::cout<<this->bd2.z << "/n ----- /n"<<std::endl;
-//				if (position >= 0)
-//				{
-//					this->joints_[0]->SetPosition(0,position);
+				if (position >= 0.171)
+				{
+					this->joints_[0]->SetPosition(0,position);
 ////					joint_forces			= 	this->jt->GetPositions();
 //					this->model_->GetLink("link")->SetForce(math::Vector3(0,0,1));
 //
 //					this->jtwr = this->joints_[0]->GetForceTorque(2);
 //					this->bd2 = this->model_->GetLink("link")->GetWorldForce();
 //					std::cout<<this->bd2.z<<std::endl;
-//					position = position - .01;
-//				}
-//				else
-//				{
+					position = position - .01;
+				}
+				else
+				{
 //					this->bd2 = this->model_->GetLink("link")->GetWorldForce();
 //					std::cout<<this->bd2.z<<std::endl;
-//					//this->joints_[0]->SetPosition(0, position);
+					this->joints_[0]->SetPosition(0, position);
 ////					std::cout<<position<<std::endl;
-//				}
+				}
 //				std::cout<<joint_forces.begin()->first<<std::endl;
 			}
 

@@ -4,7 +4,7 @@
 		<link name='cylinder_link'>
 	      <pose>0 0 0.5 0 0 0</pose>
 	      <inertial>
-              <mass>1</mass>
+              <mass>10</mass>
         	  <inertia>
 		          <ixx>0.145833</ixx>
 		          <ixy>0</ixy>
@@ -14,7 +14,7 @@
 		          <izz>0</izz>
 	          </inertia>
 	      </inertial>
-	      <collision name='collision'>
+	      <collision name='collision_cylinder'>
 	          <pose>0 0 0 0 0 0</pose>
 	          <geometry>
 	              <cylinder>
@@ -40,10 +40,10 @@
 	      	<sensor name='my_contact' type='contact'>
 	      		<plugin name="VisualizeContactPlugin" filename="libVisualizeContactPlugin.so"/>
           		<contact>
-            		<collision>collision</collision>
+            		<collision>collision_cylinder</collision>
           		</contact>
           		<update_rate> 5 </update_rate>
-			</sensor>
+		</sensor>
 	    </link>
 	    
 		<joint name = "my_mass_joint" type="prismatic">
