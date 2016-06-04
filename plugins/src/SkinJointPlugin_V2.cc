@@ -45,12 +45,20 @@
 #include <vector>
 #include <list>
 
-#include <gazebo/physics/physics.hh>
+#include <gazebo/msgs/msgs.hh>
 #include <gazebo/common/Events.hh>
 #include <gazebo/gazebo.hh>
+#include <gazebo/transport/transport.hh>
+#include <gazebo/physics/physics.hh>
+#include <gazebo/physics/Collision.hh>
 
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
+#include <boost/bind.hpp>
+
+#include <gazebo/common/common.hh>
+#include <gazebo/physics/World.hh>
+
 
 #include "SkinSim/ModelPath.hh"
 
@@ -86,22 +94,124 @@ namespace gazebo
 			this->joints_.resize(this->model_->GetJointCount());
 			this->joints_ 						= 	this->model_->GetJoints();
 
+			//For subscription
+//			gazebo::setupClient();
 
 			// Create a new transport node
-			transport::NodePtr node(new transport::Node());
+			this->receiver						=	transport::NodePtr(new transport::Node());
 
 			// Initialize the node with the Model name
-			node->Init(model_->GetName());
+			this->receiver->Init(model_->GetName());
 			this->start 						=	true;
 			this->first_collison 				=	true;
+			this->first_contact 				=	false;
 
 			// Define Callback function
 			this->update_connection_ 			= 	event::Events::ConnectWorldUpdateBegin(boost::bind(&SkinJointForceDistributionPlugin::UpdateJoint, this));
+			this->sub 							= 	this->receiver->Subscribe("/gazebo/default/physics/contacts", &SkinJointForceDistributionPlugin::cb, this);
+
+			const std::string topic("~/physics/feedback/contacts");
+			this->m_pub 						= 	this->receiver->Advertise<gazebo::msgs::Contacts>(topic, 1);
 		}
 
 	public:
 		void OnUpdate()
 		{
+		}
+
+		void pub(const gazebo::msgs::Contact var)
+		{
+//			common::Time ttt = gazebo::common::Time::GetWallTime();
+//			//
+//			msgs::Contacts cts;
+//			msgs::Time *yyy = cts.mutable_time();
+//			yyy->set_sec(ttt.sec);
+//			yyy->set_nsec(ttt.nsec);
+//			msgs::Contact *ct = cts.add_contact();
+//			msgs::Time *xxx = ct->mutable_time();
+//			xxx->set_sec(ttt.sec);
+//			xxx->set_nsec(ttt.nsec);
+//			std::string* str_c1 = ct->mutable_collision1();
+//			std::string* str_c2 = ct->mutable_collision2();
+//			*str_c1 = var.collision1();
+//			*str_c2 = var.collision2();
+//			msgs::Vector3d* point = ct->add_position();
+//			point->set_x(1.5);
+//			point->set_y(1.5);
+//			point->set_z(1.5);
+//			//
+//			msgs::Vector3d* normal = ct->add_normal();
+//			normal->set_x(0.0);
+//			normal->set_y(0.0);
+//			normal->set_z(1.0);
+//			//
+//			ct->add_depth(0.5);
+//			//
+//			msgs::JointWrench* jw = ct->add_wrench();
+//			jw->set_body_1_name("body_a");
+//			jw->set_body_2_name("body_b");
+//			math::Vector3 *a = jw->body1Force;
+//			a->set_x(0.0);
+//			a->set_y(0.0);
+//			a->set_z(0.0);
+//			msgs::Vector3d *b = jw->mutable_body_1_torque();
+//			b->set_x(0.0);
+//			b->set_y(0.0);
+//			b->set_z(0.0);
+//			msgs::Vector3d *c = jw->mutable_body_2_force();
+//			c->set_x(0.0);
+//			c->set_y(0.0);
+//			c->set_z(0.0);
+//			msgs::Vector3d *d = jw->mutable_body_2_torque();
+//			d->set_x(0.0);
+//			d->set_y(0.0);
+//			d->set_z(0.0);
+//			msgs::Set(jw->mutable_body_1_force(), var.wrench[0].body1Force);
+//			this->m_pub->Publish(cts);
+//			// Apply a small linear velocity to the model.
+//			this->model_->SetLinearVel(math::Vector3(.05, 0, 0));
+		}
+
+		void cb(ConstContactsPtr &_msg)
+		{
+			const int c = _msg->contact_size();
+			if ((c > 0) && (!this->first_contact))
+			{
+				FindCOP();
+				this->first_contact = true;
+			}
+			if (c > 0)
+			{
+				const gazebo::msgs::Contact& var= _msg->contact(0);
+				std::string st     = var.collision2();
+				std::string last_element(st.substr(st.rfind("_") + 1));
+				double x = this->model_->GetJoint("spring_joint_" + last_element)->GetAngle(0).Radian();
+
+				physics::JointWrench wrench = this->model_->GetJoint("spring_joint_" + last_element)->GetForceTorque(0);
+
+//				std::cout <<wrench.body1Force.z<< std::endl;
+				pub(var);
+			}
+
+		}
+
+		void FindCOP( )
+		{
+
+			double force_sum 				=	0;
+			double x_sum 					=	0;
+			double y_sum 					=	0;
+			for (int i = 0; i < this->joints_.size(); i++)
+			{
+				physics::JointWrench wrench = 	this->joints_[i]->GetForceTorque(0);
+				force_sum 					=	force_sum + wrench.body1Force.z;
+				x_sum 						=	x_sum + (this->joints_[i]->GetWorldPose().pos.x * wrench.body1Force.z);
+				y_sum 						=	y_sum + (this->joints_[i]->GetWorldPose().pos.y * wrench.body1Force.z);
+			}
+
+			std::cout << "COP : " << x_sum/force_sum << "," << y_sum/force_sum <<std::endl;
+
+
 		}
 
 		void GetCollisionBoundary()
@@ -150,8 +260,8 @@ namespace gazebo
 			int    counter_spring 			    =	0;
 			std::string data_path 			    =	this->out_path + std::string("/data.csv");
 
-			this->spring_ 					    =	1.24 ;
-			this->damper_ 				        =	1.23 ;
+			this->spring_ 					    =	122.24 ;
+			this->damper_ 				        =	1.83 ;
 
 			double current_time 			    = 	this->model_->GetWorld()->GetSimTime().Double();
 			this->out_datafile.open (data_path.c_str(), std::ios::out | std::ios::ate | std::ios::app | std::ios::binary) ;
@@ -195,7 +305,7 @@ namespace gazebo
 
 			    if (this->joints_[i]->GetName() != "plane_joint")
 				{
-					if (fabs(this->initState[i] - current_angle) > .03)
+					if (fabs(this->initState[i] - current_angle) > .02)
 					{
 						if(this->first_collison)
 						{
@@ -204,7 +314,8 @@ namespace gazebo
 						}
 
 						this->joints_[i]->SetForce(0, this->force_);
-						this->out_datafile << fabs(this->initState[i] - current_angle)<< " , ";
+//						this->out_datafile << fabs(this->initState[i] - current_angle)<< " , ";
+						this->out_datafile << (this->force_)<< " , ";
 
 //						counter_spring 			+= 	1;
 //						std::cout<<1<< " ";
@@ -217,8 +328,10 @@ namespace gazebo
 						double c 				=	1;
 						double b				=	pow((loc.pos.x - this->collision_x),2) + pow((loc.pos.y - this->collision_y),2);
 						double exp_force 		= 	-(a*exp(-b/(pow(c,2))));
-						this->joints_[i]->SetForce(0, 100*exp_force);
-						this->out_datafile << fabs(this->initState[i] - current_angle)<< " , ";
+						this->joints_[i]->SetForce(0, exp_force);
+//						this->out_datafile << fabs(this->initState[i] - current_angle)<< " , ";
+						this->out_datafile << exp_force<< " , ";
+
 //						std::cout<<0<< " ";
 //						std::cout<<round(this->joints_[i]->GetForce(0)* 10)<< " ";
 //						std::cout<<round(loc.pos.y)<< " ";
@@ -226,7 +339,8 @@ namespace gazebo
 					else
 					{
 						this->joints_[i]->SetForce(0, this->force_);
-						this->out_datafile << fabs(this->initState[i] - current_angle)<< " , ";
+//						this->out_datafile << fabs(this->initState[i] - current_angle)<< " , ";
+						this->out_datafile << joints_[i]->GetName().c_str()<< " , ";
 					}
 //					if (i % 15 == 0)
 //						std::cout<<std::endl;
@@ -247,6 +361,9 @@ namespace gazebo
 		physics::Joint_V joints_;
 		physics::ModelPtr model_;
 		event::ConnectionPtr update_connection_;
+		transport::SubscriberPtr sub;
+		transport::PublisherPtr m_pub;
+		transport::NodePtr receiver;
 		YAML::Node    doc_;
 		std::ifstream input_file_;
 		std::ofstream out_datafile;
@@ -259,6 +376,7 @@ namespace gazebo
 		std::vector<double> initState;
 		bool start;
 		bool first_collison;
+		bool first_contact;
 
 		// Collision Parameters
 		double collision_x;

@@ -23,3 +23,16 @@ start_time: {secs: 0, nsecs: 0}
 duration: {secs: 1, nsecs: 0}" 
 ```
 
+To load skin patches on PR2
+
+```
+roslaunch gazebo_ros empty_world.launch
+
+```
+Then insert "SKIN_ASSEMBLE" from the menu.
+
+This will load PR2 with Skin Patches.
+
+```
+TO edit the placement of skin patches, edit file: model/models/skin_assemble/assembply.sdf
+```

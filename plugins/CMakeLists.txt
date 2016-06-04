@@ -29,8 +29,11 @@ target_link_libraries(MassJoint ${GAZEBO_LIBRARIES})
 add_library(SkinJointPlugin SHARED src/SkinJointPlugin.cc)
 target_link_libraries(SkinJointPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs )
 
+add_library(SkinJointPlugin_V2 SHARED src/SkinJointPlugin_V2.cc)
+target_link_libraries(SkinJointPlugin_V2 ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs pthread)
+
 add_library(SkinJointForceDistributionPlugin SHARED src/SkinJointForceDistributionPlugin.cc)
-target_link_libraries(SkinJointForceDistributionPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs )
+target_link_libraries(SkinJointForceDistributionPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs pthread)
 
 add_library(VisualizeContactPlugin SHARED src/VisualizeContactPlugin.cc)
 target_link_libraries(VisualizeContactPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs )

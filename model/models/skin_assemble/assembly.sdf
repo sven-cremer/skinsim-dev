@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="skin_assemble">
+
+    <include>
+      <uri>model://pr2_skin</uri>
+    </include>
+
+    <include>
+  	    <uri>model://spring_board</uri>
+        <name>forearm_spring</name>
+	    <pose>0.7000 0.12900 0.77675 1.57 0 0</pose>
+    </include>
+
+    <include>
+  	    <uri>model://spring_board</uri>
+        <name>upper_arm_spring_side</name>
+	    <pose>0.450000 0.11900 0.790675 1.57 0 0</pose>
+    </include>
+
+    <include>
+  	    <uri>model://spring_board</uri>
+        <name>upper_arm_spring_up</name>
+	    <pose>0.310000 0.18100 0.830675 0 0.785398 0</pose>
+    </include>
+
+    <joint name="forearm_skin_joint" type="prismatic">
+      <parent>pr2_skin::l_forearm_roll_link</parent>
+      <child>forearm_spring::plane</child>
+      <axis>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+        <xyz>0 1 0</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+    </joint>
+
+    <joint name="upperarm_skin_side_joint" type="prismatic">
+      <parent>pr2_skin::l_upper_arm_roll_link</parent>
+      <child>upper_arm_spring_side::plane</child>
+      <axis>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+        <xyz>0 1 0</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+    </joint>
+
+    <joint name="upperarm_skin_up_joint" type="prismatic">
+      <parent>pr2_skin::l_upper_arm_roll_link</parent>
+      <child>upper_arm_spring_up::plane</child>
+      <axis>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+        <xyz>0 0 1</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+    </joint>
+
+  </model>
+</sdf>

@@ -312,6 +312,17 @@ public:
                 << "          <upper>" <<  2.0 << "</upper>\n"
                 << "        </limit>\n"
                 << "      </axis>\n"
+				<< "    <sensor name='contact_" + joint_name + "' type='force_torque'>"
+				<< "		<topic> test_ "+ joint_name + " </topic>"
+				<< "		<update_rate> 5 </update_rate>"
+				<< "  		<always_on>true</always_on>"
+				<< "		<visualize>true</visualize>"
+//				<< " 		<noise>"
+//				<< "        	<type>gaussian</type>"
+//				<< "            <mean>0.0</mean>"
+//				<< "            <stddev>0.01</stddev>"
+//				<< " 		</noise>"
+				<< "   	</sensor>"
                 << "  </joint>\n";
   }
 
@@ -794,9 +805,10 @@ public:
     ////////////////////
 
 //    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
-    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
+//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
 //    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
 //    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
+    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin_V2.so", model_name );
 
     saveSDFFile(    model_name );
     saveConfigFile( model_name );
