@@ -1,60 +1,92 @@
-# SkinSim : multi-modal skin simulation for Gazebo
+# SkinSim
 
-# About
+### About
 SkinSim is a multi-modal skin simulation environment based on the Gazebo simulator. It provides functionality for building robot models with robotic skin attached and near real-time realistic skin simulation.
 
-# Dependencies
-SkinSim 0.2 uses Gazebo 5 which is supported in Ubuntu 14.04 (Trusty): 
+### Dependencies
+SkinSim 0.2 is being developed in Ubuntu 14.04 (Trusty) using Gazebo 5. To install the developer tools: 
 ```
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-latest.list'
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install libgazebo5-dev
 ```
-The following also needs to be installed:
+The following dependencies are needed:
 ```
 sudo apt-get install clang  
 sudo apt-get install protobuf-compiler
 ```
-ROS Jade is optional:
-```
-http://wiki.ros.org/jade/Installation
-```
-# Install
-- Clone to catkin workspace (for example ~/catkin_ws/src)  
+It is recommended to install ROS alonside with Gazebo. Version 5 is supported by ROS Jade and *gazebo_ros_pkgs* provides several wrappers:
 
-		git clone https://<user-name>@bitbucket.org/nextgensystems/skinsim.git
+- http://wiki.ros.org/jade/Installation
+- http://gazebosim.org/tutorials?tut=ros_installing
 
+Currently, *ros_control* has not been released for ROS Jade. 
 
-- Add path to skinsim as SKINSIM_PATH env variable
+### Install
+1\) Assuming that ROS has been installed, first setup a catkin workspace:
 
-		echo "export SKINSIM_PATH=~/catkin_ws/src/skinsim" >> ~/.bashrc
+    source /opt/ros/jade/setup.bash
+    mkdir ~/skin_ws/src -p
+    cd ~/skin_ws/src
+    catkin_init_workspace
+    cd ~/skin_ws
+    catkin_make
 
+Edit your bashrc to source the workspace in every new shell or simply execute
 
-- Export model and plugin folders
+    echo "source ~/skin_ws/devel/setup.bash" >> ~/.bashrc
 
-		echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/model/models" >> ~/.bashrc
-		echo "export GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH:$SKINSIM_PATH/build" >> ~/.bashrc
-and source the bashrc file
+2\) Download the repositry (or fork) to your workspace, e.g. 
 
-		source ~/.bashrc
+    cd ~/skin_ws/src
+    git clone https://<user-name>@bitbucket.org/nextgensystems/skinsim.git
 
+3\) Add the repository path to the SKINSIM_PATH environment variable
 
-- Build SkinSim
+    echo "export SKINSIM_PATH=~/skin_ws/src/skinsim" >> ~/.bashrc
 
-		cd ~/catkin_ws/src/skinsim
-		mkdir build
-		cd build
-		cmake ..
-		make
+4\) Export model and plugin folders to the Gazebo environment variables
 
-- Add the build folder to the path environment variable
+    echo "export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$SKINSIM_PATH/model/models" >> ~/.bashrc
+    echo "export GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH:$SKINSIM_PATH/build" >> ~/.bashrc
 
-		echo "export PATH=$SKINSIM_PATH/build:$PATH" >> ~/.bashrc
+5\) Open a new terminal or source the bashrc file
+
+    source ~/.bashrc
+
+6\) Build SkinSim
+
+    cd ~/skin_ws/src/skinsim
+    mkdir build
+    cd build
+    cmake ..
+    make
+
+7\) Add the build folder to the path environment variable
+
+    echo "export PATH=$SKINSIM_PATH/build:$PATH" >> ~/.bashrc
+
 and source the bashrc file again.
 
+### Troubleshooting
+If another version of Gazebo is already installed, then the following errors might occur:
 
-# Example programs
+- unable to install *libgazebo5-dev* due to "unmet dependencies"
+- *catkin_make* fails because *gazebo_ros* cannot be found
+- *make* fails because of missing member in "gazebo::physics::Joint"
+
+For example, the PR2 simulator is still using Gazebo 2. To check the version, open up Gazebo from the terminal
+```
+gazebo
+```
+and in the menu go to Help->About. If for example version 2 is installed, remove it by executing
+```
+sudo apt-get remove gazebo2
+```
+and then try installing *libgazebo5-dev* again.
+
+### Example programs
 
 - *skin_model_generator*
     - generates Gazebo models based on the configurtions inside generator/config/model_params.yaml 
@@ -63,12 +95,13 @@ and source the bashrc file again.
 - *auto_experimenter*
     - runs auto experimenter (currently no data is saved) 
 
-# Versioning
-Semantic versioning 2.0.0 is used in SkinSim. See : http://semver.org/
+### Versioning
+Semantic versioning 2.0.0 is used in SkinSim. See http://semver.org/
 
 - Current version : 0.1.0
+- In development  : 0.2.0
 
-# Release Schedule and Roadmap
+### Release Schedule and Roadmap (OUTDATED)
 A new version of SkinSim will be released 1 month after every major Gazebo release.
 
 - 2014-09-30 - SkinSim 0.1.0 : Gazebo 4.0 : ROS I
@@ -86,12 +119,12 @@ A new version of SkinSim will be released 1 month after every major Gazebo relea
     - Robot tailor GUI
 - 2016-05-01 - SkinSim 2.0.0 : Gazebo 7.0 : ROS K
 
-# Coding Style
+### Coding Style
 
 SkinSim tries to adhere to the Google style guide:
 
 - Google C++ Style Guide : http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
 
-# Build Status
+### Build Status
 
 [![Build Status](https://drone.io/bitbucket.org/nextgensystems/skinsim/status.png)](https://drone.io/bitbucket.org/nextgensystems/skinsim/latest)
