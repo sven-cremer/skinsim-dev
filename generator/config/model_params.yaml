@@ -1,4 +1,4 @@
-- name: spring_board
+- name: spring_array
   spec:
     # No of elements per side
     # do nothing if 0 use size_x and size_y
