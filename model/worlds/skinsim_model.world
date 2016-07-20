@@ -11,7 +11,7 @@
 </include>
 
 <include>
-  <uri>model://spring_array15</uri>
+  <uri>model://spring_array</uri>
 </include>
 
 <physics type="ode">
