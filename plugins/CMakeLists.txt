@@ -10,7 +10,9 @@ if (PKG_CONFIG_FOUND)
   pkg_check_modules(GAZEBO gazebo)
 endif()
 
-include(FindBoost)
+find_package(OGRE REQUIRED)
+include_directories(${OGRE_INCLUDE_DIRS} ${OGRE_Terrain_INCLUDE_DIRS} ${OGRE_Paging_INCLUDE_DIRS})
+
 find_package(Boost ${MIN_BOOST_VERSION} REQUIRED system filesystem regex)
 
 include_directories(include ${GAZEBO_INCLUDE_DIRS}
