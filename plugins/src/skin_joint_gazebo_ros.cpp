@@ -154,7 +154,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
 
 		// Custom Callback Queue
-		ros::AdvertiseOptions ao = ros::AdvertiseOptions::create<skinsim_ros_msgs::SkinJointDataArray>(
+		ros::AdvertiseOptions ao = ros::AdvertiseOptions::create<skinsim_ros_msgs::Joint1DArray>(
 				this->topic_name_,1,
 				boost::bind( &SkinJointGazeboRos::RosConnect,this),
 				boost::bind( &SkinJointGazeboRos::RosDisconnect,this), ros::VoidPtr(), &this->ros_queue_);
@@ -214,9 +214,6 @@ void SkinJointGazeboRos::UpdateJoints()
 	if (this->ros_connections_ == 0 || !pub_to_ros_)
 		return;
 
-	physics::JointWrench wrench;
-	math::Vector3 force;
-
 	this->lock_.lock();
 
 	// TODO: Copy data into ROS message
@@ -226,15 +223,11 @@ void SkinJointGazeboRos::UpdateJoints()
 
 	for(int i=0;i<this->joint_names_.size();i++)
 	{
-		this->skin_msg_.dataArray[i].position.z = this->joints_[i]->GetAngle(0).Radian();
+		this->skin_msg_.dataArray[i].position = this->joints_[i]->GetAngle(0).Radian();
 
-		this->skin_msg_.dataArray[i].velocity.z = this->joints_[i]->GetVelocity(0);
+		this->skin_msg_.dataArray[i].velocity = this->joints_[i]->GetVelocity(0);
 
-		wrench = this->joints_[i]->GetForceTorque(0);
-		force = wrench.body2Force;
-		this->skin_msg_.dataArray[i].force.x = force.x;
-		this->skin_msg_.dataArray[i].force.y = force.y;
-		this->skin_msg_.dataArray[i].force.z = force.z;
+		this->skin_msg_.dataArray[i].force = this->joints_[i]->GetForce(0);
 	}
 
 	this->ros_pub_.publish(this->skin_msg_);

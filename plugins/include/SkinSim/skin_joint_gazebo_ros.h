@@ -54,7 +54,7 @@
 #include <ros/advertise_options.h>
 
 // ROS messages
-#include <geometry_msgs/WrenchStamped.h>
+#include <skinsim_ros_msgs/Joint1DArray.h>
 #include <skinsim_ros_msgs/SkinJointDataArray.h>
 
 // Utilities
@@ -110,7 +110,7 @@ class SkinJointGazeboRos : public ModelPlugin
   private: bool pub_to_ros_;
 
   /// \brief A custom ROS message
-  private: skinsim_ros_msgs::SkinJointDataArray skin_msg_;
+  private: skinsim_ros_msgs::Joint1DArray skin_msg_;
 
   /// \brief Stores the ROS topic name
   private: std::string topic_name_;
