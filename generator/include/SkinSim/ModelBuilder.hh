@@ -349,9 +349,19 @@ public:
 
   void addPlugin( std::string plugin_name, std::string plugin_filename, std::string & model_name )
   {
+    std::string ros_namespace = "skinsim";
+    double update_rate = 0.0;
+    double mass = 0.0;
+    double spring = 122.24;
+    double damping = 1.83;
+
     m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
-                << "    <fileName>" << model_name << "</fileName>\n"
-                << "    <topicName>" << "test" << "</topicName>\n"
+                << "    <fileName>"     << model_name << "</fileName>\n"
+                << "    <rosNamespace>" << ros_namespace << "</rosNamespace>\n"
+                << "    <updateRate>"   << update_rate << "</updateRate>\n"
+                << "    <mass>"         << mass << "</mass>\n"
+                << "    <spring>"       << spring << "</spring>\n"
+                << "    <damping>"      << damping << "</damping>\n"
                 << "  </plugin>";
   }
 

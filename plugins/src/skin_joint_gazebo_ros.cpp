@@ -70,10 +70,6 @@ SkinJointGazeboRos::~SkinJointGazeboRos()
 // Load the controller
 void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 {
-	// TODO load from file
-    this->sping_ = 122.24 ;
-    this->damper_ = 1.83  ;
-
 	// Save pointers and names
 	this->model_ = _model;
 	this->world_ = this->model_->GetWorld();
@@ -81,28 +77,28 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	this->model_name_ = model_->GetName();
 	this->topic_name_ = model_name_;
 
-	// Load parameters from model SDF file
+	// Set default values
 	this->ros_namespace_ = "skinsim/";
+	this->update_rate_   = 0;
+	this->mass_          = 0.0;
+    this->sping_         = 122.24;
+    this->damper_        = 1.83;
+
+	// Load parameters from model SDF file
 	if (_sdf->HasElement("rosNamespace"))
 		this->ros_namespace_ = _sdf->GetElement("rosNamespace")->Get<std::string>() + "/";
 
-//	if (!_sdf->HasElement("topicName"))
-//	{
-//		ROS_FATAL("ft_sensor plugin missing <topicName>, cannot proceed");
-//		this->topic_name_ = "default";
-////		return;
-//	}
-//	else
-//		this->topic_name_ = _sdf->GetElement("topicName")->Get<std::string>();
-
-	if (!_sdf->HasElement("updateRate"))
-	{
-		ROS_DEBUG("ft_sensor plugin missing <updateRate>, defaults to 0.0"
-				" (as fast as possible)");
-		this->update_rate_ = 0;
-	}
-	else
+	if (_sdf->HasElement("updateRate"))
 		this->update_rate_ = _sdf->GetElement("updateRate")->Get<double>();
+
+	if (_sdf->HasElement("mass"))
+		this->mass_ = _sdf->GetElement("mass")->Get<double>();
+
+	if (_sdf->HasElement("spring"))
+		this->sping_ = _sdf->GetElement("spring")->Get<double>();
+
+	if (_sdf->HasElement("damping"))
+		this->damper_ = _sdf->GetElement("damping")->Get<double>();
 
 	// Load joint names from file
 	std::string fullname;
@@ -180,6 +176,13 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	std::cout<<"> Model child count: "<<model_->GetChildCount()<<"\n";
 	std::cout<<"> Model joint count: "<<model_->GetJointCount()<<"\n";
 	std::cout<<"> Num joint names: "<<num_joints_<<"\n";
+
+	std::cout<<"> rosNamespace: "<<this->ros_namespace_<<"\n";
+	std::cout<<"> updateRate:   "<<this->update_rate_<<"\n";
+	std::cout<<"> mass:         "<<this->mass_<<"\n";
+	std::cout<<"> spring:       "<<this->sping_<<"\n";
+	std::cout<<"> damping:      "<<this->damper_<<"\n";
+
 }
 
 //////////////////////////////////////////////////////////////////////////
