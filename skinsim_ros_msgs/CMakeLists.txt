@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(FILES
   SkinJointData.msg
   SkinJointDataArray.msg
+  Joint1D.msg
+  Joint1DArray.msg
 )
 
 add_service_files(DIRECTORY srv FILES
