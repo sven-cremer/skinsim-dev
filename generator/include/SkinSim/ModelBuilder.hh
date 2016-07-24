@@ -803,7 +803,7 @@ public:
       x_ix++;
 
       out << YAML::BeginMap;
-      out << YAML::Key << "Joint" << YAML::Value << "joint_" + convert.str();
+      out << YAML::Key << "Joint" << YAML::Value << "spring_joint_" + convert.str();
       out << YAML::EndMap;
 
     }
