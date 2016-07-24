@@ -413,6 +413,7 @@ public:
     generateModelEnd();
 
     std::string filename = genModelDirectory( model_name ) + model_name + ".sdf";
+	std::cout<<"Saving to: "<<filename.c_str()<<"\n";
 
     m_sdfParsed.SetFromString( m_sdfStream.str() );
     m_sdfParsed.Write( filename );
@@ -497,6 +498,7 @@ public:
 
   void saveFile( std::string & filename, std::ostringstream & model )
   {
+	std::cout<<"Saving to: "<<filename.c_str()<<"\n";
     std::ofstream saveToFile;
     saveToFile.open ( filename.c_str() );
     saveToFile << model.str();
@@ -806,10 +808,11 @@ public:
     ////////////////////
 
 //    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
-    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
+//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );			// <- Simple plugin that works
 //    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
 //    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
 //    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin_V2.so", model_name );
+    addPlugin( "SkinJointGazeboRos", "libSkinJointGazeboRos.so", model_name );
 
     saveSDFFile(    model_name );
     saveConfigFile( model_name );
