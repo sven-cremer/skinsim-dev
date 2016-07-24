@@ -350,7 +350,8 @@ public:
   void addPlugin( std::string plugin_name, std::string plugin_filename, std::string & model_name )
   {
     m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
-                << "    <file_name>" << model_name << "</file_name>\n"
+                << "    <fileName>" << model_name << "</fileName>\n"
+                << "    <topicName>" << "test" << "</topicName>\n"
                 << "  </plugin>";
   }
 
