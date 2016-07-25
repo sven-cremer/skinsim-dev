@@ -13,10 +13,11 @@ add_message_files(FILES
   SkinJointDataArray.msg
   Joint1D.msg
   Joint1DArray.msg
+  PointArray.msg
 )
 
 add_service_files(DIRECTORY srv FILES
-#  Example.srv
+  Empty.srv
 )
 
 generate_messages(
