@@ -96,7 +96,7 @@ void ModelBuilder::initSkinSimModelBuilder()
 void ModelBuilder::generateSDFHeader()
 {
 	m_sdfStream << "<?xml version='1.0' ?>\n"
-			<< "<sdf version='1.4'>\n";
+			<< "<sdf version='1.5'>\n";
 }
 
 void ModelBuilder::generateModelEnd()
@@ -406,7 +406,7 @@ void ModelBuilder::saveSDFFile( std::string & model_name )
 	generateModelEnd();
 
 	std::string filename = genModelDirectory( model_name ) + model_name + ".sdf";
-	std::cout<<"Saving to: "<<filename.c_str()<<"\n";
+	std::cout<<"Saving: "<<filename.c_str()<<"\n";
 
 	m_sdfParsed.SetFromString( m_sdfStream.str() );
 	m_sdfParsed.Write( filename );
@@ -491,7 +491,7 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 
 void ModelBuilder::saveFile( std::string & filename, std::ostringstream & model )
 {
-	std::cout<<"Saving to: "<<filename.c_str()<<"\n";
+	std::cout<<"Saving: "<<filename.c_str()<<"\n";
 	std::ofstream saveToFile;
 	saveToFile.open ( filename.c_str() );
 	saveToFile << model.str();
@@ -794,9 +794,11 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 	out << YAML::EndSeq;
 
 	// Write YAML file and close
+    std::cout<<"Saving: "<<joint_config_filename.c_str()<<"\n";
 	fout << out.c_str();
 	fout.close();
-	fout2.close();
+
+	fout2.close();		// TODO nothing is saved to file
 
 	////////////////////
 
