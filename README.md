@@ -121,13 +121,19 @@ wrench:
 start_time: {secs: 0, nsecs: 0}
 duration: {secs: 1, nsecs: 0}" 
 ```
-To view or save the data published from the spring array plugin:
+### Data collection with ROS
+To view or save the joint data published from the spring array plugin:
 
     rostopic list
     rostopic echo /skinsim/spring_array
-    rostopic echo /skinsim/spring_array -p > data_file.csv
+    rostopic echo /skinsim/spring_array -p > joint_data.csv
 
-The file can easily be importeted into MATLAB using the *rtpload.m* script.
+To save the layout of the spring array execute the following in order:
+
+    rostopic echo /skinsim/layout -n 1 -p > layout_data.csv
+    rosservice call /skinsim/publish_layout "{}"
+
+The CSV files can easily be importeted into MATLAB using the *rtpload.m* script.
 
 ### Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See http://semver.org/
