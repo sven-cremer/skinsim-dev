@@ -29,6 +29,9 @@ include_directories ( ${Boost_INCLUDE_DIRS}
 link_directories( ${Boost_LIBRARY_DIRS} )
 
 # Build
+add_library(model_builder src/model_builder.cpp)
+target_link_libraries(model_builder ${GAZEBO_LIBRARIES} yaml-cpp  ${Boost_LIBRARIES} )
+
 add_executable(skin_model_generator src/skin_model_generator.cc)
-target_link_libraries( skin_model_generator ${GAZEBO_LIBRARIES} yaml-cpp  ${Boost_LIBRARIES} )
+target_link_libraries(skin_model_generator model_builder ${GAZEBO_LIBRARIES} yaml-cpp  ${Boost_LIBRARIES} )
 

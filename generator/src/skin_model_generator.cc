@@ -47,7 +47,8 @@
 #include <Eigen/Core>
 #include <yaml-cpp/yaml.h>
 
-#include <SkinSim/ModelBuilder.hh>
+#include <SkinSim/model_builder.h>
+//#include <SkinSim/ModelBuilder.hh>
 #include <SkinSim/ModelSpecYAML.hh>
 
 using namespace SkinSim;
@@ -78,14 +79,17 @@ int main(int argc, char** argv)
   std::string configFilePath = pathString + "/generator/config/model_params.yaml";
   std::ifstream fin(configFilePath.c_str());
 
-  std::cout<<"Loading file: "<<configFilePath<<"\n";
+  std::cout<<"Loading: "<<configFilePath<<"\n";
   YAML::Node doc;
   doc = YAML::LoadAll(fin);
-  std::cout<<"File Loaded"<<"\n";
+  //std::cout<<"File Loaded"<<"\n";
   for(std::size_t i=0;i<doc[0].size();i++)
   {
-	  std::cout<<"Spec Loaded: "<< doc[0][i] <<"\n";
+	  //std::cout<<"Spec Loaded: \n"<< doc[0][i] <<"\n";
 	  doc[0][i] >> modelSpecs;						// FIXME overwrites previous data
+
+	  std::cout<<"Spec Stored: \n";
+	  print(modelSpecs);
   }
 
   // FIXME this assumes square patches
@@ -93,10 +97,13 @@ int main(int argc, char** argv)
   {
     modelSpecs.spec.size_x = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
     modelSpecs.spec.size_y = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
+
+	std::cout<<"New size_x: "<<modelSpecs.spec.size_x<<"\n";
+	std::cout<<"New size_y: "<<modelSpecs.spec.size_y<<"\n";
   }
 
   // Create model files
-  SkinSimModelBuilder skinSimModelBuilderObject( modelSpecs.name                        ,
+  ModelBuilder skinSimModelBuilderObject( modelSpecs.name                        ,
                                                  modelSpecs.spec.xByX                   ,
 												 modelSpecs.spec.thick_board            ,
                                                  modelSpecs.spec.density                ,
