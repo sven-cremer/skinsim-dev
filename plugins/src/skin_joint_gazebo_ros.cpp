@@ -183,7 +183,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	std::cout<<"> Model name: "<<model_name_<<"\n";
 	std::cout<<"> Model child count: "<<model_->GetChildCount()<<"\n";
 	std::cout<<"> Model joint count: "<<model_->GetJointCount()<<"\n";
-	std::cout<<"> Num joint names: "<<num_joints_<<"\n";
+	std::cout<<"> Joint names count: "<<num_joints_<<"\n";
 
 	std::cout<<"> rosNamespace: "<<this->ros_namespace_<<"\n";
 	std::cout<<"> updateRate:   "<<this->update_rate_<<"\n";
@@ -191,6 +191,15 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	std::cout<<"> spring:       "<<this->sping_<<"\n";
 	std::cout<<"> damping:      "<<this->damper_<<"\n";
 
+	std::cout<<"GetInitialAnchorPose: "<<this->joints_[5]->GetInitialAnchorPose()<<"\n";
+	std::cout<<"GetWorldPose: "<<this->model_->GetWorldPose()<<"\n";
+	if(this->model_->GetChildLink("spring_5"))
+	{
+		std::cout<<"1: "<< this->model_->GetChildLink("spring_5")->GetInitialRelativePose () <<"\n";
+		std::cout<<"2: "<< this->model_->GetChildLink("spring_5")->GetRelativePose () <<"\n";
+		std::cout<<"3: "<< this->model_->GetChildLink("spring_5")->GetWorldCoGPose () <<"\n";
+		std::cout<<"4: "<< this->model_->GetChildLink("spring_5")->GetWorldPose () <<"\n";
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
