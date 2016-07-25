@@ -562,6 +562,8 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 
 	box_size << 1.0*size_x, 1.0*size_y, thick_board;		//Added the width as a parameter from Yaml File
 
+
+//////////////////////////////////////////////////////
 	// TODO make "plane" a variable, try using "r_forearm_roll_link" instead with the PR2
 	addLink( "plane",
 			20,
@@ -584,6 +586,41 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 			axis,
 			-0,
 			0 );
+
+    out << YAML::BeginSeq;
+///////////////////////////////////////////////////////
+    for(int p = 0; p<2; p++)
+    {
+
+    	std::string patch = "patch_" + boost::lexical_cast<std::string>(p);
+    	std::string patch_joint = patch + "_joint";
+
+
+    	box_size << 0.5*size_x, 0.5*size_y, thick_board*1.5;
+    	pose << 0, 0, plane_height, 0, 0, 0;		// Pose of spring board model
+
+    // TODO make "plane" a variable, try using "r_forearm_roll_link" instead with the PR2
+    addLink( patch,
+             20,
+             "collision",
+             "visual",
+             box_size,
+             pose,
+             base_ambient ,
+             base_diffuse ,
+             base_specular,
+             base_emissive );
+
+    axis << 0, 0, 1;
+
+    // Create a "fixed" joint by giving it +/- zero limits 			// TODO: make world a varaible name
+    addPlaneJoint( patch_joint,
+                   "prismatic",
+                   "plane",
+				   patch,
+                   axis,
+                   -0,
+                   0 );
 
 	//environment is moving
 	/*test.addPlaneJoint( "plane_joint",
@@ -719,7 +756,7 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 	double pos_x = -(size_x-skin_element_diameter)/2;
 	double pos_y = (size_y-skin_element_diameter)/2;
 
-	out << YAML::BeginSeq;
+//	out << YAML::BeginSeq;
 
 	int x_ix = 1, y_ix = 1;
 
@@ -753,9 +790,16 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 		pose << pos_x, pos_y, (skin_height + plane_height + tactile_height + (skin_element_diameter/2)), 0, 0, 0;		//Skin_hight changed to skin_height + tac_height + plane height+ radius of skin to avoid collision
 		radius = skin_element_diameter/2;
 
-		addLink( "spring_" + convert.str(),
+
+	  	std::string spring = patch + "_spring_" + convert.str();
+	  	std::string spring_joint = spring + "_joint" ; // + convert.str() ;
+
+	  	std::string collision = patch + "_sphere_collision_" + convert.str();
+
+
+		addLink( spring,
 				0.00235,
-				"sphere_collision_" + convert.str(),
+				collision,
 				"visual",
 				radius,
 				pose,
@@ -766,10 +810,10 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 
 		axis << 0, 0, 1;
 
-		addJoint( "spring_joint_" + convert.str(),
+		addJoint( spring_joint,
 				"prismatic",
-				"plane",
-				"spring_" + convert.str(),
+				patch,
+				spring,
 				axis );
 
 		//    std::cout << pos_x << " " << pos_y << "\n";
@@ -786,10 +830,11 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 		x_ix++;
 
 		out << YAML::BeginMap;
-		out << YAML::Key << "Joint" << YAML::Value << "spring_joint_" + convert.str();
+		out << YAML::Key << "Joint" << YAML::Value << spring_joint;
 		out << YAML::EndMap;
 
 	}
+} // End for patch
 
 	out << YAML::EndSeq;
 
