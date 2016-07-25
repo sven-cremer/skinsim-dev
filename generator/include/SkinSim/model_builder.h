@@ -206,15 +206,17 @@ public:
 			double pos_y,
 			double pos_z);
 
-	void createSkinPatchPlane(
-			std::string patch_name,
-			double plane_mass,
+	void createPlane(
+			std::string link_name,
+			std::string parent_name,
+			double link_mass,
 			double length_x,
 			double length_y,
 			double length_z,
 			double pos_x,
 			double pos_y,
-			double pos_z);
+			double pos_z,
+			Eigen::Vector4d color);
 
 };
 

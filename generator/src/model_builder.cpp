@@ -511,15 +511,8 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 		double tactile_length                       ,
 		double tactile_separation                   )
 {
-	Eigen::Vector4d base_ambient ;
-	Eigen::Vector4d base_diffuse ;
-	Eigen::Vector4d base_specular;
-	Eigen::Vector4d base_emissive;
-	//                R    G    B    a
-	base_ambient  << 1.0, 1.0, 1.0, 1.0 ;
-	base_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
-	base_specular << 0.1, 0.1, 0.1, 1.0 ;
-	base_emissive = Eigen::Vector4d::Zero();
+	Eigen::Vector4d color;
+	color  << 1.0, 1.0, 1.0, 1.0 ;
 
 	std::string modelDirectory = genModelDirectory( model_name );
 
@@ -536,55 +529,15 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 	//  sdf::init(robot);
 
 	Eigen::VectorXd pose;
-	Eigen::Vector3d box_size;
-	Eigen::Vector3d axis;
-	axis << 0, 0, 1;
-	double radius;
-
 	pose.resize(6,1);
 	pose << 0.0, 0.0, 0.05, 0.0, 0.0, 0.0;		// Pose of spring board model
 
 	generateModelStart( model_name, pose );
 
-	pose << 0, 0, plane_height, 0, 0, 0;
+	// Parameters
 
-	//    box_size << 1.5*size_x, 1.5*size_y, skin_element_diameter/10;		//Removing the height as a parameter of d_pose
-
-	box_size << 1.0*size_x, 1.0*size_y, thick_board;		//Added the width as a parameter from Yaml File
-
-
-	//////////////////////////////////////////////////////
-	// WORLD -> PLANE
-
-	base_ambient  << 0.3, 0.3, 0.3, 1.0 ;
-
-	std::string parent = "world";	// TODO try mounting on a PR2 link, e.g. "r_forearm_roll_link"
-	std::string child  = "plane";
-
-	addLink( child,
-			20,
-			"collision",
-			"visual",
-			box_size,
-			pose,
-			base_ambient ,
-			base_diffuse ,
-			base_specular,
-			base_emissive );
-
-	// Create a "fixed" joint by giving it +/- zero limits
-	addPlaneJoint( "plane_joint",
-			"prismatic",
-			parent,
-			child,
-			axis,
-			-0,
-			 0);
-
-	///////////////////////////////////////////////////////
-	// PLANE -> PATCH_X
-
-	out << YAML::BeginSeq;
+	int num_patches_x = 1;
+	int num_patches_y = 1;
 
 	double plane_mass = 20.0;
 	double element_mass = 0.002;
@@ -595,6 +548,41 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 	double length_y  = num_elements_y*skin_element_diameter;
 	double length_z  = thick_board*1.5;
 
+	double total_length_x = num_patches_x*length_x;
+	double total_length_y = num_patches_y*length_y;
+    double total_length_z = thick_board;
+
+    // Center plane
+//    total_length_x += (num_patches_x-1)*total_length_x/2;
+//    total_length_y += (num_patches_y-1)*total_length_y/2;
+
+	//////////////////////////////////////////////////////
+	// WORLD -> PLANE
+
+	color  << 0.6, 0.6, 0.6, 1.0 ;
+
+	std::string parent = "world";	// TODO try mounting on a PR2 link, e.g. "r_forearm_roll_link"
+	std::string plane  = "plane";
+
+	createPlane(
+			plane,
+			parent,
+			20.0,
+			total_length_x,
+			total_length_y,
+			total_length_z,
+			0.0,
+			0.0,
+			plane_height,
+			color);
+
+	///////////////////////////////////////////////////////
+	// PLANE -> PATCH_X
+
+	out << YAML::BeginSeq;
+
+	color  << 1.0, 1.0, 1.0, 1.0 ;
+
 	for(int p = 0; p<1; p++)
 	{
 
@@ -604,15 +592,18 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 		double pos_y = 0.0;
 		double pos_z = skin_height + plane_height + tactile_height;
 
-		createSkinPatchPlane(
+		// Create skin patch plane
+		createPlane(
 				patch,
+				"plane",
 				plane_mass,
-				length_x,
-				length_y,
+				0.95*length_x,
+				0.95*length_y,
 				length_z,
 				pos_x,
 				pos_y,
-				plane_height);
+				plane_height,
+				color);
 
 
 		createSkinPatchElements(
@@ -637,8 +628,6 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 
 	fout2.close();		// TODO nothing is saved to file
 
-	////////////////////
-
 	//    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
 	//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );			// <- Simple plugin that works
 	//    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
@@ -646,21 +635,24 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 	//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin_V2.so", model_name );
 	addPlugin( "SkinJointGazeboRos", "libSkinJointGazeboRos.so", model_name );
 
+	// Save files
 	saveSDFFile(    model_name );
 	saveConfigFile( model_name );
 	saveWorldFile(  model_name );
 
 }
 
-void ModelBuilder::createSkinPatchPlane(
-		std::string patch_name,
-		double plane_mass,
+void ModelBuilder::createPlane(
+		std::string link_name,
+		std::string parent_name,
+		double link_mass,
 		double length_x,
 		double length_y,
 		double length_z,
 		double pos_x,
 		double pos_y,
-		double pos_z)
+		double pos_z,
+		Eigen::Vector4d color)
 {
 
 	Eigen::Vector4d base_ambient ;
@@ -673,21 +665,22 @@ void ModelBuilder::createSkinPatchPlane(
 	base_specular << 0.1, 0.1, 0.1, 1.0 ;
 	base_emissive = Eigen::Vector4d::Zero();
 
+	base_diffuse = color;
+
 	Eigen::VectorXd pose;
 	pose.resize(6,1);
+	pose << pos_x, pos_y, pos_z, 0, 0, 0;
 
 	Eigen::Vector3d axis;
 	axis << 0, 0, 1;
 
 	Eigen::Vector3d box_size;
+	box_size << length_x, length_y, length_z;
 
-	box_size << 0.95*length_x, 0.95*length_y, length_z;
-	pose << pos_x, pos_y, pos_z, 0, 0, 0;
+	std::string link_joint = link_name + "_joint";
 
-	std::string patch_joint = patch_name + "_joint";
-
-	addLink( patch_name,
-			plane_mass,
+	addLink(link_name,
+			link_mass,
 			"collision",
 			"visual",
 			box_size,
@@ -698,10 +691,10 @@ void ModelBuilder::createSkinPatchPlane(
 			base_emissive );
 
 	// Create a "fixed" joint by giving it +/- zero limits
-	addPlaneJoint( patch_joint,
+	addPlaneJoint( link_joint,
 			"prismatic",
-			"plane",
-			patch_name,
+			parent_name,
+			link_name,
 			axis,
 			-0,
 			 0);
