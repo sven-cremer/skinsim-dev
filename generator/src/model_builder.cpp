@@ -536,30 +536,27 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 
 	// Parameters
 
-	int num_patches_x = 1;
-	int num_patches_y = 1;
+	int num_patches_x = 2;
+	int num_patches_y = 3;
 
 	double plane_mass = 20.0;
 	double element_mass = 0.002;
 	double num_elements_x = 8;
-	double num_elements_y = 8;
+	double num_elements_y = 5;
 
-	double length_x  = num_elements_x*skin_element_diameter;
-	double length_y  = num_elements_y*skin_element_diameter;
-	double length_z  = thick_board*1.5;
+	double patch_length_x  = num_elements_x*skin_element_diameter;
+	double patch_length_y  = num_elements_y*skin_element_diameter;
+	double patch_length_z  = thick_board*1.5;
 
-	double total_length_x = num_patches_x*length_x;
-	double total_length_y = num_patches_y*length_y;
+	double total_length_x = num_patches_x*patch_length_x;
+	double total_length_y = num_patches_y*patch_length_y;
     double total_length_z = thick_board;
-
-    // Center plane
-//    total_length_x += (num_patches_x-1)*total_length_x/2;
-//    total_length_y += (num_patches_y-1)*total_length_y/2;
 
 	//////////////////////////////////////////////////////
 	// WORLD -> PLANE
 
-	color  << 0.6, 0.6, 0.6, 1.0 ;
+	//color  << 0.6, 0.6, 0.6, 1.0 ;
+	color  << 1.0, 0.0, 0.0, 1.0 ;
 
 	std::string parent = "world";	// TODO try mounting on a PR2 link, e.g. "r_forearm_roll_link"
 	std::string plane  = "plane";
@@ -583,41 +580,50 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 
 	color  << 1.0, 1.0, 1.0, 1.0 ;
 
-	for(int p = 0; p<1; p++)
+	// Shift to center
+	double pos_x = 0.0 + patch_length_x/2 - patch_length_x*(double)num_patches_x/2;
+	double pos_y = 0.0 + patch_length_y/2 - patch_length_y*(double)num_patches_y/2;
+	double pos_z = skin_height + plane_height + tactile_height;
+
+	int index = 0;
+	for( int ix = 0; ix < num_patches_x; ix++ )
 	{
+		for( int iy = 0; iy < num_patches_y; iy++ )
+		{
 
-		std::string patch = "patch_" + boost::lexical_cast<std::string>(p);
+			double x = pos_x + ix*patch_length_x;
+			double y = pos_y + iy*patch_length_y;
 
-		double pos_x = 0.0;
-		double pos_y = 0.0;
-		double pos_z = skin_height + plane_height + tactile_height;
+			std::string patch = "patch_" + boost::lexical_cast<std::string>(index);
 
-		// Create skin patch plane
-		createPlane(
-				patch,
-				"plane",
-				plane_mass,
-				0.95*length_x,
-				0.95*length_y,
-				length_z,
-				pos_x,
-				pos_y,
-				plane_height,
-				color);
+			// Create skin patch plane
+			createPlane(
+					patch,
+					"plane",
+					plane_mass,
+					0.95*patch_length_x,
+					0.95*patch_length_y,
+					patch_length_z,
+					x,
+					y,
+					plane_height,
+					color);
 
 
-		createSkinPatchElements(
-				patch,
-				out,
-				skin_element_diameter,
-				element_mass,
-				num_elements_x,
-				num_elements_y,
-				pos_x,
-				pos_y,
-				pos_z);
+			createSkinPatchElements(
+					patch,
+					out,
+					skin_element_diameter,
+					element_mass,
+					num_elements_x,
+					num_elements_y,
+					x,
+					y,
+					pos_z);
 
-	} // End for patch
+			index++;
+		} // End for patch
+	}
 
 	out << YAML::EndSeq;
 
@@ -724,7 +730,9 @@ void ModelBuilder::createSkinPatchElements(
 	//                R    G    B    a
 	skin_ambient  << 1.0, 1.0, 1.0, 1.0 ;
 	skin_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
-	skin_specular << 0.1, 0.1, 0.1, 1.0 ;
+//	skin_diffuse  << 1.0, 1.0, 1.0, 0.5 ;
+//	skin_specular << 0.1, 0.1, 0.1, 1.0 ;
+	skin_specular << 0.5, 0.5, 0.5, 1.0 ;
 	skin_emissive = Eigen::Vector4d::Zero();
 
 	Eigen::VectorXd pose;
