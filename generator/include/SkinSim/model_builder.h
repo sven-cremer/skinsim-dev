@@ -195,7 +195,26 @@ public:
 			double tactile_length                 ,
 			double tactile_separation             );
 
+	void createSkinPatchElements(
+			std::string patch_name,
+			YAML::Emitter& out,
+			double element_diameter,
+			double element_mass,
+			double num_elements_x,
+			double num_elements_y,
+			double pos_x,
+			double pos_y,
+			double pos_z);
 
+	void createSkinPatchPlane(
+			std::string patch_name,
+			double plane_mass,
+			double length_x,
+			double length_y,
+			double length_z,
+			double pos_x,
+			double pos_y,
+			double pos_z);
 
 };
 

@@ -511,22 +511,11 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 		double tactile_length                       ,
 		double tactile_separation                   )
 {
-	Eigen::Vector4d skin_ambient ;
-	Eigen::Vector4d skin_diffuse ;
-	Eigen::Vector4d skin_specular;
-	Eigen::Vector4d skin_emissive;
-
 	Eigen::Vector4d base_ambient ;
 	Eigen::Vector4d base_diffuse ;
 	Eigen::Vector4d base_specular;
 	Eigen::Vector4d base_emissive;
-
-	////                 R    G    B
-	//skin_ambient  << 1.0, 1.0, 1.0, 1.0 ;
-	//skin_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
-	skin_specular << 0.1, 0.1, 0.1, 1.0 ;
-	skin_emissive = Eigen::Vector4d::Zero();
-
+	//                R    G    B    a
 	base_ambient  << 1.0, 1.0, 1.0, 1.0 ;
 	base_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
 	base_specular << 0.1, 0.1, 0.1, 1.0 ;
@@ -549,6 +538,7 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 	Eigen::VectorXd pose;
 	Eigen::Vector3d box_size;
 	Eigen::Vector3d axis;
+	axis << 0, 0, 1;
 	double radius;
 
 	pose.resize(6,1);
@@ -563,13 +553,15 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 	box_size << 1.0*size_x, 1.0*size_y, thick_board;		//Added the width as a parameter from Yaml File
 
 
-//////////////////////////////////////////////////////
-// WORLD -> PLANE
+	//////////////////////////////////////////////////////
+	// WORLD -> PLANE
 
 	base_ambient  << 0.3, 0.3, 0.3, 1.0 ;
 
-	// TODO make "plane" a variable, try using "r_forearm_roll_link" instead with the PR2
-	addLink( "plane",
+	std::string parent = "world";	// TODO try mounting on a PR2 link, e.g. "r_forearm_roll_link"
+	std::string child  = "plane";
+
+	addLink( child,
 			20,
 			"collision",
 			"visual",
@@ -580,266 +572,66 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 			base_specular,
 			base_emissive );
 
-	axis << 0, 0, 1;
-
-	// Create a "fixed" joint by giving it +/- zero limits 			// TODO: make world a varaible name
+	// Create a "fixed" joint by giving it +/- zero limits
 	addPlaneJoint( "plane_joint",
 			"prismatic",
-			"world",
-			"plane",
+			parent,
+			child,
 			axis,
 			-0,
-			0 );
+			 0);
 
-    out << YAML::BeginSeq;
-///////////////////////////////////////////////////////
-// PLANE -> PATCH_X
-    for(int p = 0; p<1; p++)
-    {
+	///////////////////////////////////////////////////////
+	// PLANE -> PATCH_X
 
-    	std::string patch = "patch_" + boost::lexical_cast<std::string>(p);
-    	std::string patch_joint = patch + "_joint";
+	out << YAML::BeginSeq;
 
-    	base_ambient  << 1.0, 1.0, 1.0, 1.0 ;
-    	box_size << 0.5*size_x, 0.5*size_y, thick_board*1.5;
-    	pose << 0, 0, plane_height, 0, 0, 0;		// Pose of spring board model
+	double plane_mass = 20.0;
+	double element_mass = 0.002;
+	double num_elements_x = 8;
+	double num_elements_y = 8;
 
-    // TODO make "plane" a variable, try using "r_forearm_roll_link" instead with the PR2
-    addLink( patch,
-             20,
-             "collision",
-             "visual",
-             box_size,
-             pose,
-             base_ambient ,
-             base_diffuse ,
-             base_specular,
-             base_emissive );
+	double length_x  = num_elements_x*skin_element_diameter;
+	double length_y  = num_elements_y*skin_element_diameter;
+	double length_z  = thick_board*1.5;
 
-    axis << 0, 0, 1;
-
-    // Create a "fixed" joint by giving it +/- zero limits 			// TODO: make world a varaible name
-    addPlaneJoint( patch_joint,
-                   "prismatic",
-                   "plane",
-				   patch,
-                   axis,
-                   -0,
-                   0 );
-
-
-	double skin_no = (double)(size_x/skin_element_diameter)*(size_y/skin_element_diameter);
-	int x_skin_len = (int)(size_x/skin_element_diameter);
-	int y_skin_len = (int)(size_y/skin_element_diameter);
-//	int skin_ix [y_skin_len][x_skin_len];
-//	int ix = 1;
-//
-//	for ( int i = 0; i<y_skin_len; i++)
-//	{
-//		for( int j = 0; j<x_skin_len; j++)
-//		{
-//			skin_ix[i][j] = ix;
-//			ix++;
-//		}
-//	}
-//
-//	int cent_x = (int)x_skin_len/2;
-//	int cent_y = (int)y_skin_len/2;
-//	std::vector <int> search_pts_x;
-//	std::vector <int> search_pts_y;
-//	std::vector <int> sens_cent_ix;
-//
-//	std::string path_cent = pathString + "model/config/tactile_cent_id.txt";
-//	std::ofstream tact_cent_rec;
-//	tact_cent_rec.open(path_cent.c_str());
-//
-//	// ---------down ------------
-//	for(int iy=cent_y; iy<=(y_skin_len-1); iy=iy+tactile_separation)
-//	{
-//		if((iy+tactile_length)<=(y_skin_len-1))
-//		{
-//			// --- left ----
-//			for(int ix=cent_x;ix>=0;ix=ix-tactile_separation)
-//			{
-//				if((ix-tactile_length)>=0)
-//				{
-//					search_pts_x.push_back(ix);
-//					search_pts_y.push_back(iy);
-//					sens_cent_ix.push_back(skin_ix[iy][ix]);
-//					tact_cent_rec << skin_ix[iy][ix]<<' ';
-//				}
-//			}
-//			// --- right ----
-//			for(int ix=(cent_x+tactile_separation);ix<=(x_skin_len-1);ix=ix+tactile_separation)
-//			{
-//				if((ix+tactile_length)<=(x_skin_len-1))
-//				{
-//					search_pts_x.push_back(ix);
-//					search_pts_y.push_back(iy);
-//					sens_cent_ix.push_back(skin_ix[iy][ix]);
-//					tact_cent_rec << skin_ix[iy][ix]<<' ';
-//				}
-//			}
-//		}
-//	}
-//
-//	// ---------upper ------------
-//	for(int iy=(cent_y-tactile_separation); iy>=0; iy=iy-tactile_separation)
-//	{
-//		if((iy-tactile_length)>=0)
-//		{
-//			// --- left ----
-//			for(int ix=cent_x;ix>=0;ix=ix-tactile_separation)
-//			{
-//				if((ix-tactile_length)>=0)
-//				{
-//					search_pts_x.push_back(ix);
-//					search_pts_y.push_back(iy);
-//					sens_cent_ix.push_back(skin_ix[iy][ix]);
-//					tact_cent_rec << skin_ix[iy][ix]<<' ';
-//				}
-//			}
-//			// --- right ----
-//			for(int ix=(cent_x+tactile_separation);ix<=(x_skin_len-1);ix=ix+tactile_separation)
-//			{
-//				if((ix+tactile_length)<=(x_skin_len-1))
-//				{
-//					search_pts_x.push_back(ix);
-//					search_pts_y.push_back(iy);
-//					sens_cent_ix.push_back(skin_ix[iy][ix]);
-//					tact_cent_rec << skin_ix[iy][ix]<<' ';
-//				}
-//			}
-//		}
-//	}
-//
-//	tact_cent_rec.close();
-//	std::vector <int> sens_cent_disp;
-//	sens_cent_disp = sens_cent_ix;
-//	std::sort(sens_cent_disp.begin(), sens_cent_disp.end(), std::greater<int>());
-//
-//	std::vector <int> tact_sens_ix;
-//
-//	std::string path = pathString + "model/config/tactile_id.txt";
-//	std::ofstream tact_rec;
-//	tact_rec.open(path.c_str());
-//
-//	for(int pt_ix=0; pt_ix<=(sens_cent_ix.size()-1); pt_ix++)
-//	{
-//		int tact_cent_x = search_pts_x[pt_ix];
-//		int tact_cent_y = search_pts_y[pt_ix];
-//
-//		for(int i = 0; i<=(y_skin_len-1);i++)
-//		{
-//			for(int j = 0; j<=(x_skin_len-1);j++)
-//			{
-//				if((abs(i - tact_cent_y)<=tactile_length)&&(abs(j - tact_cent_x)<=tactile_length))
-//				{
-//					tact_sens_ix.push_back(skin_ix[i][j]);
-//					tact_rec << skin_ix[i][j]<<' ';
-//				}
-//			}
-//		}
-//		if(pt_ix!=sens_cent_ix.size())
-//		{
-//			tact_rec<<'\n';
-//		}
-//	}
-//
-//	tact_rec.close();
-//
-//	std::sort(tact_sens_ix.begin(), tact_sens_ix.end(), std::greater<int>());
-
-	double pos_x = -(size_x-skin_element_diameter)/2;
-	double pos_y = (size_y-skin_element_diameter)/2;
-
-//	out << YAML::BeginSeq;
-
-	int x_ix = 1, y_ix = 1;
-
-// Add skin elements
-	for( int i = 1; i <= skin_no; i++ )
+	for(int p = 0; p<1; p++)
 	{
 
-		std::ostringstream convert;
-		convert << i;
+		std::string patch = "patch_" + boost::lexical_cast<std::string>(p);
 
-		if( x_ix > x_skin_len )
-		{
-			x_ix = 1;
-			y_ix++;
-		}
-/*
-		if(skin_ix[y_ix-1][x_ix-1]==tact_sens_ix.back())
-			//if(skin_ix[y_ix-1][x_ix-1]==sens_cent_disp.back())
-		{
-			// Sensor
-			skin_ambient  << 1.0, 0.0, 0.0, 1.0 ;
-			skin_diffuse  << 1.0, 0.0, 0.0, 1.0 ;
-			tact_sens_ix.pop_back();
-			//sens_cent_disp.pop_back();
-		}
-		else
-*/
-		{
-			skin_ambient  << 1.0, 1.0, 1.0, 1.0 ;
-			skin_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
+		double pos_x = 0.0;
+		double pos_y = 0.0;
+		double pos_z = skin_height + plane_height + tactile_height;
 
-		}
-
-		pose << pos_x, pos_y, (skin_height + plane_height + tactile_height + (skin_element_diameter/2)), 0, 0, 0;		//Skin_hight changed to skin_height + tac_height + plane height+ radius of skin to avoid collision
-		radius = skin_element_diameter/2;
-
-
-	  	std::string spring = patch + "_spring_" + convert.str();
-	  	std::string spring_joint = spring + "_joint" ; // + convert.str() ;
-
-	  	std::string collision = patch + "_sphere_collision_" + convert.str();
-
-
-		addLink( spring,
-				0.00235,
-				collision,
-				"visual",
-				radius,
-				pose,
-				skin_ambient ,
-				skin_diffuse ,
-				skin_specular,
-				skin_emissive );
-
-		axis << 0, 0, 1;
-
-		addJoint( spring_joint,
-				"prismatic",
+		createSkinPatchPlane(
 				patch,
-				spring,
-				axis );
+				plane_mass,
+				length_x,
+				length_y,
+				length_z,
+				pos_x,
+				pos_y,
+				plane_height);
 
-		//    std::cout << pos_x << " " << pos_y << "\n";
 
-		pos_x = pos_x + skin_element_diameter;
+		createSkinPatchElements(
+				patch,
+				out,
+				skin_element_diameter,
+				element_mass,
+				num_elements_x,
+				num_elements_y,
+				pos_x,
+				pos_y,
+				pos_z);
 
-		if( pos_x > size_x/2)
-		{
-			pos_x = -(size_x-skin_element_diameter)/2;
-			pos_y = pos_y - skin_element_diameter;
-			//std::cout << " y_id \n";
-		}
-
-		x_ix++;
-
-		out << YAML::BeginMap;
-		out << YAML::Key << "Joint" << YAML::Value << spring_joint;
-		out << YAML::EndMap;
-
-	} // End for element
-} // End for patch
+	} // End for patch
 
 	out << YAML::EndSeq;
 
 	// Write YAML file and close
-    std::cout<<"Saving: "<<joint_config_filename.c_str()<<"\n";
+	std::cout<<"Saving: "<<joint_config_filename.c_str()<<"\n";
 	fout << out.c_str();
 	fout.close();
 
@@ -860,4 +652,145 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 
 }
 
+void ModelBuilder::createSkinPatchPlane(
+		std::string patch_name,
+		double plane_mass,
+		double length_x,
+		double length_y,
+		double length_z,
+		double pos_x,
+		double pos_y,
+		double pos_z)
+{
+
+	Eigen::Vector4d base_ambient ;
+	Eigen::Vector4d base_diffuse ;
+	Eigen::Vector4d base_specular;
+	Eigen::Vector4d base_emissive;
+	//                R    G    B    a
+	base_ambient  << 1.0, 1.0, 1.0, 1.0 ;
+	base_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
+	base_specular << 0.1, 0.1, 0.1, 1.0 ;
+	base_emissive = Eigen::Vector4d::Zero();
+
+	Eigen::VectorXd pose;
+	pose.resize(6,1);
+
+	Eigen::Vector3d axis;
+	axis << 0, 0, 1;
+
+	Eigen::Vector3d box_size;
+
+	box_size << 0.95*length_x, 0.95*length_y, length_z;
+	pose << pos_x, pos_y, pos_z, 0, 0, 0;
+
+	std::string patch_joint = patch_name + "_joint";
+
+	addLink( patch_name,
+			plane_mass,
+			"collision",
+			"visual",
+			box_size,
+			pose,
+			base_ambient ,
+			base_diffuse ,
+			base_specular,
+			base_emissive );
+
+	// Create a "fixed" joint by giving it +/- zero limits
+	addPlaneJoint( patch_joint,
+			"prismatic",
+			"plane",
+			patch_name,
+			axis,
+			-0,
+			 0);
+
+}
+
+void ModelBuilder::createSkinPatchElements(
+		std::string patch_name,
+		YAML::Emitter& out,
+		double element_diameter,
+		double element_mass,
+		double num_elements_x,
+		double num_elements_y,
+		double pos_x,
+		double pos_y,
+		double pos_z)
+{
+
+	int num_elements = num_elements_x*num_elements_y;
+	double radius = element_diameter/2;
+	double x, y, z;
+
+	Eigen::Vector4d skin_ambient ;
+	Eigen::Vector4d skin_diffuse ;
+	Eigen::Vector4d skin_specular;
+	Eigen::Vector4d skin_emissive;
+	//                R    G    B    a
+	skin_ambient  << 1.0, 1.0, 1.0, 1.0 ;
+	skin_diffuse  << 1.0, 1.0, 1.0, 1.0 ;
+	skin_specular << 0.1, 0.1, 0.1, 1.0 ;
+	skin_emissive = Eigen::Vector4d::Zero();
+
+	Eigen::VectorXd pose;
+	pose.resize(6,1);
+
+	Eigen::Vector3d axis;
+	axis << 0, 0, 1;
+
+	// Shift to center
+	pos_x = pos_x + radius - element_diameter*(double)num_elements_x/2;
+	pos_y = pos_y + radius - element_diameter*(double)num_elements_y/2;
+	z = pos_z + radius;
+
+	// Add skin elements
+	int i = 0;
+	for( int ix = 0; ix < num_elements_x; ix++ )
+	{
+		for( int iy = 0; iy < num_elements_y; iy++ )
+		{
+
+			x = pos_x + ix*element_diameter;
+			y = pos_y + iy*element_diameter;
+
+			pose << x, y, z, 0, 0, 0;
+
+			std::string spring = patch_name + "_spring_" + boost::lexical_cast<std::string>(i);
+			std::string spring_joint = spring + "_joint" ;
+			std::string collision = patch_name + "_sphere_collision_" + boost::lexical_cast<std::string>(i);
+
+
+			addLink(spring,
+					element_mass,
+					collision,
+					"visual",
+					radius,
+					pose,
+					skin_ambient ,
+					skin_diffuse ,
+					skin_specular,
+					skin_emissive );
+
+			addJoint(spring_joint,
+					"prismatic",
+					patch_name,
+					spring,
+					axis );
+
+			//std::cout << pos_x << " " << pos_y << "\n";
+
+			// Store name
+			out << YAML::BeginMap;
+			out << YAML::Key << "Joint" << YAML::Value << spring_joint;
+			out << YAML::EndMap;
+
+			i++;
+		}
+
+	}
+}
+
+//////////////////////////////////////////////////////////////
 }
