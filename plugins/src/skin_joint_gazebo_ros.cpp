@@ -153,17 +153,26 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
 
-		// Custom Callback Queue
+		// ROS topics
 		ros::AdvertiseOptions ao = ros::AdvertiseOptions::create<skinsim_ros_msgs::Joint1DArray>(
 				this->topic_name_,1,
 				boost::bind( &SkinJointGazeboRos::RosConnect,this),
 				boost::bind( &SkinJointGazeboRos::RosDisconnect,this), ros::VoidPtr(), &this->ros_queue_);
-		this->ros_pub_ = this->ros_node_->advertise(ao);
+		this->ros_pub_joint_ = this->ros_node_->advertise(ao);
+
+		ros::AdvertiseOptions ao2 = ros::AdvertiseOptions::create<skinsim_ros_msgs::PointArray>(
+				"layout",1,
+				boost::bind( &SkinJointGazeboRos::emptyCB,this),
+				boost::bind( &SkinJointGazeboRos::emptyCB,this), ros::VoidPtr(), &this->ros_queue_);		// TODO check if it is OK to use the same ros queue
+		this->ros_pub_layout_ = this->ros_node_->advertise(ao2);
+
+		// ROS services
+		this->ros_srv_ = this->ros_node_->advertiseService("publish_layout", &SkinJointGazeboRos::serviceCB, this);
 
 		// Custom Callback Queue
 		this->callback_ros_queue_thread_ = boost::thread( boost::bind( &SkinJointGazeboRos::RosQueueThread,this ) );
 
-		this->skin_msg_.dataArray.resize(this->num_joints_);
+		this->joint_msg_.dataArray.resize(this->num_joints_);
 	}
 
 	// Update joints at every simulation iteration
@@ -223,18 +232,51 @@ void SkinJointGazeboRos::UpdateJoints()
 
 	for(int i=0;i<this->joint_names_.size();i++)
 	{
-		this->skin_msg_.dataArray[i].position = this->joints_[i]->GetAngle(0).Radian();
+		this->joint_msg_.dataArray[i].position = this->joints_[i]->GetAngle(0).Radian();
 
-		this->skin_msg_.dataArray[i].velocity = this->joints_[i]->GetVelocity(0);
+		this->joint_msg_.dataArray[i].velocity = this->joints_[i]->GetVelocity(0);
 
-		this->skin_msg_.dataArray[i].force = this->joints_[i]->GetForce(0);
+		this->joint_msg_.dataArray[i].force = this->joints_[i]->GetForce(0);
 	}
 
-	this->ros_pub_.publish(this->skin_msg_);
+	this->ros_pub_joint_.publish(this->joint_msg_);
 	this->lock_.unlock();
 
 	// save last time stamp
 	this->last_time_ = cur_time;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Callback function when subscriber connects
+bool SkinJointGazeboRos::serviceCB(skinsim_ros_msgs::Empty::Request& req, skinsim_ros_msgs::Empty::Response& res)
+{
+	math::Pose p;
+
+	this->lock_.lock();
+
+	// Copy position data into ROS message
+	layout_msg_.data.resize(this->num_joints_);
+
+	for(int i=0;i<this->num_joints_;i++)
+	{
+		p = this->joints_[i]->GetChild()->GetInitialRelativePose();
+
+		layout_msg_.data[i].x = p.pos.x;
+		layout_msg_.data[i].y = p.pos.y;
+		layout_msg_.data[i].z = p.pos.z;
+	}
+
+	this->ros_pub_layout_.publish(this->layout_msg_);
+
+	this->lock_.unlock();
+
+	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Empty callback function
+void SkinJointGazeboRos::emptyCB()
+{
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -55,7 +55,8 @@
 
 // ROS messages
 #include <skinsim_ros_msgs/Joint1DArray.h>
-#include <skinsim_ros_msgs/SkinJointDataArray.h>
+#include <skinsim_ros_msgs/Empty.h>
+#include <skinsim_ros_msgs/PointArray.h>
 
 // Utilities
 #include <yaml-cpp/yaml.h>
@@ -103,14 +104,28 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief A pointer to the ROS node handle
   private: ros::NodeHandle* ros_node_;
 
-  /// \brief A ROS publisher
-  private: ros::Publisher ros_pub_;
+  /// \brief A ROS service server
+  private: ros::ServiceServer ros_srv_;
+
+  /// \brief Service callback function that triggers the layout publisher
+  /// The layout data could have been returned in the service response,
+  /// however it is more convenient to save a rostopic into a CSV file.
+  private: bool serviceCB(skinsim_ros_msgs::Empty::Request& req, skinsim_ros_msgs::Empty::Response& res);
+
+  /// \brief A ROS publisher for the joint data
+  private: ros::Publisher ros_pub_joint_;
+
+  /// \brief A ROS publisher for the layout data
+  private: ros::Publisher ros_pub_layout_;
 
   /// \brief A toggle for publishing to ROS
   private: bool pub_to_ros_;
 
-  /// \brief A custom ROS message
-  private: skinsim_ros_msgs::Joint1DArray skin_msg_;
+  /// \brief A custom ROS message for the joint data
+  private: skinsim_ros_msgs::Joint1DArray joint_msg_;
+
+  /// \brief A custom ROS message for the layout data
+  private: skinsim_ros_msgs::PointArray layout_msg_;
 
   /// \brief Stores the ROS topic name
   private: std::string topic_name_;
@@ -120,6 +135,9 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief Count connections to ROS publisher
   private: int ros_connections_;
+
+  /// \brief: Empty callback function
+  private: void emptyCB();
 
   /// \brief: Callback function when subscriber connects
   private: void RosConnect();
