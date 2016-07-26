@@ -18,7 +18,7 @@
       # Skin array placement
       init_x                       : 0.0				# Initial x position [meters]
       init_y                       : 0.0				# Initial y position [meters]
-      init_z                       : 0.0				# Initial z position [meters]
+      init_z                       : 0.03				# Initial z position [meters]
       parent                       : world				# Name of parent link
       # Data collection with ROS
       ros_namespace                : skinsim			# Namespace for ROS topic
