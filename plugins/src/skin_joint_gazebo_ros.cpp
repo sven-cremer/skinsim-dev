@@ -129,6 +129,46 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		}
 	}
 
+	// Compute distances
+	math::Pose current;
+	math::Pose target;
+	std::vector<Distances> layout;
+
+	for (int i = 0; i < this->joints_.size(); ++i)
+	{
+		// Select  joint
+		current = this->joints_[i]->GetChild()->GetInitialRelativePose ();
+
+		Distances tmp;
+		tmp.index.resize( this->joints_.size() );
+		tmp.distance.resize( this->joints_.size() );		// Includes distance to itself
+
+		// Compute distances
+		for (int j = 0; j < this->joints_.size(); ++j)
+		{
+				target = this->joints_[j]->GetChild()->GetInitialRelativePose ();
+				tmp.distance[j] = current.pos.Distance(target.pos);
+				tmp.index[j] = j;
+		}
+
+		// Sort values
+		std::sort(tmp.index.begin(), tmp.index.end(), boost::bind(indexSort, _1, _2, tmp.distance));
+		std::sort(tmp.distance.begin(), tmp.distance.end() );
+
+		// Store result
+		layout.push_back(tmp);
+	}
+	// Print results
+//	for (int i = 0; i < this->joints_.size(); ++i)
+//	{
+//		std::cout<<this->joint_names_[i]<<"\n";
+//		for (int j = 0; j < this->joints_.size(); ++j)
+//		{
+//			std::cout<<"  "<<joint_names_[ layout[i].index[j] ] << ": "<<layout[i].distance[j]<<"\n";
+//		}
+//	}
+
+
 //    // Create a new Gazbeo transport node
 //    transport::NodePtr node(new transport::Node());
 //
@@ -193,12 +233,14 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 	std::cout<<"GetInitialAnchorPose: "<<this->joints_[5]->GetInitialAnchorPose()<<"\n";
 	std::cout<<"GetWorldPose: "<<this->model_->GetWorldPose()<<"\n";
-	if(this->model_->GetChildLink("spring_5"))
+	std::string link_name = "patch_0_spring_0";
+	if(this->model_->GetChildLink(link_name))
 	{
-		std::cout<<"1: "<< this->model_->GetChildLink("spring_5")->GetInitialRelativePose () <<"\n";
-		std::cout<<"2: "<< this->model_->GetChildLink("spring_5")->GetRelativePose () <<"\n";
-		std::cout<<"3: "<< this->model_->GetChildLink("spring_5")->GetWorldCoGPose () <<"\n";
-		std::cout<<"4: "<< this->model_->GetChildLink("spring_5")->GetWorldPose () <<"\n";
+		std::cout<<"1: "<< this->model_->GetChildLink(link_name)->GetInitialRelativePose () <<"\n";
+		std::cout<<"1: "<< this->joints_[0]->GetChild()->GetInitialRelativePose () <<"\n";
+		std::cout<<"2: "<< this->model_->GetChildLink(link_name)->GetRelativePose ()        <<"\n";
+		std::cout<<"3: "<< this->model_->GetChildLink(link_name)->GetWorldCoGPose ()        <<"\n";
+		std::cout<<"4: "<< this->model_->GetChildLink(link_name)->GetWorldPose ()           <<"\n";
 	}
 }
 

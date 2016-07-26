@@ -62,7 +62,19 @@
 #include <yaml-cpp/yaml.h>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/bind.hpp>
 #include <SkinSim/ModelPath.hh>
+
+struct Distances
+{
+	std::vector<int> index;
+	std::vector<double> distance;
+};
+
+bool indexSort(int a, int b, std::vector<double> data)
+{
+    return data[a]<data[b];
+}
 
 namespace gazebo
 {
