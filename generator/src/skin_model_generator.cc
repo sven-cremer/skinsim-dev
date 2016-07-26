@@ -92,29 +92,8 @@ int main(int argc, char** argv)
 	  print(modelSpecs);
   }
 
-  // FIXME this assumes square patches
-  if( modelSpecs.spec.xByX != 0.0 )
-  {
-    modelSpecs.spec.size_x = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
-    modelSpecs.spec.size_y = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
-
-	std::cout<<"New size_x: "<<modelSpecs.spec.size_x<<"\n";
-	std::cout<<"New size_y: "<<modelSpecs.spec.size_y<<"\n";
-  }
-
   // Create model files
-  ModelBuilder skinSimModelBuilderObject( modelSpecs.name                        ,
-                                                 modelSpecs.spec.xByX                   ,
-												 modelSpecs.spec.thick_board            ,
-                                                 modelSpecs.spec.density                ,
-                                                 modelSpecs.spec.size_x                 ,
-                                                 modelSpecs.spec.size_y                 ,
-                                                 modelSpecs.spec.skin_height            ,
-                                                 modelSpecs.spec.plane_height           ,
-												 modelSpecs.spec.tactile_height	        ,
-                                                 modelSpecs.spec.skin_element_diameter  ,
-                                                 modelSpecs.spec.tactile_length         ,
-                                                 modelSpecs.spec.tactile_separation     );
+  ModelBuilder skinSimModelBuilderObject( modelSpecs );
 
   fin.close();
 
