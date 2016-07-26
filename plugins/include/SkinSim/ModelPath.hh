@@ -52,7 +52,7 @@ void getModelConfigPath( std::string & fullname, sdf::ElementPtr _sdf )
   bool found = false;
   std::string filename;
 
-  filename = _sdf->Get < std::string > ("file_name");
+  filename = _sdf->Get < std::string > ("fileName");
 
   std::list<std::string>::iterator iter;
   std::list < std::string > modelPaths = common::SystemPaths::Instance()->GetModelPaths();

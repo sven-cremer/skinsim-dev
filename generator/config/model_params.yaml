@@ -1,15 +1,33 @@
-- name: spring_array
+# Configuration file for model generator
+- name: skin_array
   spec:
-    # No of elements per side
-    # do nothing if 0 use size_x and size_y
-    - xByX                         : 8.0 				# Creates matrix of skin elements (has to be less than 10)
-      skin_element_diameter        : 0.01			 	# Diameter of each skin element [meters]
-      thick_board                  : 0.002         		# Thickness of the white board [meters]
-      density                      : 3.0				# Not used
-      size_x                       : 0.0525				# size of the skin element (xbyX * d_pos) in X direction ?
-      size_y                       : 0.0525				# size of the skin element (xbyX * d_pos) in Y direction ?
-      skin_height                  : 0.001				# The height of the skin layer ?
-      tactile_height               : 0.01				# Distance between board and skin layer [meters]
-      plane_height                 : 0.001				# The height of the white plane from the ground
-      tactile_length               : 0.9   				# The radius of the sensors underneath the skin layer (for which skin layer is marked in red) ?
+      # Skin element and patch count
+    - num_elements_x               : 8					# Number of skin elements per patch in x-direction
+      num_elements_y               : 5					# Number of skin elements per patch in y-direction  (note: total number of elements per patch < 100)
+      num_patches_x                : 2					# Number of skin patches in x-direction
+      num_patches_y                : 3					# Number of skin patches in y-direction
+      # Skin element properties
+      element_diameter             : 0.010			 	# Diameter of each skin element [meters]
+      element_height               : 0.010				# The height of the skin element from the ground [meters]
+      element_mass                 : 0.0				# Mass of skin element [kg]
+      element_spring               : 122.24				# Spring constant of skin element [N/m]
+      element_damping              : 1.183				# Damping of skin element
+      # Skin plane properties
+      plane_thickness              : 0.002				# Thickness of the skin plane [meters]
+      plane_height                 : 0.001				# The height of the plane from the ground [meters]
+      # Skin array placement
+      init_x                       : 0.0				# Initial x position [meters]
+      init_y                       : 0.0				# Initial y position [meters]
+      init_z                       : 0.03				# Initial z position [meters]
+      parent                       : world				# Name of parent link
+      # Data collection with ROS
+      ros_namespace                : skinsim			# Namespace for ROS topic
+      update_rate                  : 0.0				# Update rate of plugin (0 means as fast as possible)
+      # TODO: override count settings if length > 0
+      patch_length_x               : 0.0				# Length of skin patch in x-direction
+      patch_length_y               : 0.0				# Length of skin patch in y-direction
+      total_length_x               : 0.0				# Length of skin array in x-direction
+      total_length_y               : 0.0				# Length of skin array in y-direction
+      # TODO: tactile layer properties
+      tactile_length               : 0.9				# The radius of the sensors underneath the skin layer (for which skin layer is marked in red) ?
       tactile_separation           : 2.0				# The space between each sensor underneath the skin layer (for which there are spaces between the rows and columns of skin elements) ?

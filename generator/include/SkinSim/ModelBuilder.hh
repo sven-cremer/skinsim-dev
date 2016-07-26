@@ -312,17 +312,17 @@ public:
                 << "          <upper>" <<  2.0 << "</upper>\n"
                 << "        </limit>\n"
                 << "      </axis>\n"
-				<< "    <sensor name='contact_" + joint_name + "' type='force_torque'>"
-				<< "		<topic> test_ "+ joint_name + " </topic>"
-				<< "		<update_rate> 5 </update_rate>"
-				<< "  		<always_on>true</always_on>"
-				<< "		<visualize>true</visualize>"
+//				<< "    <sensor name='contact_" + joint_name + "' type='force_torque'>"
+//				<< "		<topic> test_ "+ joint_name + " </topic>"
+//				<< "		<update_rate> 5 </update_rate>"
+//				<< "  		<always_on>true</always_on>"
+//				<< "		<visualize>true</visualize>"
 //				<< " 		<noise>"
 //				<< "        	<type>gaussian</type>"
 //				<< "            <mean>0.0</mean>"
 //				<< "            <stddev>0.01</stddev>"
 //				<< " 		</noise>"
-				<< "   	</sensor>"
+//				<< "   	</sensor>"
                 << "  </joint>\n";
   }
 
@@ -349,8 +349,19 @@ public:
 
   void addPlugin( std::string plugin_name, std::string plugin_filename, std::string & model_name )
   {
+    std::string ros_namespace = "skinsim";
+    double update_rate = 0.0;
+    double mass = 0.0;
+    double spring = 122.24;
+    double damping = 1.83;
+
     m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
-                << "    <file_name>" << model_name << "</file_name>\n"
+                << "    <fileName>"     << model_name << "</fileName>\n"
+                << "    <rosNamespace>" << ros_namespace << "</rosNamespace>\n"
+                << "    <updateRate>"   << update_rate << "</updateRate>\n"
+                << "    <mass>"         << mass << "</mass>\n"
+                << "    <spring>"       << spring << "</spring>\n"
+                << "    <damping>"      << damping << "</damping>\n"
                 << "  </plugin>";
   }
 
@@ -412,6 +423,7 @@ public:
     generateModelEnd();
 
     std::string filename = genModelDirectory( model_name ) + model_name + ".sdf";
+	std::cout<<"Saving to: "<<filename.c_str()<<"\n";
 
     m_sdfParsed.SetFromString( m_sdfStream.str() );
     m_sdfParsed.Write( filename );
@@ -474,11 +486,11 @@ public:
                 << "  </ode>                                                        \n"
                 << "</physics>                                                      \n"
                 << "                                                                \n"
-                << "                                                                \n"
-                << "<include>                                                       \n"
-                << "  <uri>model://box</uri>                                        \n"
-                << "  <pose>0 0 0.055 0 0 0</pose>                                  \n"
-                << "</include>                                                      \n"
+//                << "                                                                \n"
+//                << "<include>                                                       \n"
+//                << "  <uri>model://box</uri>                                        \n"
+//                << "  <pose>0 0 0.055 0 0 0</pose>                                  \n"
+//                << "</include>                                                      \n"
                 << "                                                                \n"
                 << "<gui fullscreen='0'>                                            \n"
                 << "  <camera name='user_camera'>                                   \n"
@@ -496,6 +508,7 @@ public:
 
   void saveFile( std::string & filename, std::ostringstream & model )
   {
+	std::cout<<"Saving to: "<<filename.c_str()<<"\n";
     std::ofstream saveToFile;
     saveToFile.open ( filename.c_str() );
     saveToFile << model.str();
@@ -790,7 +803,7 @@ public:
       x_ix++;
 
       out << YAML::BeginMap;
-      out << YAML::Key << "Joint" << YAML::Value << "joint_" + convert.str();
+      out << YAML::Key << "Joint" << YAML::Value << "spring_joint_" + convert.str();
       out << YAML::EndMap;
 
     }
@@ -805,10 +818,11 @@ public:
     ////////////////////
 
 //    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
-    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );
+//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );			// <- Simple plugin that works
 //    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
 //    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
 //    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin_V2.so", model_name );
+    addPlugin( "SkinJointGazeboRos", "libSkinJointGazeboRos.so", model_name );
 
     saveSDFFile(    model_name );
     saveConfigFile( model_name );

@@ -76,11 +76,11 @@ If another version of Gazebo is already installed, then the following errors mig
 - *catkin_make* fails because *gazebo_ros* cannot be found
 - *make* fails because of missing member in "gazebo::physics::Joint"
 
-For example, the PR2 simulator is still using Gazebo 2. To check the version, open up Gazebo from the terminal
+For example, the PR2 simulator is still using Gazebo 2. To check the version, execute the following in a terminal
 ```
-gazebo
+gazebo -v
 ```
-and in the menu go to Help->About. If for example version 2 is installed, remove it by executing
+If for example version 2 is installed, remove it by executing
 ```
 sudo apt-get remove gazebo2
 ```
@@ -89,11 +89,51 @@ and then try installing *libgazebo5-dev* again.
 ### Example programs
 
 - *skin_model_generator*
-    - generates Gazebo models based on the configurtions inside generator/config/model_params.yaml 
+    - generates Gazebo models based on the configurtions inside *generator/config/model_params.yaml* 
 - *generate_experiment_specification*
     - generates files used by experimenter
 - *auto_experimenter*
     - runs auto experimenter (currently no data is saved) 
+
+### Demo
+First generate the spring array model:
+
+    cd ~/skin_ws/src/skinsim/build
+    ./skin_model_generator
+
+Startup Gazebo by running 
+
+    gazebo --verbose
+
+or
+
+    roslaunch gazebo_ros empty_world.launch
+
+Insert the spring_array model from the menu. To test: spawn a sphere, resize it, and drop it on the array.
+If Gazebo was launched with ROS, virtual forces can be applied:
+```
+rosservice call /gazebo/apply_body_wrench "body_name: 'spring_2'
+reference_frame: 'spring_2'
+reference_point: {x: 0.0, y: 0.0, z: 0.0}
+wrench:
+  force: {x: 0.0, y: 0.0, z: 10.0}
+  torque: {x: 0.0, y: 0.0, z: 0.0}
+start_time: {secs: 0, nsecs: 0}
+duration: {secs: 1, nsecs: 0}" 
+```
+### Data collection with ROS
+To view or save the joint data published from the spring array plugin:
+
+    rostopic list
+    rostopic echo /skinsim/spring_array
+    rostopic echo /skinsim/spring_array -p > joint_data.csv
+
+To save the layout of the spring array execute the following in order:
+
+    rostopic echo /skinsim/layout -n 1 -p > layout_data.csv
+    rosservice call /skinsim/publish_layout "{}"
+
+The CSV files can easily be importeted into MATLAB using the *rtpload.m* script.
 
 ### Versioning
 Semantic versioning 2.0.0 is used in SkinSim. See http://semver.org/
