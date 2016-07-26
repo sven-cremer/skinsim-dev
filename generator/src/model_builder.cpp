@@ -91,12 +91,13 @@ void ModelBuilder::generateModelStart( std::string name, Eigen::VectorXd & pose 
 
 void ModelBuilder::addGeometry( double radius )
 {
+	double scaled_radius = radius*0.95;
 	m_sdfStream << "      <geometry>\n"
 			<< "        <sphere>\n"
-			<< "          <radius>" << radius*0.95 << "</radius>\n"
+			<< "          <radius>" << scaled_radius << "</radius>\n"
 			<< "        </sphere>\n"
 			<< "      </geometry>\n";
-	std::cout<<"[ModelBuilder::addGeometry] Actual radius used: "<<radius<<"\n"; 	// TODO remove scaling
+	//std::cout<<"[ModelBuilder::addGeometry] Actual radius used: "<<scaled_radius<<"\n"; 	// TODO remove scaling
 }
 
 void ModelBuilder::addGeometry( Eigen::Vector3d & box_size )
