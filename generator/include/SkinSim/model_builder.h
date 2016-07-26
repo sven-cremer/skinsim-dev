@@ -54,6 +54,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <SkinSim/ModelSpecYAML.hh>
+
 namespace SkinSim
 {
 
@@ -63,6 +65,7 @@ private:
 	std::ostringstream m_sdfStream;
 	sdf::SDF m_sdfParsed;
 	std::string pathString;
+	BuildModelSpec m_;
 
 	void generateSDFHeader();
 
@@ -80,18 +83,7 @@ public:
 
 	ModelBuilder( );
 
-	ModelBuilder(  std::string model_name  ,
-			double xByX                    ,
-			double thick_board			   ,
-			double density                 ,
-			double size_x                  ,
-			double size_y                  ,
-			double skin_height             ,
-			double plane_height            ,
-			double tactile_height		   ,
-			double skin_element_diameter   ,
-			double tactile_length          ,
-			double tactile_separation      );
+	ModelBuilder( BuildModelSpec modelSpecs );
 
 	~ModelBuilder();
 
@@ -166,7 +158,7 @@ public:
 			double upper_limit,
 			double lower_limit );
 
-	void addPlugin( std::string plugin_name, std::string plugin_filename, std::string & model_name );
+	void addPlugin( std::string plugin_name, std::string plugin_filename);
 
 	std::string getDirPath( std::string & model_name );
 
@@ -182,18 +174,7 @@ public:
 
 	void saveFile( std::string & filename, std::ostringstream & model );
 
-	void createModelFiles( std::string model_name ,
-			double xByX                           ,
-			double thick_board				      ,
-			double density                        ,
-			double size_x                         ,
-			double size_y                         ,
-			double skin_height                    ,
-			double plane_height                   ,
-			double tactile_height				  ,
-			double skin_element_diameter          ,
-			double tactile_length                 ,
-			double tactile_separation             );
+	void createModelFiles( BuildModelSpec modelSpecs_  );
 
 	void createSkinPatchElements(
 			std::string patch_name,

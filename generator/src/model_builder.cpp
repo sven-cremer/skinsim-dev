@@ -51,32 +51,10 @@ ModelBuilder::ModelBuilder( )
 	initSkinSimModelBuilder();
 }
 
-ModelBuilder::ModelBuilder(  std::string model_name                        ,
-		double xByX                                 ,
-		double thick_board				          ,
-		double density                              ,
-		double size_x                               ,
-		double size_y                               ,
-		double skin_height                          ,
-		double plane_height                         ,
-		double tactile_height					      ,
-		double skin_element_diameter                ,
-		double tactile_length                       ,
-		double tactile_separation                   )
+ModelBuilder::ModelBuilder( BuildModelSpec modelSpecs )
 {
 	initSkinSimModelBuilder();
-	createModelFiles( model_name                      ,
-			xByX                            ,
-			thick_board			          ,
-			density                         ,
-			size_x                          ,
-			size_y                          ,
-			skin_height                     ,
-			plane_height                    ,
-			tactile_height			      ,
-			skin_element_diameter           ,
-			tactile_length                  ,
-			tactile_separation              );
+	createModelFiles( modelSpecs );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -330,21 +308,16 @@ void ModelBuilder::addPlaneJoint( std::string joint_name,
 			<< "  </joint>\n";
 }
 
-void ModelBuilder::addPlugin( std::string plugin_name, std::string plugin_filename, std::string & model_name )
+void ModelBuilder::addPlugin( std::string plugin_name, std::string plugin_filename)
 {
-	std::string ros_namespace = "skinsim";
-	double update_rate = 0.0;
-	double mass = 0.0;
-	double spring = 122.24;
-	double damping = 1.83;
 
 	m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
-			<< "    <fileName>"     << model_name << "</fileName>\n"
-			<< "    <rosNamespace>" << ros_namespace << "</rosNamespace>\n"
-			<< "    <updateRate>"   << update_rate << "</updateRate>\n"
-			<< "    <mass>"         << mass << "</mass>\n"
-			<< "    <spring>"       << spring << "</spring>\n"
-			<< "    <damping>"      << damping << "</damping>\n"
+			<< "    <fileName>"     << m_.name << "</fileName>\n"
+			<< "    <rosNamespace>" << m_.spec.ros_namespace   << "</rosNamespace>\n"
+			<< "    <updateRate>"   << m_.spec.update_rate     << "</updateRate>\n"
+			<< "    <mass>"         << m_.spec.element_mass    << "</mass>\n"
+			<< "    <spring>"       << m_.spec.element_spring  << "</spring>\n"
+			<< "    <damping>"      << m_.spec.element_damping << "</damping>\n"
 			<< "  </plugin>";
 }
 
@@ -498,23 +471,15 @@ void ModelBuilder::saveFile( std::string & filename, std::ostringstream & model 
 	saveToFile.close();
 }
 
-void ModelBuilder::createModelFiles( std::string model_name                        ,
-		double xByX                                 ,
-		double thick_board				           ,
-		double density                              ,
-		double size_x                               ,
-		double size_y                               ,
-		double skin_height                          ,
-		double plane_height                         ,
-		double tactile_height				       ,
-		double skin_element_diameter                ,
-		double tactile_length                       ,
-		double tactile_separation                   )
+void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 {
+	// Store model specs
+	m_ = modelSpecs_;
+
 	Eigen::Vector4d color;
 	color  << 1.0, 1.0, 1.0, 1.0 ;
 
-	std::string modelDirectory = genModelDirectory( model_name );
+	std::string modelDirectory = genModelDirectory( m_.name );
 
 	std::string joint_config_filename = modelDirectory + "joint_names.yaml";
 	std::string tactile_id_filename   = modelDirectory + "tactile_id.yaml";
@@ -530,47 +495,41 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 
 	Eigen::VectorXd pose;
 	pose.resize(6,1);
-	pose << 0.0, 0.0, 0.05, 0.0, 0.0, 0.0;		// Pose of spring board model
 
-	generateModelStart( model_name, pose );
+	// Initial position of skin array model
+	pose << m_.spec.init_x, m_.spec.init_y, m_.spec.init_z, 0.0, 0.0, 0.0;
+	generateModelStart( m_.name, pose );
 
 	// Parameters
+	double plane_mass   = 0.010;
+	double element_mass = 0.001;		// Mass of Gazebo model, not MSD (has to be > 0, crashes otherwise)
 
-	int num_patches_x = 2;
-	int num_patches_y = 3;
+	// TODO check if length > 0
 
-	double plane_mass = 20.0;
-	double element_mass = 0.002;
-	double num_elements_x = 8;
-	double num_elements_y = 5;
+	m_.spec.patch_length_x  = m_.spec.num_elements_x*m_.spec.element_diameter;
+	m_.spec.patch_length_y  = m_.spec.num_elements_y*m_.spec.element_diameter;
 
-	double patch_length_x  = num_elements_x*skin_element_diameter;
-	double patch_length_y  = num_elements_y*skin_element_diameter;
-	double patch_length_z  = thick_board*1.5;
-
-	double total_length_x = num_patches_x*patch_length_x;
-	double total_length_y = num_patches_y*patch_length_y;
-    double total_length_z = thick_board;
+	m_.spec.total_length_x = m_.spec.num_patches_x*m_.spec.patch_length_x;
+	m_.spec.total_length_y = m_.spec.num_patches_y*m_.spec.patch_length_y;
 
 	//////////////////////////////////////////////////////
 	// WORLD -> PLANE
 
-	//color  << 0.6, 0.6, 0.6, 1.0 ;
 	color  << 1.0, 0.0, 0.0, 1.0 ;
 
-	std::string parent = "world";	// TODO try mounting on a PR2 link, e.g. "r_forearm_roll_link"
+	//std::string parent = "world";	// TODO try mounting on a PR2 link, e.g. "r_forearm_roll_link"
 	std::string plane  = "plane";
 
 	createPlane(
 			plane,
-			parent,
-			20.0,
-			total_length_x,
-			total_length_y,
-			total_length_z,
+			m_.spec.parent,
+			plane_mass,
+			m_.spec.total_length_x,
+			m_.spec.total_length_y,
+			m_.spec.plane_thickness,
 			0.0,
 			0.0,
-			plane_height,
+			m_.spec.plane_height,
 			color);
 
 	///////////////////////////////////////////////////////
@@ -581,18 +540,17 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 	color  << 1.0, 1.0, 1.0, 1.0 ;
 
 	// Shift to center
-	double pos_x = 0.0 + patch_length_x/2 - patch_length_x*(double)num_patches_x/2;
-	double pos_y = 0.0 + patch_length_y/2 - patch_length_y*(double)num_patches_y/2;
-	double pos_z = skin_height + plane_height + tactile_height;
+	double pos_x = 0.0 + m_.spec.patch_length_x/2 - m_.spec.patch_length_x*(double)m_.spec.num_patches_x/2;
+	double pos_y = 0.0 + m_.spec.patch_length_y/2 - m_.spec.patch_length_y*(double)m_.spec.num_patches_y/2;
 
 	int index = 0;
-	for( int ix = 0; ix < num_patches_x; ix++ )
+	for( int ix = 0; ix < m_.spec.num_patches_x; ix++ )
 	{
-		for( int iy = 0; iy < num_patches_y; iy++ )
+		for( int iy = 0; iy < m_.spec.num_patches_y; iy++ )
 		{
 
-			double x = pos_x + ix*patch_length_x;
-			double y = pos_y + iy*patch_length_y;
+			double x = pos_x + ix*m_.spec.patch_length_x;
+			double y = pos_y + iy*m_.spec.patch_length_y;
 
 			std::string patch = "patch_" + boost::lexical_cast<std::string>(index);
 
@@ -601,28 +559,28 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 					patch,
 					"plane",
 					plane_mass,
-					0.95*patch_length_x,
-					0.95*patch_length_y,
-					patch_length_z,
+					0.95*m_.spec.patch_length_x,
+					0.95*m_.spec.patch_length_y,
+					1.50*m_.spec.plane_thickness,
 					x,
 					y,
-					plane_height,
+					m_.spec.plane_height,
 					color);
 
 
 			createSkinPatchElements(
 					patch,
 					out,
-					skin_element_diameter,
+					m_.spec.element_diameter,
 					element_mass,
-					num_elements_x,
-					num_elements_y,
+					m_.spec.num_elements_x,
+					m_.spec.num_elements_y,
 					x,
 					y,
-					pos_z);
+					m_.spec.element_height);
 
 			index++;
-		} // End for patch
+		}
 	}
 
 	out << YAML::EndSeq;
@@ -639,12 +597,12 @@ void ModelBuilder::createModelFiles( std::string model_name                     
 	//    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
 	//    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
 	//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin_V2.so", model_name );
-	addPlugin( "SkinJointGazeboRos", "libSkinJointGazeboRos.so", model_name );
+	addPlugin( "SkinJointGazeboRos", "libSkinJointGazeboRos.so");
 
 	// Save files
-	saveSDFFile(    model_name );
-	saveConfigFile( model_name );
-	saveWorldFile(  model_name );
+	saveSDFFile(   m_.name );
+	saveConfigFile(m_.name );
+	saveWorldFile( m_.name );
 
 }
 
