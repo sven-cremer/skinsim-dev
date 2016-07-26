@@ -132,7 +132,6 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	// Compute distances
 	math::Pose current;
 	math::Pose target;
-	std::vector<Distances> layout;
 
 	for (int i = 0; i < this->joints_.size(); ++i)
 	{
@@ -241,6 +240,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		std::cout<<"2: "<< this->model_->GetChildLink(link_name)->GetRelativePose ()        <<"\n";
 		std::cout<<"3: "<< this->model_->GetChildLink(link_name)->GetWorldCoGPose ()        <<"\n";
 		std::cout<<"4: "<< this->model_->GetChildLink(link_name)->GetWorldPose ()           <<"\n";
+		std::cout<<"Collision property: "<<this->joints_[0]->GetChild()->GetCollisions()[0]->GetName()<<"\n";
 	}
 }
 
@@ -254,6 +254,8 @@ void SkinJointGazeboRos::UpdateJoints()
 	double current_force = 0;
 	double current_velocity = 0;
 	double sens_force = 0;
+	double force = 0;
+	double force_dist =0;
 
 	common::Time cur_time = this->world_->GetSimTime();
 
@@ -267,7 +269,19 @@ void SkinJointGazeboRos::UpdateJoints()
       current_velocity = this->joints_[i]->GetVelocity(0);
 
       // This sets the mass-spring-damper dynamics, currently only spring and damper
-      this->joints_[i]->SetForce(0, (rest_angle - current_angle) * sping_ - damper_ * current_velocity);
+      force = (rest_angle - current_angle) * sping_ - damper_ * current_velocity;
+      this->joints_[i]->SetForce(0, force);
+
+      // Force distribution
+      if(i==54)	// FIXME Only works for a single element, check contacts before applying
+      {
+    	  for (int j = 1; j < this->joints_.size(); ++j)	// skip first
+    	  {
+    		  force_dist = -force * exp(- 80.0 * layout[i].distance[j] );
+    		  this->joints_[ layout[i].index[j] ]->SetForce(0, force_dist);
+    	  }
+      }
+
     }
 
     // Decide whether to publish
@@ -288,6 +302,9 @@ void SkinJointGazeboRos::UpdateJoints()
 		this->joint_msg_.dataArray[i].velocity = this->joints_[i]->GetVelocity(0);
 
 		this->joint_msg_.dataArray[i].force = this->joints_[i]->GetForce(0);
+
+		// this->joint_msg_.dataArray[i].collisions =
+
 	}
 
 	this->ros_pub_joint_.publish(this->joint_msg_);

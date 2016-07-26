@@ -112,14 +112,14 @@ or
 Insert the spring_array model from the menu. To test: spawn a sphere, resize it, and drop it on the array.
 If Gazebo was launched with ROS, virtual forces can be applied:
 ```
-rosservice call /gazebo/apply_body_wrench "body_name: 'spring_2'
-reference_frame: 'spring_2'
+rosservice call /gazebo/apply_body_wrench "body_name: 'skin_array::patch_2_spring_4'
+reference_frame: 'world'
 reference_point: {x: 0.0, y: 0.0, z: 0.0}
 wrench:
-  force: {x: 0.0, y: 0.0, z: 10.0}
+  force: {x: 0.0, y: 0.0, z: -1.0}
   torque: {x: 0.0, y: 0.0, z: 0.0}
 start_time: {secs: 0, nsecs: 0}
-duration: {secs: 1, nsecs: 0}" 
+duration: {secs: 2, nsecs: 0}" 
 ```
 ### Data collection with ROS
 To view or save the joint data published from the spring array plugin:

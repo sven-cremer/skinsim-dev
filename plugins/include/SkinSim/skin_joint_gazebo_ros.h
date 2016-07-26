@@ -183,6 +183,9 @@ class SkinJointGazeboRos : public ModelPlugin
   YAML::Node    doc_;
   std::ifstream input_file_;
 
+  /// \brief Distances between each element
+  private: std::vector<Distances> layout;
+
 };
 
 }
