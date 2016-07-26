@@ -96,6 +96,7 @@ void ModelBuilder::addGeometry( double radius )
 			<< "          <radius>" << radius*0.95 << "</radius>\n"
 			<< "        </sphere>\n"
 			<< "      </geometry>\n";
+	std::cout<<"[ModelBuilder::addGeometry] Actual radius used: "<<radius<<"\n"; 	// TODO remove scaling
 }
 
 void ModelBuilder::addGeometry( Eigen::Vector3d & box_size )
@@ -149,7 +150,7 @@ void ModelBuilder::addMaterial( Eigen::Vector4d & ambient ,
 void ModelBuilder::addCollision( std::string collision_name,  double radius )
 {
 	m_sdfStream << "    <collision name='" + collision_name + "'>\n";
-	m_sdfStream << "		<pose>0.000000 0.000000 0.0 0.000000 -0.000000 0.000000</pose>\n";
+	m_sdfStream << "		<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>\n";
 	addGeometry( radius );
 	addSurface();
 	m_sdfStream << "    </collision>\n";
@@ -158,7 +159,7 @@ void ModelBuilder::addCollision( std::string collision_name,  double radius )
 void ModelBuilder::addCollision( std::string collision_name, Eigen::Vector3d & box_size )
 {
 	m_sdfStream << "    <collision name='" + collision_name + "'>\n";
-	m_sdfStream << "		<pose>0.000000 0.000000 0.0 0.000000 -0.000000 0.000000</pose>\n";
+	m_sdfStream << "		<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>\n";
 	addGeometry( box_size );
 	addSurface();
 	m_sdfStream << "    </collision>\n";
@@ -642,10 +643,11 @@ void ModelBuilder::createPlane(
 	box_size << length_x, length_y, length_z;
 
 	std::string link_joint = link_name + "_joint";
+	std::string link_collision = link_name + "_collision";
 
 	addLink(link_name,
 			link_mass,
-			"collision",
+			link_collision,
 			"visual",
 			box_size,
 			pose,
@@ -718,7 +720,7 @@ void ModelBuilder::createSkinPatchElements(
 
 			std::string spring = patch_name + "_spring_" + boost::lexical_cast<std::string>(i);
 			std::string spring_joint = spring + "_joint" ;
-			std::string collision = patch_name + "_sphere_collision_" + boost::lexical_cast<std::string>(i);
+			std::string collision = spring + "_collision";
 
 
 			addLink(spring,
