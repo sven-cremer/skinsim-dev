@@ -114,7 +114,13 @@ class SkinJointGazeboRos : public ModelPlugin
   private: std::string model_name_;
 
   /// \brief A pointer to the contact manager of the physics engine
-  private: std::vector<physics::ContactManager*> contact_mgrs_;
+  private: physics::ContactManager* contact_mgr_;
+
+  /// \brief Vector containing the collision names
+  private: std::vector<std::string> collision_names_;
+
+  /// \brief Vector containing the collision names
+  private: std::vector<bool> collision_index_;
 
   /// \brief A pointer to the ROS node handle
   private: ros::NodeHandle* ros_node_;

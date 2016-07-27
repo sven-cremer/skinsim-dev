@@ -73,6 +73,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	// Save pointers and names
 	this->model_ = _model;
 	this->world_ = this->model_->GetWorld();
+	this->contact_mgr_ = this->world_->GetPhysicsEngine()->GetContactManager();
 
 	this->model_name_ = model_->GetName();
 	this->topic_name_ = model_name_;
@@ -129,6 +130,15 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		}
 	}
 
+	// Store collision names
+	for (unsigned int i = 0; i < this->num_joints_; ++i)
+	{
+		std::string link = this->joints_[i]->GetChild()->GetName();
+		std::string name  = link + "_collision";
+		collision_names_.push_back(name);
+		collision_index_.push_back(false);
+	}
+
 	// Compute distances
 	math::Pose current;
 	math::Pose target;
@@ -167,17 +177,6 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 //		}
 //	}
 
-	// Create contact filters
-	for (unsigned int i = 0; i < this->num_joints_; ++i)
-	{
-		this->contact_mgrs_.push_back( this->world_->GetPhysicsEngine()->GetContactManager() );
-		std::string topic = "f_" + boost::lexical_cast<std::string>(i);
-		std::string link = this->joints_[i]->GetChild()->GetName();
-		std::string name  = model_name_ + "::" + link + "::" + link + "_collision";
-		std::cout<<name<<"\n";
-		this->contact_mgrs_[i]->CreateFilter( topic, name );
-		//std::vector<physics::Contact*> temp = contact_mgr_->GetContacts();
-	}
 
 //    // Create a new Gazbeo transport node
 //    transport::NodePtr node(new transport::Node());
@@ -274,6 +273,31 @@ void SkinJointGazeboRos::UpdateJoints()
 //	if (this->update_rate_ > 0 && (cur_time-this->last_time_).Double() < (1.0/this->update_rate_))
 //		return;
 
+	// Check for collisions
+	std::vector<physics::Contact*> contacts_ = contact_mgr_->GetContacts();
+    for (unsigned int i = 0; i < contacts_.size(); ++i)
+    {
+    	//contacts_[i]->collision1->GetLink()->GetName()
+    	std::string name1 = contacts_[i]->collision1->GetName();
+    	std::string name2 = contacts_[i]->collision2->GetName();
+    	if (std::find(collision_names_.begin(), collision_names_.end(), name1) != collision_names_.end())
+    	{
+    	  // Element in vector.
+    		collision_index_[i] = true;
+    	}
+    	else if (std::find(collision_names_.begin(), collision_names_.end(), name2) != collision_names_.end())
+    	{
+    	  // Element in vector.
+    		collision_index_[i] = true;
+    	}
+    	else
+    	{
+    		collision_index_[i] = false;
+    	}
+    	//std::cout<<name1<<", "<<name2<<" -> "<<collision_index_[i]<<"\n";
+    }
+
+    // Set dynamics
     for (unsigned int i = 0; i < this->joints_.size(); ++i)
     {
       current_angle = this->joints_[i]->GetAngle(0).Radian();
@@ -314,7 +338,11 @@ void SkinJointGazeboRos::UpdateJoints()
 
 		this->joint_msg_.dataArray[i].force = this->joints_[i]->GetForce(0);
 
-		this->joint_msg_.dataArray[i].collisions = this->contact_mgrs_[i]->GetContactCount();
+		//this->joint_msg_.dataArray[i].collisions = this->contact_mgr_->GetContactCount();
+		if(collision_index_[i])
+			this->joint_msg_.dataArray[i].collisions = 1;
+		else
+			this->joint_msg_.dataArray[i].collisions = 0;
 	}
 
 	this->ros_pub_joint_.publish(this->joint_msg_);
