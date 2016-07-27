@@ -167,6 +167,17 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 //		}
 //	}
 
+	// Create contact filters
+	for (unsigned int i = 0; i < this->num_joints_; ++i)
+	{
+		this->contact_mgrs_.push_back( this->world_->GetPhysicsEngine()->GetContactManager() );
+		std::string topic = "f_" + boost::lexical_cast<std::string>(i);
+		std::string link = this->joints_[i]->GetChild()->GetName();
+		std::string name  = model_name_ + "::" + link + "::" + link + "_collision";
+		std::cout<<name<<"\n";
+		this->contact_mgrs_[i]->CreateFilter( topic, name );
+		//std::vector<physics::Contact*> temp = contact_mgr_->GetContacts();
+	}
 
 //    // Create a new Gazbeo transport node
 //    transport::NodePtr node(new transport::Node());
@@ -273,7 +284,7 @@ void SkinJointGazeboRos::UpdateJoints()
       this->joints_[i]->SetForce(0, force);
 
       // Force distribution
-      if(i==54)	// FIXME Only works for a single element, check contacts before applying
+      if(false) //i==54)	// FIXME Only works for a single element, check contacts before applying
       {
     	  for (int j = 1; j < this->joints_.size(); ++j)	// skip first
     	  {
@@ -303,8 +314,7 @@ void SkinJointGazeboRos::UpdateJoints()
 
 		this->joint_msg_.dataArray[i].force = this->joints_[i]->GetForce(0);
 
-		// this->joint_msg_.dataArray[i].collisions =
-
+		this->joint_msg_.dataArray[i].collisions = this->contact_mgrs_[i]->GetContactCount();
 	}
 
 	this->ros_pub_joint_.publish(this->joint_msg_);
