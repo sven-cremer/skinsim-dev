@@ -274,27 +274,32 @@ void SkinJointGazeboRos::UpdateJoints()
 //		return;
 
 	// Check for collisions
+	for (unsigned int i = 0; i < collision_index_.size(); ++i)
+		collision_index_[i] = false;
+
 	std::vector<physics::Contact*> contacts_ = contact_mgr_->GetContacts();
+	//contact_mgr_->Clear(); <- crashes
     for (unsigned int i = 0; i < contacts_.size(); ++i)
     {
     	//contacts_[i]->collision1->GetLink()->GetName()
-    	std::string name1 = contacts_[i]->collision1->GetName();
-    	std::string name2 = contacts_[i]->collision2->GetName();
-    	if (std::find(collision_names_.begin(), collision_names_.end(), name1) != collision_names_.end())
+
+    	std::string name = contacts_[i]->collision1->GetName();
+    	int idx = std::find(collision_names_.begin(), collision_names_.end(), name) - collision_names_.begin();
+
+    	if (idx < collision_names_.size()) // Name found
     	{
-    	  // Element in vector.
-    		collision_index_[i] = true;
+    		collision_index_[idx] = true;
     	}
-    	else if (std::find(collision_names_.begin(), collision_names_.end(), name2) != collision_names_.end())
+    	else	// Name not found
     	{
-    	  // Element in vector.
-    		collision_index_[i] = true;
+    		name = contacts_[i]->collision2->GetName();
+    		idx = std::find(collision_names_.begin(), collision_names_.end(), name) - collision_names_.begin();
+
+    		if (idx < collision_names_.size()) // Name found
+        	{
+    			collision_index_[idx] = true;
+        	}
     	}
-    	else
-    	{
-    		collision_index_[i] = false;
-    	}
-    	//std::cout<<name1<<", "<<name2<<" -> "<<collision_index_[i]<<"\n";
     }
 
     // Set dynamics
@@ -308,12 +313,15 @@ void SkinJointGazeboRos::UpdateJoints()
       this->joints_[i]->SetForce(0, force);
 
       // Force distribution
-      if(false) //i==54)	// FIXME Only works for a single element, check contacts before applying
+      if(collision_index_[i]) //i==54)	// FIXME Only works for a single element, check contacts before applying
       {
     	  for (int j = 1; j < this->joints_.size(); ++j)	// skip first
     	  {
-    		  force_dist = -force * exp(- 80.0 * layout[i].distance[j] );
-    		  this->joints_[ layout[i].index[j] ]->SetForce(0, force_dist);
+    		  if(!collision_index_[j])
+    		  {
+    			  force_dist = -force * exp(- 40.0 * layout[i].distance[j] );
+    			  this->joints_[ layout[i].index[j] ]->SetForce(0, force_dist);
+    		  }
     	  }
       }
 
