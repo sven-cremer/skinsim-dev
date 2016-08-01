@@ -277,9 +277,9 @@ void SkinJointGazeboRos::UpdateJoints()
 	for (unsigned int i = 0; i < collision_index_.size(); ++i)
 		collision_index_[i] = false;
 
+	// FIXME: If there are no subscribers to ~/physics/contacts, then the return value will be NULL.
 	std::vector<physics::Contact*> contacts_ = contact_mgr_->GetContacts();
-	//contact_mgr_->Clear(); <- crashes
-    for (unsigned int i = 0; i < contacts_.size(); ++i)
+    for (unsigned int i = 0; i < contact_mgr_->GetContactCount(); ++i)	// Note: do not iterate from 0 to .size()
     {
     	//contacts_[i]->collision1->GetLink()->GetName()
 
