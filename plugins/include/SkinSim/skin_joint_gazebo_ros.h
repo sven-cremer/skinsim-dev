@@ -57,6 +57,8 @@
 #include <skinsim_ros_msgs/Joint1DArray.h>
 #include <skinsim_ros_msgs/Empty.h>
 #include <skinsim_ros_msgs/PointArray.h>
+#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
 
 // Utilities
 #include <yaml-cpp/yaml.h>
@@ -139,6 +141,9 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief A ROS publisher for the layout data
   private: ros::Publisher ros_pub_layout_;
 
+  /// \brief A ROS publisher for RVIZ
+  private: ros::Publisher ros_pub_rviz_;
+
   /// \brief A toggle for publishing to ROS
   private: bool pub_to_ros_;
 
@@ -147,6 +152,9 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief A custom ROS message for the layout data
   private: skinsim_ros_msgs::PointArray layout_msg_;
+
+  /// \brief A custom ROS message for the layout data
+  private: visualization_msgs::MarkerArray msg_rviz_;
 
   /// \brief Stores the ROS topic name
   private: std::string topic_name_;

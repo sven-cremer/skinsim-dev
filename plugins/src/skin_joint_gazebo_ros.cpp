@@ -215,6 +215,12 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 				boost::bind( &SkinJointGazeboRos::emptyCB,this), ros::VoidPtr(), &this->ros_queue_);		// TODO check if it is OK to use the same ros queue
 		this->ros_pub_layout_ = this->ros_node_->advertise(ao2);
 
+		ros::AdvertiseOptions ao3 = ros::AdvertiseOptions::create<visualization_msgs::MarkerArray>(
+				"rviz",1,
+				boost::bind( &SkinJointGazeboRos::emptyCB,this),
+				boost::bind( &SkinJointGazeboRos::emptyCB,this), ros::VoidPtr(), &this->ros_queue_);		// TODO check if it is OK to use the same ros queue
+		this->ros_pub_rviz_ = this->ros_node_->advertise(ao3);
+
 		// ROS services
 		this->ros_srv_ = this->ros_node_->advertiseService("publish_layout", &SkinJointGazeboRos::serviceCB, this);
 
@@ -251,6 +257,40 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		std::cout<<"3: "<< this->model_->GetChildLink(link_name)->GetWorldCoGPose ()        <<"\n";
 		std::cout<<"4: "<< this->model_->GetChildLink(link_name)->GetWorldPose ()           <<"\n";
 		std::cout<<"Collision property: "<<this->joints_[0]->GetChild()->GetCollisions()[0]->GetName()<<"\n";
+	}
+
+	// RVIZ marker
+	visualization_msgs::Marker m_vizMarker;
+	m_vizMarker.header.frame_id = "world";
+
+	m_vizMarker.ns = "skinsim";
+
+	m_vizMarker.type = visualization_msgs::Marker::ARROW;
+	m_vizMarker.action = visualization_msgs::Marker::ADD;
+
+	m_vizMarker.pose.orientation.w = 0.70711;
+	m_vizMarker.pose.orientation.x = 0;
+	m_vizMarker.pose.orientation.y = 0.70711;
+	m_vizMarker.pose.orientation.z = 0;
+
+	m_vizMarker.scale.y = 0.02;
+	m_vizMarker.scale.z = 0.02;
+
+	m_vizMarker.color.a = 1.0;
+	m_vizMarker.color.b = 0.0;
+
+	m_vizMarker.header.stamp = ros::Time::now();
+
+	for(int i=0;i<this->joint_names_.size();i++)
+	{
+		m_vizMarker.id = i;
+		math::Pose p = this->joints_[i]->GetChild()->GetInitialRelativePose();
+
+		m_vizMarker.pose.position.x = p.pos.x*4;	// Increase spacing
+		m_vizMarker.pose.position.y = p.pos.y*4;
+		m_vizMarker.pose.position.z = p.pos.z+0.2;
+
+		msg_rviz_.markers.push_back(m_vizMarker);
 	}
 }
 
@@ -326,6 +366,30 @@ void SkinJointGazeboRos::UpdateJoints()
       }
 
     }
+
+    // Publish RVIZ marker
+	this->lock_.lock();
+	for(int i=0;i<this->joint_names_.size();i++)
+	{
+		msg_rviz_.markers[i].header.stamp = ros::Time::now();
+		msg_rviz_.markers[i].pose.position.z = this->joints_[i]->GetAngle(0).Radian();
+
+		msg_rviz_.markers[i].scale.x = -this->joints_[i]->GetForce(0);
+
+		if(collision_index_[i])
+		{
+			msg_rviz_.markers[i].color.r = 1.0;
+			msg_rviz_.markers[i].color.g = 0.0;
+		}
+		else
+		{
+			msg_rviz_.markers[i].color.r = 0.0;
+			msg_rviz_.markers[i].color.g = 1.0;
+		}
+	}
+	this->ros_pub_rviz_ .publish(this->msg_rviz_);
+	this->lock_.unlock();
+
 
     // Decide whether to publish
 	if (this->ros_connections_ == 0 || !pub_to_ros_)

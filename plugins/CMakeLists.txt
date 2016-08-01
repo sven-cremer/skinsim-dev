@@ -21,8 +21,10 @@ include_directories(
 # ROS
 find_package(roscpp REQUIRED)
 find_package(skinsim_ros_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 include_directories(${roscpp_INCLUDE_DIRS})
 include_directories(${skinsim_ros_msgs_INCLUDE_DIRS})
+include_directories(${visualization_msgs_INCLUDE_DIRS})
 
 # OGRE
 find_package(OGRE REQUIRED)
