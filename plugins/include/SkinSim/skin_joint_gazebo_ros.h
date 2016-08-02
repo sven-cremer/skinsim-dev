@@ -66,6 +66,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
 #include <SkinSim/ModelPath.hh>
+#include <Eigen/Core>
 
 struct Distances
 {
@@ -123,6 +124,9 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief Vector containing the collision names
   private: std::vector<bool> collision_index_;
+  private: Eigen::MatrixXi past_collisions_;
+  private: Eigen::MatrixXd past_forces_;
+  private: int past_collisions_window_;
 
   /// \brief A pointer to the ROS node handle
   private: ros::NodeHandle* ros_node_;

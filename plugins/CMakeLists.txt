@@ -18,6 +18,9 @@ include_directories(
   ${SDFormat_INCLUDE_DIRS}
 )
 
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
 # ROS
 find_package(roscpp REQUIRED)
 find_package(skinsim_ros_msgs REQUIRED)

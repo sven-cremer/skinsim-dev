@@ -138,6 +138,11 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		collision_names_.push_back(name);
 		collision_index_.push_back(false);
 	}
+	past_collisions_window_ = 3;
+	past_collisions_.resize(num_joints_,past_collisions_window_);
+	past_collisions_.setZero();
+	past_forces_.resize(num_joints_,1);
+	past_forces_.setZero();
 
 	// Compute distances
 	math::Pose current;
@@ -314,8 +319,13 @@ void SkinJointGazeboRos::UpdateJoints()
 //		return;
 
 	// Check for collisions
-	for (unsigned int i = 0; i < collision_index_.size(); ++i)
+	past_collisions_.block(0,0,num_joints_,past_collisions_window_-1) = past_collisions_.block(0,1,num_joints_,past_collisions_window_-1);
+	for (unsigned int i = 0; i < num_joints_; ++i)
+	{
 		collision_index_[i] = false;
+		msg_rviz_.markers[i].scale.x = 0.0;
+		past_collisions_(i,past_collisions_window_-1) = 0;
+	}
 
 	// FIXME: If there are no subscribers to ~/physics/contacts, then the return value will be NULL.
 	std::vector<physics::Contact*> contacts_ = contact_mgr_->GetContacts();
@@ -328,7 +338,8 @@ void SkinJointGazeboRos::UpdateJoints()
 
     	if (idx < collision_names_.size()) // Name found
     	{
-    		collision_index_[idx] = true;
+    		//collision_index_[idx] = true;
+    		past_collisions_(idx,past_collisions_window_-1) = 1;
     	}
     	else	// Name not found
     	{
@@ -337,10 +348,18 @@ void SkinJointGazeboRos::UpdateJoints()
 
     		if (idx < collision_names_.size()) // Name found
         	{
-    			collision_index_[idx] = true;
+    			//collision_index_[idx] = true;
+    			past_collisions_(idx,past_collisions_window_-1) = 1;
         	}
     	}
     }
+
+	for (unsigned int i = 0; i < num_joints_; ++i)
+	{
+		collision_index_[i] = false;
+		if( past_collisions_.row(i).sum() >= 2)		// Physics engine screwed up, use old value
+			collision_index_[i] = true;
+	}
 
     // Set dynamics
     for (unsigned int i = 0; i < this->joints_.size(); ++i)
