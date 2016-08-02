@@ -306,6 +306,14 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 		msg_rviz_.markers.push_back(m_vizMarker);
 	}
+
+	// Set MSD parameters for Gazebo
+	for(int i=0;i<this->joint_names_.size();i++)
+	{
+		//this->joints_[i]->SetStiffnessDamping(0,122,1.1,0);
+		this->joints_[i]->SetStiffnessDamping(0,0,0,0);			// TODO is this necessary?
+	}
+
 }
 
 //////////////////////////////////////////////////////////////////////////
