@@ -335,15 +335,16 @@ void SkinJointGazeboRos::UpdateJoints()
 //	if (this->update_rate_ > 0 && (cur_time-this->last_time_).Double() < (1.0/this->update_rate_))
 //		return;
 
-	// Check for collisions
-	past_collisions_.block(0,0,num_joints_,past_collisions_window_-1) = past_collisions_.block(0,1,num_joints_,past_collisions_window_-1);
+	// Initialize collision variables
+	past_collisions_.block(0,0,num_joints_,past_collisions_window_-1) = past_collisions_.block(0,1,num_joints_,past_collisions_window_-1);	// Shift left
 	for (unsigned int i = 0; i < num_joints_; ++i)
 	{
+		past_collisions_(i,past_collisions_window_-1) = 0;
 		collision_index_[i] = false;
 		msg_rviz_.markers[i].scale.x = 0.0;
-		past_collisions_(i,past_collisions_window_-1) = 0;
 	}
 
+	// Check for collisions
 	// FIXME: If there are no subscribers to ~/physics/contacts, then the return value will be NULL.
 	std::vector<physics::Contact*> contacts_ = contact_mgr_->GetContacts();
     for (unsigned int i = 0; i < contact_mgr_->GetContactCount(); ++i)	// Note: do not iterate from 0 to .size()
@@ -370,38 +371,58 @@ void SkinJointGazeboRos::UpdateJoints()
         	}
     	}
     }
-
+    // Filter contact jitter
 	for (unsigned int i = 0; i < num_joints_; ++i)
 	{
-		collision_index_[i] = false;
-		if( past_collisions_.row(i).sum() >= 2)		// Physics engine screwed up, use old value
+		if( past_collisions_.row(i).sum() >= 2)		// Physics engine screwed up, use old values instead
 			collision_index_[i] = true;
 	}
 
     // Set dynamics
-    for (unsigned int i = 0; i < this->joints_.size(); ++i)
-    {
-      current_angle = this->joints_[i]->GetAngle(0).Radian();
-      current_velocity = this->joints_[i]->GetVelocity(0);
+	for (unsigned int i = 0; i < this->num_joints_; ++i)
+	{
+		//if(past_collisions_.row(i).sum() == past_collisions_window_ && collision_index_[i])	// True collision
+		if(past_collisions_.row(i).sum() == past_collisions_window_ || past_collisions_.row(i).sum() == 0)
+		{
+			current_angle = this->joints_[i]->GetAngle(0).Radian();
+			current_velocity = this->joints_[i]->GetVelocity(0);
 
-      // This sets the mass-spring-damper dynamics, currently only spring and damper
-      force = (rest_angle - current_angle) * sping_ - damper_ * current_velocity;
-      this->joints_[i]->SetForce(0, force);
+			// This sets the mass-spring-damper dynamics, currently only spring and damper
+			force = (rest_angle - current_angle) * sping_ - damper_ * current_velocity;
+			past_forces_(i,0) = force;
+		}
+		//else if(past_collisions_.row(i).sum() >= 2 && collision_index_[i])	// Collision with bad data
+		else	// Collision with bad data
+		{
+			force = past_forces_(i,0);
+		}
 
-      // Force distribution
-      if(collision_index_[i]) //i==54)	// FIXME Only works for a single element, check contacts before applying
-      {
-    	  for (int j = 1; j < this->joints_.size(); ++j)	// skip first
-    	  {
-    		  if(!collision_index_[j])
-    		  {
-    			  force_dist = -force * exp(- 40.0 * layout[i].distance[j] );
-    			  this->joints_[ layout[i].index[j] ]->SetForce(0, force_dist);
-    		  }
-    	  }
-      }
+		this->joints_[i]->SetForce(0, force);
+		//msg_rviz_.markers[ i ].scale.x = this->joints_[ i ]->GetForce(0);
 
-    }
+		// Force distribution
+		if(collision_index_[i]) //i==54)	// FIXME Only works for a single element, check contacts before applying
+		{
+			//this->joints_[i]->SetForce(0, force);	 <- elements float if done here
+
+			for (int j = 1; j < this->num_joints_; ++j)	// skip first
+			{
+				if(!collision_index_[ layout[i].index[j] ])
+				{
+					force_dist = -force * exp(- 40.0 * layout[i].distance[j] );
+//					double f_tmp = this->joints_[ layout[i].index[j] ]->CheckAndTruncateForce(0, force_dist);
+//					if ( force_dist !=  f_tmp)
+//						std::cout<<"Force was truncated: "<<force_dist<<" -> "<<f_tmp<<"\n";
+//					force_dist = -0.101;
+
+					this->joints_[ layout[i].index[j] ]->SetForce(0, force_dist);
+
+					//std::cout<<"Force "<<layout[i].index[j]<<" ("<<i<<"): "<<force_dist<<" -> "<<this->joints_[ layout[i].index[j] ]->GetForce(0)<<"\n";
+					//msg_rviz_.markers[ layout[i].index[j] ].scale.x = this->joints_[ layout[i].index[j] ]->GetForce(0);
+				}
+			}
+		}
+	}
 
     // Publish RVIZ marker
 	this->lock_.lock();
@@ -432,7 +453,6 @@ void SkinJointGazeboRos::UpdateJoints()
 		return;
 
 	this->lock_.lock();
-
 	// TODO: Copy data into ROS message
 //	this->skin_msg_.header.stamp.sec = (this->world_->GetSimTime()).sec;
 //	this->skin_msg_.header.stamp.nsec = (this->world_->GetSimTime()).nsec;
