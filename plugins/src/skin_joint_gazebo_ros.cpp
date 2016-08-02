@@ -398,7 +398,10 @@ void SkinJointGazeboRos::UpdateJoints()
 		}
 
 		this->joints_[i]->SetForce(0, force);
-		msg_rviz_.markers[ i ].scale.x += force; // this->joints_[ i ]->GetForce(0);
+		msg_rviz_.markers[ i ].scale.x -= force; // this->joints_[ i ]->GetForce(0);
+
+//		if( fabs(force - this->joints_[ i ]->GetForce(0) ) > 0.00001 )
+//			std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Force "<<i<<": "<<force<<" -> "<<this->joints_[ i ]->GetForce(0)<<"\n";
 
 		// Force distribution
 		if(collision_index_[i]) //i==54)	// FIXME Only works for a single element, check contacts before applying
@@ -409,17 +412,19 @@ void SkinJointGazeboRos::UpdateJoints()
 			{
 				if(!collision_index_[ layout[i].index[j] ])
 				{
-					force_dist = -force * exp(- 40.0 * layout[i].distance[j] );
-//					double f_tmp = this->joints_[ layout[i].index[j] ]->CheckAndTruncateForce(0, force_dist);
-//					if ( force_dist !=  f_tmp)
-//						std::cout<<"Force was truncated: "<<force_dist<<" -> "<<f_tmp<<"\n";
-//					force_dist = -0.101;
+					// Apply force distribution model
+					force_dist = -force * exp(- 1.0 * pow(layout[i].distance[j]/0.01,2) );
+//					force_dist = -force * exp(- 1.5 * layout[i].distance[j] / 0.01 );
+
+					if( fabs(force_dist)<0.00001 )	// Stop once force become negligible
+						break;
 
 					this->joints_[ layout[i].index[j] ]->SetForce(0, force_dist);
 					msg_rviz_.markers[ layout[i].index[j] ].scale.x += force_dist;
 
-					//std::cout<<"Force "<<layout[i].index[j]<<" ("<<i<<"): "<<force_dist<<" -> "<<this->joints_[ layout[i].index[j] ]->GetForce(0)<<"\n";
-					//msg_rviz_.markers[ layout[i].index[j] ].scale.x = this->joints_[ layout[i].index[j] ]->GetForce(0);
+//					if( fabs(force_dist - this->joints_[ layout[i].index[j] ]->GetForce(0) ) > 0.00001 )
+//						std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Dist "<<i<<" ("<<j<<"): "<<force_dist<<" -> "<<this->joints_[ layout[i].index[j] ]->GetForce(0)<<"\n";
+
 				}
 			}
 		}
