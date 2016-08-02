@@ -398,7 +398,7 @@ void SkinJointGazeboRos::UpdateJoints()
 		}
 
 		this->joints_[i]->SetForce(0, force);
-		//msg_rviz_.markers[ i ].scale.x = this->joints_[ i ]->GetForce(0);
+		msg_rviz_.markers[ i ].scale.x += force; // this->joints_[ i ]->GetForce(0);
 
 		// Force distribution
 		if(collision_index_[i]) //i==54)	// FIXME Only works for a single element, check contacts before applying
@@ -416,6 +416,7 @@ void SkinJointGazeboRos::UpdateJoints()
 //					force_dist = -0.101;
 
 					this->joints_[ layout[i].index[j] ]->SetForce(0, force_dist);
+					msg_rviz_.markers[ layout[i].index[j] ].scale.x += force_dist;
 
 					//std::cout<<"Force "<<layout[i].index[j]<<" ("<<i<<"): "<<force_dist<<" -> "<<this->joints_[ layout[i].index[j] ]->GetForce(0)<<"\n";
 					//msg_rviz_.markers[ layout[i].index[j] ].scale.x = this->joints_[ layout[i].index[j] ]->GetForce(0);
@@ -426,12 +427,13 @@ void SkinJointGazeboRos::UpdateJoints()
 
     // Publish RVIZ marker
 	this->lock_.lock();
+	ros::Time t_stamp = ros::Time::now();
 	for(int i=0;i<this->joint_names_.size();i++)
 	{
-		msg_rviz_.markers[i].header.stamp = ros::Time::now();
+		msg_rviz_.markers[i].header.stamp = t_stamp;
 		msg_rviz_.markers[i].pose.position.z = this->joints_[i]->GetAngle(0).Radian();
 
-		msg_rviz_.markers[i].scale.x = -this->joints_[i]->GetForce(0);	// Get external force set by user
+		//msg_rviz_.markers[i].scale.x = -this->joints_[i]->GetForce(0);	// Get external force set by user
 																		// TODO not reliable so keep track of forces instead
 		if(collision_index_[i])
 		{
