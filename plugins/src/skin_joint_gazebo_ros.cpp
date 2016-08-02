@@ -278,8 +278,8 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	m_vizMarker.pose.orientation.y = 0.70711;
 	m_vizMarker.pose.orientation.z = 0;
 
-	m_vizMarker.scale.y = 0.02;
-	m_vizMarker.scale.z = 0.02;
+	m_vizMarker.scale.y = 0.01;
+	m_vizMarker.scale.z = 0.01;
 
 	m_vizMarker.color.a = 1.0;
 	m_vizMarker.color.b = 0.0;
@@ -293,7 +293,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 		m_vizMarker.pose.position.x = p.pos.x*4;	// Increase spacing
 		m_vizMarker.pose.position.y = p.pos.y*4;
-		m_vizMarker.pose.position.z = p.pos.z+0.2;
+		m_vizMarker.pose.position.z = p.pos.z;
 
 		msg_rviz_.markers.push_back(m_vizMarker);
 	}
@@ -393,8 +393,8 @@ void SkinJointGazeboRos::UpdateJoints()
 		msg_rviz_.markers[i].header.stamp = ros::Time::now();
 		msg_rviz_.markers[i].pose.position.z = this->joints_[i]->GetAngle(0).Radian();
 
-		msg_rviz_.markers[i].scale.x = -this->joints_[i]->GetForce(0);
-
+		msg_rviz_.markers[i].scale.x = -this->joints_[i]->GetForce(0);	// Get external force set by user
+																		// TODO not reliable so keep track of forces instead
 		if(collision_index_[i])
 		{
 			msg_rviz_.markers[i].color.r = 1.0;
