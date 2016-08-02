@@ -263,6 +263,15 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		std::cout<<"4: "<< this->model_->GetChildLink(link_name)->GetWorldPose ()           <<"\n";
 		std::cout<<"Collision property: "<<this->joints_[0]->GetChild()->GetCollisions()[0]->GetName()<<"\n";
 	}
+	std::cout << std::hex;
+	std::cout << "Get type: " << this->joints_[0]->GetType() << "\n";
+	std::cout << "physics::Base::HINGE_JOINT:  " << physics::Base::HINGE_JOINT <<"\n";
+	std::cout << "physics::Base::SLIDER_JOINT: " << physics::Base::SLIDER_JOINT <<"\n";
+	std::cout << std::dec;
+	std::cout << "Has Hinge joint? " << this->joints_[0]->HasType(physics::Base::HINGE_JOINT) << "\n";
+	std::cout << "Has Slider joint? " << this->joints_[0]->HasType(physics::Base::SLIDER_JOINT) << "\n";
+	std::cout << this->joints_[0]->GetLocalAxis(0) <<"\n";
+	std::cout << this->joints_[0]->GetForce(0) <<"\n";
 
 	// RVIZ marker
 	visualization_msgs::Marker m_vizMarker;
@@ -421,13 +430,17 @@ void SkinJointGazeboRos::UpdateJoints()
 //	this->skin_msg_.header.stamp.nsec = (this->world_->GetSimTime()).nsec;
 //	this->skin_msg_.time = (this->world_->GetSimTime()).Double();
 
-	for(int i=0;i<this->joint_names_.size();i++)
+	for(int i=0;i<this->num_joints_;i++)
 	{
 		this->joint_msg_.dataArray[i].position = this->joints_[i]->GetAngle(0).Radian();
 
 		this->joint_msg_.dataArray[i].velocity = this->joints_[i]->GetVelocity(0);
 
 		this->joint_msg_.dataArray[i].force = this->joints_[i]->GetForce(0);
+//		physics::JointWrench wrench = this->joints_[i]->GetForceTorque(0);	// Get internal + external forces
+//		math::Vector3 force = wrench.body2Force;
+//		//this->joint_msg_.dataArray[i].force = force.GetLength();
+//		std::cout<<force<<"\t"<<	this->joints_[i]->GetForce(0)*this->joints_[i]->GetLocalAxis(0) <<"\n";
 
 		//this->joint_msg_.dataArray[i].collisions = this->contact_mgr_->GetContactCount();
 		if(collision_index_[i])
