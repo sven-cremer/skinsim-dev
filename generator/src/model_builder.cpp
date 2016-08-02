@@ -286,6 +286,14 @@ void ModelBuilder::addJoint( std::string joint_name,
 			//				<< "            <stddev>0.01</stddev>"
 			//				<< " 		</noise>"
 			//				<< "   	</sensor>"
+			<< "      <physics>\n"
+			// Toggle for ODEJoint::GetForceTorque
+			<< "            <provide_feedback>false</provide_feedback>\n"
+			// Switch between implicit and explicit in ODEJoint::ApplyStiffnessDamping()
+			<< "            <ode>\n"
+			<< "                  <implicit_spring_damper>false</implicit_spring_damper>\n"
+			<< "            </ode>\n"
+			<< "      </physics>\n"
 			<< "  </joint>\n";
 }
 
