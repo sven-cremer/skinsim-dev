@@ -249,7 +249,7 @@ void ModelBuilder::addLink( std::string link_name,
 			<< "    <pose>"<< pose.transpose() << "</pose>\n";
 
 	addInertia( mass );
-	addCollision( collision_name, box_size );
+	//addCollision( collision_name, box_size );			// FIXME uncomment
 	addVisual( visual_name,
 			box_size,
 			ambient ,
