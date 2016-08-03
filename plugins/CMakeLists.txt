@@ -3,6 +3,7 @@ project(plugins)
 
 set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_C_COMPILER "clang")
+set(CMAKE_CXX_FLAGS ${CMAKE_CSS_FLAGS} "-fPIC")
 
 # Depend on system install of Gazebo
 include (FindPkgConfig)
@@ -37,9 +38,14 @@ include_directories(${OGRE_INCLUDE_DIRS} ${OGRE_Terrain_INCLUDE_DIRS} ${OGRE_Pag
 include_directories ("${PROJECT_SOURCE_DIR}/../msgs/build")
 link_directories($ENV{SKINSIM_PATH}/msgs/build)
 
+# Build library
+add_library(digitalFilter
+  src/digitalFilter.cpp
+)
+
 # Build plugins
 add_library(SkinJointGazeboRos SHARED src/skin_joint_gazebo_ros.cpp)
-target_link_libraries(SkinJointGazeboRos ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES} yaml-cpp msgs )
+target_link_libraries(SkinJointGazeboRos ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES} yaml-cpp msgs digitalFilter)
 
 add_library(SkinJointPlugin SHARED src/SkinJointPlugin.cc)
 target_link_libraries(SkinJointPlugin ${GAZEBO_LIBRARIES} yaml-cpp msgs )
