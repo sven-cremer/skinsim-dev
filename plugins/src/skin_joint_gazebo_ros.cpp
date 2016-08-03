@@ -144,6 +144,15 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	past_forces_.resize(num_joints_,1);
 	past_forces_.setZero();
 
+	f_app_     .resize(num_joints_);
+	f_sen_     .resize(num_joints_);
+	f_app_prev_.resize(num_joints_);
+	f_sen_prev_.resize(num_joints_);
+	f_app_     .setZero();
+	f_sen_     .setZero();
+	f_app_prev_.setZero();
+	f_sen_prev_.setZero();
+
 	// Compute distances
 	math::Pose current;
 	math::Pose target;
@@ -314,6 +323,22 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		this->joints_[i]->SetStiffnessDamping(0,0,0,0);			// TODO is this necessary?
 	}
 
+	// Digital filter
+	int order = 2;
+	a_filt.resize(order+1);
+	b_filt.resize(order+1);
+	a_filt<<1,-1.561,0.6414;
+	b_filt<<0.0201,0.0402,0.0201;
+	for(int i=0;i<num_joints_;i++)
+	{
+		ice::digitalFilter tmp;
+		if(!tmp.init(order, true, b_filt, a_filt))
+		{
+			std::cerr<<"Failed to init digital filter!\n";\
+		}
+		digitalFilters.push_back(tmp);
+	}
+	useDigitalFilter = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
