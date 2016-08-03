@@ -138,11 +138,6 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		collision_names_.push_back(name);
 		collision_index_.push_back(false);
 	}
-//	past_collisions_window_ = 3;
-//	past_collisions_.resize(num_joints_,past_collisions_window_);
-//	past_collisions_.setZero();
-//	past_forces_.resize(num_joints_,1);
-//	past_forces_.setZero();
 
 	f_app_     .resize(num_joints_);
 	f_sen_     .resize(num_joints_);
@@ -322,23 +317,6 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		//this->joints_[i]->SetStiffnessDamping(0,122,1.1,0);
 		this->joints_[i]->SetStiffnessDamping(0,0,0,0);			// TODO is this necessary?
 	}
-
-	// Digital filter
-	int order = 2;
-	a_filt.resize(order+1);
-	b_filt.resize(order+1);
-	a_filt<<1,-1.561,0.6414;
-	b_filt<<0.0201,0.0402,0.0201;
-	for(int i=0;i<num_joints_;i++)
-	{
-		ice::digitalFilter tmp;
-		if(!tmp.init(order, true, b_filt, a_filt))
-		{
-			std::cerr<<"Failed to init digital filter!\n";\
-		}
-		digitalFilters.push_back(tmp);
-	}
-	useDigitalFilter = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -360,10 +338,8 @@ void SkinJointGazeboRos::UpdateJoints()
 //		return;
 
 	// Initialize collision variables
-//	past_collisions_.block(0,0,num_joints_,past_collisions_window_-1) = past_collisions_.block(0,1,num_joints_,past_collisions_window_-1);	// Shift left
 	for (unsigned int i = 0; i < num_joints_; ++i)
 	{
-//		past_collisions_(i,past_collisions_window_-1) = 0;
 		collision_index_[i] = false;
 	}
 
@@ -380,7 +356,6 @@ void SkinJointGazeboRos::UpdateJoints()
     	if (idx < collision_names_.size()) // Name found
     	{
     		collision_index_[idx] = true;
-    		//past_collisions_(idx,past_collisions_window_-1) = 1;
     	}
     	else	// Name not found
     	{
@@ -390,16 +365,9 @@ void SkinJointGazeboRos::UpdateJoints()
     		if (idx < collision_names_.size()) // Name found
         	{
     			collision_index_[idx] = true;
-    			//past_collisions_(idx,past_collisions_window_-1) = 1;
         	}
     	}
     }
-    // Filter contacts
-//	for (unsigned int i = 0; i < num_joints_; ++i)
-//	{
-//		if( past_collisions_.row(i).sum() >= 2)		// Physics engine screwed up, use old values instead
-//			collision_index_[i] = true;
-//	}
 
 	// Compute applied force
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
@@ -410,14 +378,7 @@ void SkinJointGazeboRos::UpdateJoints()
 			// This sets the mass-spring-damper dynamics, currently only spring and damper
 			f_app_(i) = (rest_angle - current_angle) * sping_ - damper_ * current_velocity;
 	}
-	// Apply low-pass filter	TODO filter velocity instead?
-	if(useDigitalFilter)
-	{
-		for (unsigned int i = 0; i < this->num_joints_; ++i)
-        {
-			f_app_prev_(i) = digitalFilters[i].getNextFilteredValue(f_app_(i));
-        }
-	}
+
 	// Set Dynamics
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
 	{

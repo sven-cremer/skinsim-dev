@@ -66,7 +66,6 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
 #include <SkinSim/ModelPath.hh>
-#include <SkinSim/digitalFilter.h>
 #include <Eigen/Core>
 
 struct Distances
@@ -125,9 +124,6 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief Vector containing the collision names
   private: std::vector<bool> collision_index_;
-  private: Eigen::MatrixXi past_collisions_;
-  private: Eigen::MatrixXd past_forces_;
-  private: int past_collisions_window_;
 
   private: Eigen::VectorXd f_app_;
   private: Eigen::VectorXd f_sen_;
@@ -212,12 +208,6 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief Distances between each element
   private: std::vector<Distances> layout;
-
-  private:
-	bool useDigitalFilter;			// Flag for using filter
-	std::vector<ice::digitalFilter> digitalFilters;	// Filter object
-	Eigen::VectorXd a_filt;			// Filter coefficients (denominator)
-	Eigen::VectorXd b_filt;			// Filter coefficients (numerator)
 
 };
 
