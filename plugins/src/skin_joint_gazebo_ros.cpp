@@ -138,11 +138,11 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		collision_names_.push_back(name);
 		collision_index_.push_back(false);
 	}
-	past_collisions_window_ = 3;
-	past_collisions_.resize(num_joints_,past_collisions_window_);
-	past_collisions_.setZero();
-	past_forces_.resize(num_joints_,1);
-	past_forces_.setZero();
+//	past_collisions_window_ = 3;
+//	past_collisions_.resize(num_joints_,past_collisions_window_);
+//	past_collisions_.setZero();
+//	past_forces_.resize(num_joints_,1);
+//	past_forces_.setZero();
 
 	f_app_     .resize(num_joints_);
 	f_sen_     .resize(num_joints_);
@@ -348,10 +348,9 @@ void SkinJointGazeboRos::UpdateJoints()
 	// TODO make parameters
 	double rest_angle = 0.0;
 	double current_angle = 0;
-	double current_force = 0;
+	//double current_force = 0;
 	double current_velocity = 0;
-	double sens_force = 0;
-	double force = 0;
+	//double force = 0;
 	double force_dist =0;
 
 	common::Time cur_time = this->world_->GetSimTime();
@@ -361,15 +360,14 @@ void SkinJointGazeboRos::UpdateJoints()
 //		return;
 
 	// Initialize collision variables
-	past_collisions_.block(0,0,num_joints_,past_collisions_window_-1) = past_collisions_.block(0,1,num_joints_,past_collisions_window_-1);	// Shift left
+//	past_collisions_.block(0,0,num_joints_,past_collisions_window_-1) = past_collisions_.block(0,1,num_joints_,past_collisions_window_-1);	// Shift left
 	for (unsigned int i = 0; i < num_joints_; ++i)
 	{
-		past_collisions_(i,past_collisions_window_-1) = 0;
+//		past_collisions_(i,past_collisions_window_-1) = 0;
 		collision_index_[i] = false;
-		msg_rviz_.markers[i].scale.x = 0.0;
 	}
 
-	// Check for collisions
+	// Check for contacts
 	// FIXME: If there are no subscribers to ~/physics/contacts, then the return value will be NULL.
 	std::vector<physics::Contact*> contacts_ = contact_mgr_->GetContacts();
     for (unsigned int i = 0; i < contact_mgr_->GetContactCount(); ++i)	// Note: do not iterate from 0 to .size()
@@ -381,8 +379,8 @@ void SkinJointGazeboRos::UpdateJoints()
 
     	if (idx < collision_names_.size()) // Name found
     	{
-    		//collision_index_[idx] = true;
-    		past_collisions_(idx,past_collisions_window_-1) = 1;
+    		collision_index_[idx] = true;
+    		//past_collisions_(idx,past_collisions_window_-1) = 1;
     	}
     	else	// Name not found
     	{
@@ -391,61 +389,64 @@ void SkinJointGazeboRos::UpdateJoints()
 
     		if (idx < collision_names_.size()) // Name found
         	{
-    			//collision_index_[idx] = true;
-    			past_collisions_(idx,past_collisions_window_-1) = 1;
+    			collision_index_[idx] = true;
+    			//past_collisions_(idx,past_collisions_window_-1) = 1;
         	}
     	}
     }
-    // Filter contact jitter
-	for (unsigned int i = 0; i < num_joints_; ++i)
-	{
-		if( past_collisions_.row(i).sum() >= 2)		// Physics engine screwed up, use old values instead
-			collision_index_[i] = true;
-	}
+    // Filter contacts
+//	for (unsigned int i = 0; i < num_joints_; ++i)
+//	{
+//		if( past_collisions_.row(i).sum() >= 2)		// Physics engine screwed up, use old values instead
+//			collision_index_[i] = true;
+//	}
 
-    // Set dynamics
+	// Compute applied force
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
 	{
-		//if(past_collisions_.row(i).sum() == past_collisions_window_ && collision_index_[i])	// True collision
-		if(past_collisions_.row(i).sum() == past_collisions_window_ || past_collisions_.row(i).sum() == 0)
-		{
 			current_angle = this->joints_[i]->GetAngle(0).Radian();
 			current_velocity = this->joints_[i]->GetVelocity(0);
 
 			// This sets the mass-spring-damper dynamics, currently only spring and damper
-			force = (rest_angle - current_angle) * sping_ - damper_ * current_velocity;
-			past_forces_(i,0) = force;
-		}
-		//else if(past_collisions_.row(i).sum() >= 2 && collision_index_[i])	// Collision with bad data
-		else	// Collision with bad data
-		{
-			force = past_forces_(i,0);
-		}
-
-		this->joints_[i]->SetForce(0, force);
-		msg_rviz_.markers[ i ].scale.x -= force; // this->joints_[ i ]->GetForce(0);
+			f_app_(i) = (rest_angle - current_angle) * sping_ - damper_ * current_velocity;
+	}
+	// Apply low-pass filter	TODO filter velocity instead?
+	if(useDigitalFilter)
+	{
+		for (unsigned int i = 0; i < this->num_joints_; ++i)
+        {
+			f_app_prev_(i) = digitalFilters[i].getNextFilteredValue(f_app_(i));
+        }
+	}
+	// Set Dynamics
+	for (unsigned int i = 0; i < this->num_joints_; ++i)
+	{
+		this->joints_[i]->SetForce(0, f_app_(i));
 
 //		if( fabs(force - this->joints_[ i ]->GetForce(0) ) > 0.00001 )
 //			std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Force "<<i<<": "<<force<<" -> "<<this->joints_[ i ]->GetForce(0)<<"\n";
 
-		// Force distribution
-		if(collision_index_[i]) //i==54)	// FIXME Only works for a single element, check contacts before applying
+	}
+	// Compute sensed force
+	f_sen_.setZero();
+	for (unsigned int i = 0; i < this->num_joints_; ++i)
+	{
+		if(collision_index_[i])
 		{
-			//this->joints_[i]->SetForce(0, force);	 <- elements float if done here
+			f_sen_(i) = -0.9*f_app_(i);	// TODO scale force
 
+			// Force distribution
 			for (int j = 1; j < this->num_joints_; ++j)	// skip first
 			{
 				if(!collision_index_[ layout[i].index[j] ])
 				{
 					// Apply force distribution model
-					force_dist = -force * exp(- 1.0 * pow(layout[i].distance[j]/0.01,2) );
-//					force_dist = -force * exp(- 1.5 * layout[i].distance[j] / 0.01 );
+					force_dist = -f_app_(i) * exp(- 1.0 * pow(layout[i].distance[j]/0.01,2) );
 
-					if( fabs(force_dist)<0.00001 )	// Stop once force become negligible
+					f_sen_( layout[i].index[j] ) += force_dist;
+
+					if( fabs(force_dist)<0.00001 )	// Stop once force becomes negligible
 						break;
-
-					this->joints_[ layout[i].index[j] ]->SetForce(0, force_dist);
-					msg_rviz_.markers[ layout[i].index[j] ].scale.x += force_dist;
 
 //					if( fabs(force_dist - this->joints_[ layout[i].index[j] ]->GetForce(0) ) > 0.00001 )
 //						std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Dist "<<i<<" ("<<j<<"): "<<force_dist<<" -> "<<this->joints_[ layout[i].index[j] ]->GetForce(0)<<"\n";
@@ -463,6 +464,7 @@ void SkinJointGazeboRos::UpdateJoints()
 		msg_rviz_.markers[i].header.stamp = t_stamp;
 		msg_rviz_.markers[i].pose.position.z = this->joints_[i]->GetAngle(0).Radian();
 
+		msg_rviz_.markers[ i ].scale.x = f_sen_(i); // this->joints_[ i ]->GetForce(0);
 		//msg_rviz_.markers[i].scale.x = -this->joints_[i]->GetForce(0);	// Get external force set by user
 																		// TODO not reliable so keep track of forces instead
 		if(collision_index_[i])
@@ -496,7 +498,7 @@ void SkinJointGazeboRos::UpdateJoints()
 
 		this->joint_msg_.dataArray[i].velocity = this->joints_[i]->GetVelocity(0);
 
-		this->joint_msg_.dataArray[i].force = this->joints_[i]->GetForce(0);
+		this->joint_msg_.dataArray[i].force = msg_rviz_.markers[ i ].scale.x; //this->joints_[i]->GetForce(0);
 //		physics::JointWrench wrench = this->joints_[i]->GetForceTorque(0);	// Get internal + external forces
 //		math::Vector3 force = wrench.body2Force;
 //		//this->joint_msg_.dataArray[i].force = force.GetLength();
