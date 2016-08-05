@@ -36,6 +36,7 @@ Currently, *ros_control* has not been released for ROS Jade.
 Edit your bashrc to source the workspace in every new shell or simply execute
 
     echo "source ~/skin_ws/devel/setup.bash" >> ~/.bashrc
+    echo "source /usr/share/gazebo/setup.sh" >> ~/.bashrc
 
 2\) Download the repositry (or fork) to your workspace, e.g. 
 
@@ -67,8 +68,23 @@ Edit your bashrc to source the workspace in every new shell or simply execute
 
     echo "export PATH=$SKINSIM_PATH/build:$PATH" >> ~/.bashrc
 
-and source the bashrc file again.
+and source the bashrc file again. Here is a slightly modified version of what the .bashrc file should look like after the above steps:
+```
+function skin_ws {
+	echo "*** skin_ws ***"
+	source /opt/ros/jade/setup.bash
+	source ~/skin_ws/devel/setup.bash
 
+	unset GAZEBO_RESOURCE_PATH; unset GAZEBO_PLUGIN_PATH; unset GAZEBO_MODEL_PATH
+	source /usr/share/gazebo/setup.sh
+
+	export SKINSIM_PATH=~/skin_ws/src/skinsim-dev
+	export GAZEBO_MODEL_PATH=${GAZEBO_MODEL_PATH}:$SKINSIM_PATH/model/models
+	export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:$SKINSIM_PATH/build
+	export PATH=$SKINSIM_PATH/build:$PATH
+}
+skin_ws
+```
 ### Troubleshooting
 If another version of Gazebo is already installed, then the following errors might occur:
 
@@ -112,14 +128,14 @@ or
 Insert the spring_array model from the menu. To test: spawn a sphere, resize it, and drop it on the array.
 If Gazebo was launched with ROS, virtual forces can be applied:
 ```
-rosservice call /gazebo/apply_body_wrench "body_name: 'skin_array::patch_2_spring_4'
+rosservice call /gazebo/apply_body_wrench "body_name: 'skin_array::patch_0_spring_24'
 reference_frame: 'world'
 reference_point: {x: 0.0, y: 0.0, z: 0.0}
 wrench:
-  force: {x: 0.0, y: 0.0, z: -1.0}
+  force: {x: 0.0, y: 0.0, z: -0.3}
   torque: {x: 0.0, y: 0.0, z: 0.0}
 start_time: {secs: 0, nsecs: 0}
-duration: {secs: 2, nsecs: 0}" 
+duration: {secs: 10, nsecs: 0}" 
 ```
 ### Data collection with ROS
 To view or save the joint data published from the spring array plugin:
