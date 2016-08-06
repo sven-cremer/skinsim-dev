@@ -1,0 +1,4 @@
+skinsim_ros_msgs/ControllerType type
+float64 f_des
+float64 x_des
+---

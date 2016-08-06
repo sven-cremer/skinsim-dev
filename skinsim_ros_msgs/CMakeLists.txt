@@ -14,10 +14,12 @@ add_message_files(FILES
   Joint1D.msg
   Joint1DArray.msg
   PointArray.msg
+  ControllerType.msg
 )
 
 add_service_files(DIRECTORY srv FILES
   Empty.srv
+  SetController.srv
 )
 
 generate_messages(
