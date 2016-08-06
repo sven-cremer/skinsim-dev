@@ -153,6 +153,9 @@ class Plunger : public ModelPlugin
   private: double Kp_;
   private: double Kd_;
 
+  /// \brief Force command
+  private: double effort_;
+
   /// \brief For storing joint state
   private: physics::JointWrench wrench_;
   private: math::Vector3 force_;

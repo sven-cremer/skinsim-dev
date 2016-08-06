@@ -203,7 +203,7 @@ void Plunger::UpdateJoints()
 
 	// FIXME Controller dynamics
 	//position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
-	force_prev_ = force_current_;
+
 	//	if(!this->joint_->SetPosition(0, position_desired_))
 //	{
 //		std::cout<<"Plunger: SetPosition failed!\n";
@@ -211,18 +211,42 @@ void Plunger::UpdateJoints()
 	//this->joint_pid_->SetPositionTarget(this->joint_->GetScopedName(),position_desired_);
 //	this->joint_pid_->Update();
 
-	// common::PID
-	//double postion_error = position_current_ - position_desired_;
-	//double effort = this->pid_.Update(postion_error, step_time);
-	//this->joint_->SetForce(0, effort);
-
+	switch(this->controller_type_.selected)
+	{
+	// Set force directly in Gazebo
+	case skinsim_ros_msgs::ControllerType::DIRECT:
+	{
+		this->effort_ = this->force_desired_;
+		this->joint_->SetForce(0, this->effort_);
+		break;
+	}
 	// Force-Based Explicit Force control
-	double Kv_ = 0.1;
-	double effort = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_;
-	this->joint_->SetForce(0, effort);
+	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
+	{
+		double Kv_ = 0.1;
+		this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_;
+		this->joint_->SetForce(0, this->effort_);
+		break;
+	}
+	// Position-Based Explicit Force control
+	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
+	{
+		position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
+		double postion_error = position_current_ - position_desired_;
+		this->effort_ = this->pid_.Update(postion_error, step_time);
+		this->joint_->SetForce(0, this->effort_);
+		break;
+	}
+	// Impedance control
+	case skinsim_ros_msgs::ControllerType::IMPEDANCE_CONTROL:
+	// Default
+	default:
+		std::cout<<"Controller not implemented.\n";
+		break;
+	}
 
 	// Debug
-	std::cout<<"F cur: "<<force_current_<<" \tF dot: "<<force_dot_<<" \tEffort: "<<effort;//<<" \t<-\t"<<force_<<"\n";
+	std::cout<<"F cur: "<<force_current_<<" \tF dot: "<<force_dot_<<" \tEffort: "<<effort_;//<<" \t<-\t"<<force_<<"\n";
 	std::cout<<"\tPos cur: "<<position_current_<<"\tPos des: "<<position_desired_<<"\n";
 
 	// Decide whether to publish
@@ -245,6 +269,9 @@ void Plunger::UpdateJoints()
 
 	// Save last time stamp
 	this->last_time_ = cur_time;
+
+	// Save force
+	force_prev_ = force_current_;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -258,10 +285,11 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 	{
 	case skinsim_ros_msgs::ControllerType::DIRECT:
 	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
+	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
 		this->force_desired_ = req.f_des;
 		break;
 	default:
-		std::cout<<"Controller not implemented";
+		std::cout<<"Controller not implemented.\n";
 		break;
 	}
 
