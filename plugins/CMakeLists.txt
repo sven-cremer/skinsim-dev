@@ -45,8 +45,12 @@ link_directories($ENV{SKINSIM_PATH}/msgs/build)
 add_library(SkinJointGazeboRos SHARED src/skin_joint_gazebo_ros.cpp)
 target_link_libraries(SkinJointGazeboRos ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES} yaml-cpp msgs)
 
+add_library(Plunger SHARED src/plunger.cpp)
+target_link_libraries(Plunger ${GAZEBO_LIBRARIES} )
+
 add_library(SkinJointPlugin SHARED src/SkinJointPlugin.cc)
 target_link_libraries(SkinJointPlugin ${GAZEBO_LIBRARIES} yaml-cpp msgs )
+
 					
 # Build (old)
 #add_library(MassJoint SHARED src/MassJoint.cc)
@@ -69,5 +73,3 @@ target_link_libraries(SkinJointPlugin ${GAZEBO_LIBRARIES} yaml-cpp msgs )
 
 #add_library(TactileSensorPlugin SHARED src/TactileSensorPlugin.cc)
 #target_link_libraries(TactileSensorPlugin ${catkin_INCLUDE_DIRS} ${GAZEBO_LIBRARIES} yaml-cpp msgs )
-
-
