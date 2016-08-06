@@ -149,9 +149,10 @@ class Plunger : public ModelPlugin
   //  \brief Update rate
   private: double update_rate_;
 
-  /// \brief Controller parameters
-  private: double Kp_;
-  private: double Kd_;
+  /// \brief Explicit force controller parameters
+  private: double Kp_;		// Proportional force gain
+  private: double Kd_;		// Derivative force gain
+  private: double Kv_;		// Velocity gain for active damping
 
   /// \brief Force command
   private: double effort_;

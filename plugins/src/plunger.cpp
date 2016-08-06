@@ -84,8 +84,9 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	// Set default values
 	this->ros_namespace_ = "skinsim/";
 	this->update_rate_   = 0;
-	this->Kp_            = 0.1;
-	this->Kd_            = 0.01;
+	this->Kp_            = 0.0;
+	this->Kd_            = 0.0;
+	this->Kv_            = 0.0;
 
 	// Load parameters from model SDF file
 	if (_sdf->HasElement("rosNamespace"))
@@ -96,9 +97,10 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 	if (_sdf->HasElement("Kp"))
 		this->Kp_ = _sdf->GetElement("Kp")->Get<double>();
-
 	if (_sdf->HasElement("Kd"))
 		this->Kd_ = _sdf->GetElement("Kd")->Get<double>();
+	if (_sdf->HasElement("Kv"))
+		this->Kv_ = _sdf->GetElement("Kv")->Get<double>();
 
 	double JointPgain_ = 5.0;
 	if (_sdf->HasElement("JointPgain"))
@@ -223,7 +225,6 @@ void Plunger::UpdateJoints()
 	// Force-Based Explicit Force control
 	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
 	{
-		double Kv_ = 0.1;
 		this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_;
 		this->joint_->SetForce(0, this->effort_);
 		break;
