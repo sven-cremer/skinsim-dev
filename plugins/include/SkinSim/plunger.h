@@ -1,4 +1,4 @@
-/*********************************************************************
+/********* ************************************************************
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2016, UT Arlington
@@ -143,20 +143,24 @@ class Plunger : public ModelPlugin
   private: double Kd_;
 
   /// \brief For storing joint state
-  physics::JointWrench wrench_;
-  math::Vector3 force_;
-  math::Vector3 torque_;
-  double position_current_;
-  double position_desired_;
-  double velocity_;
-  double force_current_;
-  double force_desired_;
+  private: physics::JointWrench wrench_;
+  private: math::Vector3 force_;
+  private: math::Vector3 torque_;
+  private: double position_current_;
+  private: double position_desired_;
+  private: double velocity_;
+  private: double force_current_;
+  private: double force_desired_;
 
   /// \brief Joint axis of rotation in the global frame.
-  math::Vector3 axis_global_;
+  private: math::Vector3 axis_global_;
 
   /// \brief Joint axis of rotation in the local frame.
-  math::Vector3 axis_local_;
+  private: math::Vector3 axis_local_;
+
+  /// \brief Joint PID controller
+  private: physics::JointControllerPtr joint_pid_;
+  private: common::PID pid_;
 };
 
 }

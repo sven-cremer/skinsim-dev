@@ -76,8 +76,9 @@
             <file_name>plunger</file_name>
             <rosNamespace>skinsim</rosNamespace>
             <updateRate>0</updateRate>
-            <Kp>0.1</Kp>
+            <Kp>0.01</Kp>
             <Kd>0.0</Kd>
+            <JointPgain>5.0</JointPgain>
         </plugin>
     
     </model>
