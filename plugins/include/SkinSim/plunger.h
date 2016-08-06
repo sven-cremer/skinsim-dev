@@ -150,6 +150,7 @@ class Plunger : public ModelPlugin
   private: double position_desired_;
   private: double velocity_;
   private: double force_current_;
+  private: double force_prev_;
   private: double force_desired_;
 
   /// \brief Joint axis of rotation in the global frame.

@@ -52,15 +52,15 @@
           <kinematic>0</kinematic>
           <gravity>0</gravity>
         </link>
-          
+                  
         <joint name='plunger_joint' type='prismatic'>
           <parent>world</parent>
           <child>plunger_link</child>
           <axis>
               <xyz>0 0 1</xyz>
               <limit>
-                  <lower>0</lower>
-                  <upper>0</upper>
+                  <lower>-0.5</lower>
+                  <upper>2</upper>
               </limit>
               <use_parent_model_frame>0</use_parent_model_frame>
           </axis>
@@ -76,9 +76,11 @@
             <file_name>plunger</file_name>
             <rosNamespace>skinsim</rosNamespace>
             <updateRate>0</updateRate>
-            <Kp>0.01</Kp>
-            <Kd>0.0</Kd>
-            <JointPgain>5.0</JointPgain>
+            <Kp>0.0010</Kp>
+            <Kd>3.0</Kd>
+            <JointPgain>0.5</JointPgain>
+            <JointIgain>0.01</JointIgain>
+            <JointDgain>0.0</JointDgain>
         </plugin>
     
     </model>

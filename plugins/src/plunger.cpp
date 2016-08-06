@@ -101,8 +101,14 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		this->Kd_ = _sdf->GetElement("Kd")->Get<double>();
 
 	double JointPgain_ = 5.0;
-	if (_sdf->HasElement("JointPgain_"))
-		JointPgain_ = _sdf->GetElement("JointPgain_")->Get<double>();
+	if (_sdf->HasElement("JointPgain"))
+		JointPgain_ = _sdf->GetElement("JointPgain")->Get<double>();
+	double JointIgain_ = 0.01;
+	if (_sdf->HasElement("JointIgain"))
+		JointIgain_ = _sdf->GetElement("JointIgain")->Get<double>();
+	double JointDgain_ = 0.1;
+	if (_sdf->HasElement("JointDgain"))
+		JointDgain_ = _sdf->GetElement("JointDgain")->Get<double>();
 
 	// Get pointers to joint from Gazebo
 	this->joint_ = this->model_->GetJoint(this->joint_name_);
@@ -146,23 +152,27 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 			boost::bind(&Plunger::UpdateJoints, this));
 
 	// Controller
-	this->force_desired_ = -10;
+	this->force_desired_ = -2.5;
+	this->force_prev_    = 0.0;
 
 	// P-controller
-	this->pid_ = common::PID(JointPgain_, 0, 0, 10, -10);
+	this->pid_ = common::PID(JointPgain_, JointIgain_, JointDgain_, 15, -15);
 
 	// Apply the P-controller to the joint.
-	this->joint_pid_->SetPositionPID(this->joint_->GetScopedName(), this->pid_);
+	//this->joint_pid_->SetPositionPID(this->joint_->GetScopedName(), this->pid_);
 
 	// Debug
 	std::cout<<"> Model name: "<<model_name_<<"\n";
 	std::cout<<"> Joint scoped name: "<<this->joint_->GetScopedName()<<"\n";
+	std::cout<<"> Joint PID: "<<JointPgain_<<", "<<JointIgain_<<", "<<JointDgain_<<"\n";
+	std::cout<<"> Kp: "<<Kp_<<"\tKd: "<<Kd_<<"\n";
 	for(int i=0;i<3;i++)
 	{
 		std::cout<<"> Local axis  ["<<i<<"]: "<<this->joint_->GetLocalAxis(i)<<"\n";
 		std::cout<<"> Global axis ["<<i<<"]: "<<this->joint_->GetGlobalAxis(i)<<"\n";
 	}
 	//this->joint_->SetStiffnessDamping(0,122,1.1,0);
+	this->joint_->SetStiffnessDamping(0,0,0,0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -186,23 +196,26 @@ void Plunger::UpdateJoints()
 
 	this->force_current_ = this->force_.Dot(this->axis_global_);
 
+	double force_dot_ = (force_current_-force_prev_)/step_time.Double();
+
 	// FIXME Controller dynamics
-	position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_current_;
-//	if(!this->joint_->SetPosition(0, position_desired_))
+	position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
+	force_prev_ = force_current_;
+	//	if(!this->joint_->SetPosition(0, position_desired_))
 //	{
 //		std::cout<<"Plunger: SetPosition failed!\n";
 //	}
-//	this->joint_pid_->SetPositionTarget(this->joint_->GetScopedName(),0.01);
+	//this->joint_pid_->SetPositionTarget(this->joint_->GetScopedName(),position_desired_);
 //	this->joint_pid_->Update();
 
 	// common::PID
-	double postion_error = position_current_ - 0.05;
+	double postion_error = position_current_ - position_desired_;
 	double effort = this->pid_.Update(postion_error, step_time);
 	this->joint_->SetForce(0, effort);
 
 	// Debug
-	//std::cout<<"Force current: "<<force_current_<<" \t<-\t"<<force_<<"\n";
-	std::cout<<"Position: "<<position_current_<<" \t Effort: "<<effort<<"\n";
+	std::cout<<"F cur: "<<force_current_<<" \tF dot: "<<force_dot_<<" \tEffort: "<<effort;//<<" \t<-\t"<<force_<<"\n";
+	std::cout<<"\tPos cur: "<<position_current_<<"\tPos des: "<<position_desired_<<"\n";
 
 	// Decide whether to publish
 	if (this->ros_connections_ == 0 || !pub_to_ros_)
