@@ -28,6 +28,8 @@
       patch_length_y               : 0.0				# Length of skin patch in y-direction
       total_length_x               : 0.0				# Length of skin array in x-direction
       total_length_y               : 0.0				# Length of skin array in y-direction
-      # TODO: tactile layer properties
-      tactile_length               : 0.9				# The radius of the sensors underneath the skin layer (for which skin layer is marked in red) ?
-      tactile_separation           : 2.0				# The space between each sensor underneath the skin layer (for which there are spaces between the rows and columns of skin elements) ?
+      # Tactile sensor properties
+      tactile_elements_x           : 2					# Number of skin elements per sensor in x-direction
+      tactile_elements_y           : 2					# Number of skin elements per sensor in y-direction
+      tactile_separation_x         : 1					# Spaceing between sensors in terms of number of elements in x-direction
+      tactile_separation_y         : 1					# Spaceing between sensors in terms of number of elements in x-direction

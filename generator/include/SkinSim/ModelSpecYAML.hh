@@ -78,9 +78,11 @@ struct ModelSpec
   double patch_length_y               ; // Length of skin patch in y-direction
   double total_length_x               ; // Length of skin array in x-direction
   double total_length_y               ; // Length of skin array in y-direction
-  // TODO: tactile layer properties
-  double tactile_length               ; // The radius of the sensors underneath the skin layer (for which skin layer is marked in red) ?
-  double tactile_separation           ; // The space between each sensor underneath the skin layer (for which there are spaces between the rows and columns of skin elements) ?
+  // Tactile sensor properties
+  int tactile_elements_x              ; // Number of skin elements per sensor in x-direction
+  int tactile_elements_y              ; // Number of skin elements per sensor in y-direction
+  int tactile_separation_x            ; // Spaceing between sensors in terms of number of elements in x-direction
+  int tactile_separation_y            ; // Spaceing between sensors in terms of number of elements in x-direction
 };
 
 struct BuildModelSpec
@@ -113,8 +115,10 @@ inline void print(BuildModelSpec b)
 	std::cout<<" patch_length_y         : "<<b.spec.patch_length_y         <<"\n";
 	std::cout<<" total_length_x         : "<<b.spec.total_length_x         <<"\n";
 	std::cout<<" total_length_y         : "<<b.spec.total_length_y         <<"\n";
-	std::cout<<" tactile_length         : "<<b.spec.tactile_length         <<"\n";
-	std::cout<<" tactile_separation     : "<<b.spec.tactile_separation     <<"\n";
+	std::cout<<" tactile_elements_x     : "<<b.spec.tactile_elements_x     <<"\n";
+	std::cout<<" tactile_elements_y     : "<<b.spec.tactile_elements_y     <<"\n";
+	std::cout<<" tactile_separation_x   : "<<b.spec.tactile_separation_x   <<"\n";
+	std::cout<<" tactile_separation_y   : "<<b.spec.tactile_separation_y   <<"\n";
 }
 
 // Read from YAML
@@ -141,8 +145,10 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.patch_length_y      = node["patch_length_y"    ].as<double>() ;
 	spec.total_length_x      = node["total_length_x"    ].as<double>() ;
 	spec.total_length_y      = node["total_length_y"    ].as<double>() ;
-	spec.tactile_length      = node["tactile_length"    ].as<double>() ;
-	spec.tactile_separation  = node["tactile_separation"].as<double>() ;
+	spec.tactile_elements_x   = node["tactile_elements_x"  ].as<int>() ;
+	spec.tactile_elements_y   = node["tactile_elements_y"  ].as<int>() ;
+	spec.tactile_separation_x = node["tactile_separation_x"].as<int>() ;
+	spec.tactile_separation_y = node["tactile_separation_y"].as<int>() ;
 }
 
 inline void operator >> (const YAML::Node& node, BuildModelSpec& buildModelSpec)
@@ -187,8 +193,10 @@ inline YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
     out << YAML::Key << "patch_length_y"      ; out << YAML::Value <<  spec.patch_length_y     ;
     out << YAML::Key << "total_length_x"      ; out << YAML::Value <<  spec.total_length_x     ;
     out << YAML::Key << "total_length_y"      ; out << YAML::Value <<  spec.total_length_y     ;
-    out << YAML::Key << "tactile_length"      ; out << YAML::Value <<  spec.tactile_length     ;
-    out << YAML::Key << "tactile_separation"  ; out << YAML::Value <<  spec.tactile_separation ;
+    out << YAML::Key << "tactile_elements_x"  ; out << YAML::Value <<  spec.tactile_elements_x  ;
+    out << YAML::Key << "tactile_elements_y"  ; out << YAML::Value <<  spec.tactile_elements_y  ;
+    out << YAML::Key << "tactile_separation_x"; out << YAML::Value <<  spec.tactile_separation_x;
+    out << YAML::Key << "tactile_separation_y"; out << YAML::Value <<  spec.tactile_separation_y;
     out << YAML::EndMap;
     return out;
 }
