@@ -1,8 +1,9 @@
 <?xml version="1.0" ?>
 <sdf version='1.4'>
     <model name='plunger'>
+        <pose>0 0 0.105 0 0 0</pose>
+        <static>false</static>
         <link name='plunger_link'>
-          <pose>0 0 0.105 0 0 0</pose>
           <inertial>
               <mass>1</mass>
               <inertia>
@@ -49,7 +50,7 @@
           </visual>
           <self_collide>0</self_collide>
           <kinematic>0</kinematic>
-          <gravity>1</gravity>
+          <gravity>0</gravity>
         </link>
           
         <joint name='plunger_joint' type='prismatic'>
@@ -71,8 +72,12 @@
           </physics>
         </joint>
           
-        <plugin name='PlungerPlugin' filename='libPlungerPlugin.so'>
+        <plugin name='Plunger' filename='libPlunger.so'>
             <file_name>plunger</file_name>
+            <rosNamespace>skinsim</rosNamespace>
+            <updateRate>0</updateRate>
+            <Kp>0.1</Kp>
+            <Kd>0.0</Kd>
         </plugin>
     
     </model>
