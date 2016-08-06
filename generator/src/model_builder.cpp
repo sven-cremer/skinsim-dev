@@ -91,7 +91,7 @@ void ModelBuilder::generateModelStart( std::string name, Eigen::VectorXd & pose 
 
 void ModelBuilder::addGeometry( double radius )
 {
-	double scaled_radius = radius*0.95;
+	double scaled_radius = radius*0.99;
 	m_sdfStream << "      <geometry>\n"
 			<< "        <sphere>\n"
 			<< "          <radius>" << scaled_radius << "</radius>\n"
@@ -580,6 +580,8 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 
 			createSkinPatchElements(
 					patch,
+					ix,
+					iy,
 					out,
 					m_.spec.element_diameter,
 					element_mass,
@@ -678,6 +680,8 @@ void ModelBuilder::createPlane(
 
 void ModelBuilder::createSkinPatchElements(
 		std::string patch_name,
+		int patch_ix,
+		int patch_iy,
 		YAML::Emitter& out,
 		double element_diameter,
 		double element_mass,
@@ -731,6 +735,35 @@ void ModelBuilder::createSkinPatchElements(
 			std::string spring_joint = spring + "_joint" ;
 			std::string collision = spring + "_collision";
 
+			// Check if it is part of a tactile sensor
+			bool sensor_x = false;
+			int t_size_x = m_.spec.tactile_elements_x+m_.spec.tactile_separation_x;
+			int global_ix = (patch_ix*m_.spec.num_elements_x + ix);						// Allow sensors to span across patches
+			if(global_ix + t_size_x > m_.spec.num_elements_x*m_.spec.num_patches_x)		// Check if enough elements are left to create a sensor
+				sensor_x = false;
+			else
+			{
+				int t_unit_x = global_ix % t_size_x;
+				if(t_unit_x<m_.spec.tactile_elements_x)
+					sensor_x = true;
+			}
+
+			bool sensor_y = false;
+			int t_size_y = m_.spec.tactile_elements_y+m_.spec.tactile_separation_y;
+			int global_iy = (patch_iy*m_.spec.num_elements_y + iy);						// Allow sensors to span across patches
+			if(global_iy + t_size_y > m_.spec.num_elements_y*m_.spec.num_patches_y)		// Check if enough elements are left to create a sensor
+				sensor_y = false;
+			else
+			{
+				int t_unit_y = global_iy % t_size_y;
+				if(t_unit_y<m_.spec.tactile_elements_y)
+					sensor_y = true;
+			}
+
+			if(sensor_x && sensor_y)
+				skin_diffuse  << 1.0, 0.0, 0.0, 1.0;	// Red
+			else
+				skin_diffuse  << 1.0, 1.0, 1.0, 1.0;	// White
 
 			addLink(spring,
 					element_mass,

@@ -178,6 +178,8 @@ public:
 
 	void createSkinPatchElements(
 			std::string patch_name,
+			int patch_ix,
+			int patch_iy,
 			YAML::Emitter& out,
 			double element_diameter,
 			double element_mass,
