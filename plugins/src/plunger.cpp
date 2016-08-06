@@ -134,14 +134,17 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
 
-		// Custom Callback Queue
+		// ROS topics
 		ros::AdvertiseOptions ao = ros::AdvertiseOptions::create<geometry_msgs::WrenchStamped>(
 				this->topic_name_,1,
 				boost::bind( &Plunger::RosConnect,this),
 				boost::bind( &Plunger::RosDisconnect,this), ros::VoidPtr(), &this->ros_queue_);
 		this->ros_pub_ = this->ros_node_->advertise(ao);
+		this->msg_wrench_.header.frame_id = "world";
 
-		msg_wrench_.header.frame_id = "world";
+		// ROS services
+		this->ros_srv_ = this->ros_node_->advertiseService("set_controller", &Plunger::serviceCB, this);
+		this->controller_type_.selected = skinsim_ros_msgs::ControllerType::DIRECT;
 
 		// Custom Callback Queue
 		this->callback_ros_queue_thread_ = boost::thread( boost::bind( &Plunger::RosQueueThread,this ) );
@@ -242,6 +245,27 @@ void Plunger::UpdateJoints()
 
 	// Save last time stamp
 	this->last_time_ = cur_time;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Callback function when subscriber connects
+bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_ros_msgs::SetController::Response& res)
+{
+	// Store data
+	this->controller_type_.selected = req.type.selected;
+
+	switch(this->controller_type_.selected)
+	{
+	case skinsim_ros_msgs::ControllerType::DIRECT:
+	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
+		this->force_desired_ = req.f_des;
+		break;
+	default:
+		std::cout<<"Controller not implemented";
+		break;
+	}
+
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

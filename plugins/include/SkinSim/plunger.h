@@ -55,6 +55,8 @@
 
 // ROS messages
 #include <geometry_msgs/WrenchStamped.h>
+#include <skinsim_ros_msgs/SetController.h>
+#include <skinsim_ros_msgs/ControllerType.h>
 
 // Utilities
 #include <boost/thread.hpp>
@@ -96,6 +98,15 @@ class Plunger : public ModelPlugin
 
   /// \brief A pointer to the ROS node handle
   private: ros::NodeHandle* ros_node_;
+
+  /// \brief A ROS service server
+   private: ros::ServiceServer ros_srv_;
+
+   /// \brief Service callback function
+   private: bool serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_ros_msgs::SetController::Response& res);
+
+   /// \brief A custom ROS message
+   private: skinsim_ros_msgs::ControllerType controller_type_;
 
   /// \brief A ROS publisher
   private: ros::Publisher ros_pub_;
