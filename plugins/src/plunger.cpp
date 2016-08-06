@@ -199,7 +199,7 @@ void Plunger::UpdateJoints()
 	double force_dot_ = (force_current_-force_prev_)/step_time.Double();
 
 	// FIXME Controller dynamics
-	position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
+	//position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
 	force_prev_ = force_current_;
 	//	if(!this->joint_->SetPosition(0, position_desired_))
 //	{
@@ -209,8 +209,13 @@ void Plunger::UpdateJoints()
 //	this->joint_pid_->Update();
 
 	// common::PID
-	double postion_error = position_current_ - position_desired_;
-	double effort = this->pid_.Update(postion_error, step_time);
+	//double postion_error = position_current_ - position_desired_;
+	//double effort = this->pid_.Update(postion_error, step_time);
+	//this->joint_->SetForce(0, effort);
+
+	// Force-Based Explicit Force control
+	double Kv_ = 0.1;
+	double effort = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_;
 	this->joint_->SetForce(0, effort);
 
 	// Debug
