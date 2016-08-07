@@ -15,11 +15,13 @@ add_message_files(FILES
   Joint1DArray.msg
   PointArray.msg
   ControllerType.msg
+  TactileData.msg
 )
 
 add_service_files(DIRECTORY srv FILES
   Empty.srv
   SetController.srv
+  GetLayout.srv
 )
 
 generate_messages(
