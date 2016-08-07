@@ -806,12 +806,8 @@ void ModelBuilder::createSkinPatchElements(
 					spring,
 					axis );
 
-			//std::cout << pos_x << " " << pos_y << "\n";
-
 			// Store name
-			out << YAML::BeginMap;
-			out << YAML::Key << "Joint" << YAML::Value << spring_joint;
-			out << YAML::EndMap;
+			out << YAML::Value << spring_joint;
 
 			i++;
 		}

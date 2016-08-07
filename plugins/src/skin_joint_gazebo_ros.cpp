@@ -111,7 +111,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	doc = YAML::LoadAll(input_file_);
 	for(std::size_t i=0;i<doc[0].size();i++)
 	{
-		this->joint_names_.push_back( doc[0][i]["Joint"].as<std::string>() );
+		this->joint_names_.push_back( doc[0][i].as<std::string>() );
 		//std::cout << this->joint_names_[i]<< std::endl;
 	}
 	input_file_.close();
