@@ -78,6 +78,9 @@ struct Tactile
 	int index;
 	math::Vector3 position;
 	std::vector<std::string> joint_names;
+	std::vector<int> joint_index;
+	double force_sensed;
+	double force_applied;
 };
 
 bool indexSort(int a, int b, std::vector<double> data)
@@ -214,6 +217,9 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief Distances between each element
   private: std::vector<Distances> layout;
+
+  /// \brief Tactile sensor data
+  private: std::vector<Tactile> sensors_;
 
 };
 

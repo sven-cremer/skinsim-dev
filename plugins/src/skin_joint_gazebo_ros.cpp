@@ -122,7 +122,6 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	fullname = fullname + std::string("/tactile_id.yaml");
 	input_file_.open(fullname.c_str());
 	std::cout<<"Loading file: "<<fullname<<"\n";
-	std::vector<Tactile> sensors_;
 	YAML::Node node;
 	node = YAML::LoadAll(input_file_);
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
@@ -136,6 +135,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 				if( sensors_[j].index == index )
 				{
 					sensors_[j].joint_names.push_back( joint_names_[i] );
+					sensors_[j].joint_index.push_back( i );
 					sensor_already_added = true;
 					break;
 				}
@@ -145,6 +145,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 				Tactile tmp;
 				tmp.index = index;
 				tmp.joint_names.push_back( joint_names_[i] );
+				tmp.joint_index.push_back( i );
 				sensors_.push_back(tmp);
 			}
 		}
@@ -156,7 +157,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		std::cout<<"Tactile "<<sensors_[i].index<<": ";
 		for (unsigned int j = 0; j < sensors_[i].joint_names.size(); ++j)
 		{
-			std::cout<<sensors_[i].joint_names[j]<<", ";
+			std::cout<<sensors_[i].joint_names[j]<<" ("<<sensors_[i].joint_index[j]<<"), ";
 		}
 		std::cout<<"\n";
 	}
@@ -459,6 +460,21 @@ void SkinJointGazeboRos::UpdateJoints()
 				}
 			}
 		}
+	}
+
+	// Compute tactile data
+	for (unsigned int i = 0; i < sensors_.size(); ++i)
+	{
+		sensors_[i].force_applied = 0;
+		sensors_[i].force_sensed  = 0;
+		for (unsigned int j = 0; j < sensors_[i].joint_index.size(); ++j)
+		{
+			int index = sensors_[i].joint_index[j];
+			//std::cout<<index<<": "<<f_app_(index)<<" N,";
+			sensors_[i].force_applied += f_app_(index);
+			sensors_[i].force_sensed  += f_sen_(index);
+		}
+		//std::cout<<"\nSensor "<<i<<":\tf_app="<<sensors_[i].force_applied<<"\tf_sen="<<sensors_[i].force_sensed<<"\n";
 	}
 
     // Publish RVIZ marker
