@@ -73,6 +73,12 @@ struct Distances
 	std::vector<int> index;
 	std::vector<double> distance;
 };
+struct Tactile
+{
+	int index;
+	math::Vector3 position;
+	std::vector<std::string> joint_names;
+};
 
 bool indexSort(int a, int b, std::vector<double> data)
 {

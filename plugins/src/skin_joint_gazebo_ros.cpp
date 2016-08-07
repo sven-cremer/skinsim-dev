@@ -115,9 +115,53 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		//std::cout << this->joint_names_[i]<< std::endl;
 	}
 	input_file_.close();
+	this->num_joints_ = this->joint_names_.size();
+
+	// Load tactile sensors
+	getModelConfigPath( fullname, _sdf );
+	fullname = fullname + std::string("/tactile_id.yaml");
+	input_file_.open(fullname.c_str());
+	std::cout<<"Loading file: "<<fullname<<"\n";
+	std::vector<Tactile> sensors_;
+	YAML::Node node;
+	node = YAML::LoadAll(input_file_);
+	for (unsigned int i = 0; i < this->num_joints_; ++i)
+	{
+		if( node[0][ joint_names_[i] ] )
+		{
+			bool sensor_already_added = false;
+			int index = node[0][ joint_names_[i] ].as<int>();
+			for (unsigned int j = 0; j < sensors_.size(); ++j)
+			{
+				if( sensors_[j].index == index )
+				{
+					sensors_[j].joint_names.push_back( joint_names_[i] );
+					sensor_already_added = true;
+					break;
+				}
+			}
+			if(!sensor_already_added)
+			{
+				Tactile tmp;
+				tmp.index = index;
+				tmp.joint_names.push_back( joint_names_[i] );
+				sensors_.push_back(tmp);
+			}
+		}
+	}
+	input_file_.close();
+	// Print tactile layout
+	for (unsigned int i = 0; i < sensors_.size(); ++i)
+	{
+		std::cout<<"Tactile "<<sensors_[i].index<<": ";
+		for (unsigned int j = 0; j < sensors_[i].joint_names.size(); ++j)
+		{
+			std::cout<<sensors_[i].joint_names[j]<<", ";
+		}
+		std::cout<<"\n";
+	}
 
 	// Get pointers to joints from Gazebo
-	this->num_joints_ = this->joint_names_.size();
 	this->joints_.resize(this->num_joints_);
 	for (unsigned int i = 0; i < this->joints_.size(); ++i)
 	{
