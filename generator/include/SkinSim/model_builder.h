@@ -67,6 +67,13 @@ private:
 	std::string pathString;
 	BuildModelSpec m_;
 
+	int total_elements_x;		// elements/patch * patches
+	int total_elements_y;
+	int unit_size_x;			// sensors + separation
+	int unit_size_y;
+	int total_sensors_x;		// floor(total_elements/unit_size)
+	int total_sensors_y;
+
 	void generateSDFHeader();
 
 	void generateModelEnd();
@@ -180,8 +187,8 @@ public:
 			std::string patch_name,
 			int patch_ix,
 			int patch_iy,
-			YAML::Emitter& out,
-			YAML::Emitter& out1,
+			YAML::Emitter& out_joint_names,
+			YAML::Emitter& out_tactile_id,
 			double element_diameter,
 			double element_mass,
 			double num_elements_x,

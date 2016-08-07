@@ -486,6 +486,14 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	// Store model specs
 	m_ = modelSpecs_;
 
+	// Compute additional parameters
+	total_elements_x = m_.spec.num_elements_x*m_.spec.num_patches_x;
+	total_elements_y = m_.spec.num_elements_y*m_.spec.num_patches_y;
+	unit_size_x = m_.spec.tactile_elements_x+m_.spec.tactile_separation_x;
+	unit_size_y = m_.spec.tactile_elements_y+m_.spec.tactile_separation_y;
+	total_sensors_x = total_elements_x/unit_size_x;								// Note: integer devision rounds down
+	total_sensors_y = total_elements_y/unit_size_y;
+
 	Eigen::Vector4d color;
 	color  << 1.0, 1.0, 1.0, 1.0 ;
 
@@ -494,10 +502,10 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	std::string joint_config_filename = modelDirectory + "joint_names.yaml";
 	std::string tactile_id_filename   = modelDirectory + "tactile_id.yaml";
 
-	YAML::Emitter out;
+	YAML::Emitter out_joint_names;
 	std::ofstream fout(joint_config_filename.c_str());
 
-	YAML::Emitter out1;
+	YAML::Emitter out_tactile_id;
 	std::ofstream fout2(tactile_id_filename.c_str());
 
 	//  sdf::SDFPtr robot(new sdf::SDF());
@@ -545,8 +553,8 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	///////////////////////////////////////////////////////
 	// PLANE -> PATCH_X
 
-	out << YAML::BeginSeq;
-	out1 << YAML::BeginMap;
+	out_joint_names << YAML::BeginSeq;
+	out_tactile_id << YAML::BeginMap;
 
 	color  << 1.0, 1.0, 1.0, 1.0 ;
 
@@ -583,8 +591,8 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 					patch,
 					ix,
 					iy,
-					out,
-					out1,
+					out_joint_names,
+					out_tactile_id,
 					m_.spec.element_diameter,
 					element_mass,
 					m_.spec.num_elements_x,
@@ -597,16 +605,16 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 		}
 	}
 
-	out << YAML::EndSeq;
-	out1 << YAML::EndMap;
+	out_joint_names << YAML::EndSeq;
+	out_tactile_id << YAML::EndMap;
 
-	// Write YAML file and close
+	// Write to YAML file and close
 	std::cout<<"Saving: "<<joint_config_filename.c_str()<<"\n";
-	fout << out.c_str();
+	fout << out_joint_names.c_str();
 	fout.close();
 
 	std::cout<<"Saving: "<<tactile_id_filename.c_str()<<"\n";
-	fout2 << out1.c_str();
+	fout2 << out_tactile_id.c_str();
 	fout2.close();
 
 	//    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
@@ -687,8 +695,8 @@ void ModelBuilder::createSkinPatchElements(
 		std::string patch_name,
 		int patch_ix,
 		int patch_iy,
-		YAML::Emitter& out,
-		YAML::Emitter& out1,
+		YAML::Emitter& out_joint_names,
+		YAML::Emitter& out_tactile_id,
 		double element_diameter,
 		double element_mass,
 		double num_elements_x,
@@ -698,7 +706,6 @@ void ModelBuilder::createSkinPatchElements(
 		double pos_z)
 {
 
-	int num_elements = num_elements_x*num_elements_y;
 	double radius = element_diameter/2;
 	double x, y, z;
 
@@ -726,69 +733,55 @@ void ModelBuilder::createSkinPatchElements(
 	z = pos_z + radius;
 
 	// Add skin elements
-	int i = 0;
+	int spring_idx = 0;
 	for( int ix = 0; ix < num_elements_x; ix++ )
 	{
 		for( int iy = 0; iy < num_elements_y; iy++ )
 		{
-
 			x = pos_x + ix*element_diameter;
 			y = pos_y + iy*element_diameter;
 
 			pose << x, y, z, 0, 0, 0;
 
-			std::string spring = patch_name + "_spring_" + boost::lexical_cast<std::string>(i);
+			std::string spring = patch_name + "_spring_" + boost::lexical_cast<std::string>(spring_idx);
 			std::string spring_joint = spring + "_joint" ;
 			std::string collision = spring + "_collision";
 
-			// Check if it is part of a tactile sensor
-			int total_elements_x = m_.spec.num_elements_x*m_.spec.num_patches_x;
-			int total_elements_y = m_.spec.num_elements_y*m_.spec.num_patches_y;
-
+			// Check if element is part of a tactile sensor					TODO specify coordinate of first tactile sensor, using (0,0) right now
 			bool sensor_x = false;
-			int t_size_x = m_.spec.tactile_elements_x+m_.spec.tactile_separation_x;
-			int global_ix = (patch_ix*m_.spec.num_elements_x + ix);		// Allow sensors to span across patches
-			int t_unit_x = global_ix % t_size_x;
-			if(global_ix + t_size_x > total_elements_x)					// Check if enough elements are left to create a sensor
+			int global_ix = (patch_ix*m_.spec.num_elements_x + ix);			// Allow sensors to span across patches
+			int unit_ix = global_ix % unit_size_x;							// Index inside a unit
+			if(global_ix + m_.spec.tactile_elements_x > total_elements_x)	// Check if enough elements are left to create a sensor
 				sensor_x = false;
 			else
-			{
-				if(t_unit_x<m_.spec.tactile_elements_x)
+				if(unit_ix<m_.spec.tactile_elements_x)						// Check if it could be a tactile element
 					sensor_x = true;
-			}
 
 			bool sensor_y = false;
-			int t_size_y = m_.spec.tactile_elements_y+m_.spec.tactile_separation_y;
-			int global_iy = (patch_iy*m_.spec.num_elements_y + iy);		// Allow sensors to span across patches
-			int t_unit_y = global_iy % t_size_y;
-			if(global_iy + t_size_y > total_elements_y)					// Check if enough elements are left to create a sensor
+			int global_iy = (patch_iy*m_.spec.num_elements_y + iy);			// Allow sensors to span across patches
+			int unit_iy = global_iy % unit_size_y;							// Index inside a unit
+			if(global_iy + m_.spec.tactile_elements_y > total_elements_y)	// Check if enough elements are left to create a sensor
 				sensor_y = false;
 			else
-			{
-				if(t_unit_y<m_.spec.tactile_elements_y)
+				if(unit_iy<m_.spec.tactile_elements_y)						// Check if it could be a tactile element
 					sensor_y = true;
-			}
 
 			if(sensor_x && sensor_y)
 			{
-				skin_diffuse  << 1.0, 0.0, 0.0, 1.0;	// Red
+				skin_diffuse  << 1.0, 0.0, 0.0, 1.0;						// Make tactile element red
 
-				// Sensor index
-				int ind_x = global_ix/t_size_x;
-				int ind_y = global_iy/t_size_y;
-
-				int total_sensors_x = total_elements_x/t_size_x;
-				int total_sensors_y = total_elements_y/t_size_y;
-
-				int sensor_ind = ind_x*total_sensors_y+ind_y;
-				//std::cout<<spring_joint<<": "<<sensor_ind<<"\n";
-
+				// Compute sensor index
+				int ind_x = global_ix/unit_size_x;
+				int ind_y = global_iy/unit_size_y;
+				int sensor_ind = ind_x*total_sensors_y+ind_y;				// Count along rows, i.e. 0, 1, 3, 4
+																			//                        5, 6, ...
 				// Store tactile sensor ID
-				out1 << YAML::Key << spring_joint << YAML::Value << sensor_ind;
+				out_tactile_id << YAML::Key << spring_joint << YAML::Value << sensor_ind;
 			}
 			else
-				skin_diffuse  << 1.0, 1.0, 1.0, 1.0;	// White
+				skin_diffuse  << 1.0, 1.0, 1.0, 1.0;						// Make non-sensor element White
 
+			// Add link and joint
 			addLink(spring,
 					element_mass,
 					collision,
@@ -807,12 +800,12 @@ void ModelBuilder::createSkinPatchElements(
 					axis );
 
 			// Store name
-			out << YAML::Value << spring_joint;
+			out_joint_names << YAML::Value << spring_joint;
 
-			i++;
+			spring_idx++;
 		}
-
 	}
+
 }
 
 //////////////////////////////////////////////////////////////
