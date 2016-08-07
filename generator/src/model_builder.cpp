@@ -546,6 +546,7 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	// PLANE -> PATCH_X
 
 	out << YAML::BeginSeq;
+	out1 << YAML::BeginSeq;
 
 	color  << 1.0, 1.0, 1.0, 1.0 ;
 
@@ -583,6 +584,7 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 					ix,
 					iy,
 					out,
+					out1,
 					m_.spec.element_diameter,
 					element_mass,
 					m_.spec.num_elements_x,
@@ -596,13 +598,16 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	}
 
 	out << YAML::EndSeq;
+	out1 << YAML::EndSeq;
 
 	// Write YAML file and close
 	std::cout<<"Saving: "<<joint_config_filename.c_str()<<"\n";
 	fout << out.c_str();
 	fout.close();
 
-	fout2.close();		// TODO nothing is saved to file
+	std::cout<<"Saving: "<<tactile_id_filename.c_str()<<"\n";
+	fout2 << out1.c_str();
+	fout2.close();
 
 	//    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
 	//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );			// <- Simple plugin that works
@@ -683,6 +688,7 @@ void ModelBuilder::createSkinPatchElements(
 		int patch_ix,
 		int patch_iy,
 		YAML::Emitter& out,
+		YAML::Emitter& out1,
 		double element_diameter,
 		double element_mass,
 		double num_elements_x,
@@ -775,7 +781,14 @@ void ModelBuilder::createSkinPatchElements(
 				int total_sensors_y = total_elements_y/t_size_y;
 
 				int sensor_ind = ind_x*total_sensors_y+ind_y;
-				std::cout<<spring_joint<<": "<<sensor_ind<<"\n";
+				//std::cout<<spring_joint<<": "<<sensor_ind<<"\n";
+
+				// Store tactile sensor ID
+				out1 << YAML::BeginMap;
+				out1 << YAML::Key << spring_joint << YAML::Value << sensor_ind;
+				//out1 << YAML::Key << sensor_ind << YAML::Value << spring_joint;
+				out1 << YAML::EndMap;
+
 			}
 			else
 				skin_diffuse  << 1.0, 1.0, 1.0, 1.0;	// White

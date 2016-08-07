@@ -181,6 +181,7 @@ public:
 			int patch_ix,
 			int patch_iy,
 			YAML::Emitter& out,
+			YAML::Emitter& out1,
 			double element_diameter,
 			double element_mass,
 			double num_elements_x,
