@@ -55,7 +55,7 @@
 
 // ROS messages
 #include <skinsim_ros_msgs/Joint1DArray.h>
-#include <skinsim_ros_msgs/Empty.h>
+#include <skinsim_ros_msgs/GetLayout.h>
 #include <skinsim_ros_msgs/PointArray.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
@@ -76,7 +76,7 @@ struct Distances
 struct Tactile
 {
 	int index;
-	math::Vector3 position;
+	math::Vector3 position;					// Center of sensor in skin_array frame
 	std::vector<std::string> joint_names;
 	std::vector<int> joint_index;
 	double force_sensed;
@@ -148,7 +148,7 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief Service callback function that triggers the layout publisher
   /// The layout data could have been returned in the service response,
   /// however it is more convenient to save a rostopic into a CSV file.
-  private: bool serviceCB(skinsim_ros_msgs::Empty::Request& req, skinsim_ros_msgs::Empty::Response& res);
+  private: bool serviceCB(skinsim_ros_msgs::GetLayout::Request& req, skinsim_ros_msgs::GetLayout::Response& res);
 
   /// \brief A ROS publisher for the joint data
   private: ros::Publisher ros_pub_joint_;
@@ -220,6 +220,9 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief Tactile sensor data
   private: std::vector<Tactile> sensors_;
+
+  /// \brief Number of sensors inside the model
+  private: int num_sensors_;
 
 };
 

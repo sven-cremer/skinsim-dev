@@ -117,51 +117,6 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	input_file_.close();
 	this->num_joints_ = this->joint_names_.size();
 
-	// Load tactile sensors
-	getModelConfigPath( fullname, _sdf );
-	fullname = fullname + std::string("/tactile_id.yaml");
-	input_file_.open(fullname.c_str());
-	std::cout<<"Loading file: "<<fullname<<"\n";
-	YAML::Node node;
-	node = YAML::LoadAll(input_file_);
-	for (unsigned int i = 0; i < this->num_joints_; ++i)
-	{
-		if( node[0][ joint_names_[i] ] )
-		{
-			bool sensor_already_added = false;
-			int index = node[0][ joint_names_[i] ].as<int>();
-			for (unsigned int j = 0; j < sensors_.size(); ++j)
-			{
-				if( sensors_[j].index == index )
-				{
-					sensors_[j].joint_names.push_back( joint_names_[i] );
-					sensors_[j].joint_index.push_back( i );
-					sensor_already_added = true;
-					break;
-				}
-			}
-			if(!sensor_already_added)
-			{
-				Tactile tmp;
-				tmp.index = index;
-				tmp.joint_names.push_back( joint_names_[i] );
-				tmp.joint_index.push_back( i );
-				sensors_.push_back(tmp);
-			}
-		}
-	}
-	input_file_.close();
-	// Print tactile layout
-	for (unsigned int i = 0; i < sensors_.size(); ++i)
-	{
-		std::cout<<"Tactile "<<sensors_[i].index<<": ";
-		for (unsigned int j = 0; j < sensors_[i].joint_names.size(); ++j)
-		{
-			std::cout<<sensors_[i].joint_names[j]<<" ("<<sensors_[i].joint_index[j]<<"), ";
-		}
-		std::cout<<"\n";
-	}
-
 	// Get pointers to joints from Gazebo
 	this->joints_.resize(this->num_joints_);
 	for (unsigned int i = 0; i < this->joints_.size(); ++i)
@@ -231,6 +186,57 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 //		}
 //	}
 
+	// Load tactile sensors
+	getModelConfigPath( fullname, _sdf );
+	fullname = fullname + std::string("/tactile_id.yaml");
+	input_file_.open(fullname.c_str());
+	std::cout<<"Loading file: "<<fullname<<"\n";
+	YAML::Node node;
+	node = YAML::LoadAll(input_file_);
+	for (unsigned int i = 0; i < this->num_joints_; ++i)
+	{
+		if( node[0][ joint_names_[i] ] )
+		{
+			bool sensor_already_added = false;
+			int index = node[0][ joint_names_[i] ].as<int>();
+			for (unsigned int j = 0; j < sensors_.size(); ++j)
+			{
+				if( sensors_[j].index == index )
+				{
+					sensors_[j].joint_names.push_back( joint_names_[i] );
+					sensors_[j].joint_index.push_back( i );
+					sensor_already_added = true;
+					break;
+				}
+			}
+			if(!sensor_already_added)
+			{
+				Tactile tmp;
+				tmp.index = index;
+				tmp.joint_names.push_back( joint_names_[i] );
+				tmp.joint_index.push_back( i );
+				sensors_.push_back(tmp);
+			}
+		}
+	}
+	input_file_.close();
+	// Compute tactile sensor positions
+	for (unsigned int i = 0; i < sensors_.size(); ++i)
+	{
+		std::cout<<"Tactile "<<sensors_[i].index<<": ";
+		sensors_[i].position.Set(0, 0, 0);
+		for (unsigned int j = 0; j < sensors_[i].joint_names.size(); ++j)
+		{
+			//std::cout<<sensors_[i].joint_names[j]<<" ("<<sensors_[i].joint_index[j]<<"), ";
+			int index = sensors_[i].joint_index[j];
+			target = this->joints_[index]->GetChild()->GetInitialRelativePose ();
+			sensors_[i].position += target.pos;
+		}
+		sensors_[i].position.x = sensors_[i].position.x / sensors_[i].joint_names.size();
+		sensors_[i].position.y = sensors_[i].position.y / sensors_[i].joint_names.size();
+		//std::cout<<"("<<sensors_[i].position<<")\n";
+	}
+	this->num_sensors_ = this->sensors_.size();
 
 //    // Create a new Gazbeo transport node
 //    transport::NodePtr node(new transport::Node());
@@ -541,22 +547,51 @@ void SkinJointGazeboRos::UpdateJoints()
 
 //////////////////////////////////////////////////////////////////////////
 // Callback function when subscriber connects
-bool SkinJointGazeboRos::serviceCB(skinsim_ros_msgs::Empty::Request& req, skinsim_ros_msgs::Empty::Response& res)
+bool SkinJointGazeboRos::serviceCB(skinsim_ros_msgs::GetLayout::Request& req, skinsim_ros_msgs::GetLayout::Response& res)
 {
 	math::Pose p;
 
 	this->lock_.lock();
 
-	// Copy position data into ROS message
-	layout_msg_.data.resize(this->num_joints_);
-
-	for(int i=0;i<this->num_joints_;i++)
+	switch(req.selected)
 	{
-		p = this->joints_[i]->GetChild()->GetInitialRelativePose();
+	// Get position of each skin element
+	case skinsim_ros_msgs::GetLayout::Request::ELEMENTS:
+	{
+		// Copy position data into ROS message
+		layout_msg_.data.resize(this->num_joints_);
 
-		layout_msg_.data[i].x = p.pos.x;
-		layout_msg_.data[i].y = p.pos.y;
-		layout_msg_.data[i].z = p.pos.z;
+		for( int i=0; i < this->num_joints_; i++ )
+		{
+			p = this->joints_[i]->GetChild()->GetInitialRelativePose();
+
+			layout_msg_.data[i].x = p.pos.x;
+			layout_msg_.data[i].y = p.pos.y;
+			layout_msg_.data[i].z = p.pos.z;
+		}
+		res.success = true;
+		break;
+	}
+	// Get position of each tactile sensor
+	case skinsim_ros_msgs::GetLayout::Request::SENSORS:
+	{
+		// Copy position data into ROS message
+		layout_msg_.data.resize(this->num_sensors_);
+
+		for( int i = 0; i < this->num_sensors_; ++i )
+		{
+			layout_msg_.data[i].x = sensors_[i].position.x;
+			layout_msg_.data[i].y = sensors_[i].position.y;
+			layout_msg_.data[i].z = sensors_[i].position.z;
+		}
+		res.success = true;
+		break;
+	}
+	// Default
+	default:
+		std::cout<<"Layout not found.\n";
+		res.success = false;
+		break;
 	}
 
 	this->ros_pub_layout_.publish(this->layout_msg_);
