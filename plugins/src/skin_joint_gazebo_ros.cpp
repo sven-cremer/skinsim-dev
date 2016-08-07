@@ -50,7 +50,9 @@ GZ_REGISTER_MODEL_PLUGIN(SkinJointGazeboRos);
 // Constructor
 SkinJointGazeboRos::SkinJointGazeboRos()
 {
-	this->ros_connections_ = 0;
+	this->ros_connections_joint_   = 0;
+	this->ros_connections_rviz_    = 0;
+	this->ros_connections_tactile_ = 0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -223,7 +225,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	// Compute tactile sensor positions
 	for (unsigned int i = 0; i < sensors_.size(); ++i)
 	{
-		std::cout<<"Tactile "<<sensors_[i].index<<": ";
+		//std::cout<<"Tactile "<<sensors_[i].index<<": ";
 		sensors_[i].position.Set(0, 0, 0);
 		for (unsigned int j = 0; j < sensors_[i].joint_names.size(); ++j)
 		{
@@ -238,12 +240,6 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	}
 	this->num_sensors_ = this->sensors_.size();
 
-//    // Create a new Gazbeo transport node
-//    transport::NodePtr node(new transport::Node());
-//
-//    // Initialize the node with the Model name
-//    node->Init("test123");
-
 
 	// Make sure the ROS node for Gazebo has already been initialized
 	if (!ros::isInitialized())
@@ -252,10 +248,8 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 		std::cout<<"Warning: The ROS node for Gazebo has not been initialized! \n"
 				 <<"Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package \n";
-//		int argc = 0;
-//		char **argv = NULL;
-//		ros::init(argc, argv, "gazebo_ros_client", ros::init_options::NoSigintHandler);
 	}
+	// Advertise ROS topics and services
 	else
 	{
 		this->pub_to_ros_ = true;
@@ -264,22 +258,28 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 		// ROS topics
 		ros::AdvertiseOptions ao = ros::AdvertiseOptions::create<skinsim_ros_msgs::Joint1DArray>(
-				this->topic_name_,1,
-				boost::bind( &SkinJointGazeboRos::RosConnect,this),
-				boost::bind( &SkinJointGazeboRos::RosDisconnect,this), ros::VoidPtr(), &this->ros_queue_);
+				"joint_data",1,
+				boost::bind( &SkinJointGazeboRos::RosConnectJoint,this),
+				boost::bind( &SkinJointGazeboRos::RosDisconnectJoint,this), ros::VoidPtr(), &this->ros_queue_);
 		this->ros_pub_joint_ = this->ros_node_->advertise(ao);
 
 		ros::AdvertiseOptions ao2 = ros::AdvertiseOptions::create<skinsim_ros_msgs::PointArray>(
 				"layout",1,
 				boost::bind( &SkinJointGazeboRos::emptyCB,this),
-				boost::bind( &SkinJointGazeboRos::emptyCB,this), ros::VoidPtr(), &this->ros_queue_);		// TODO check if it is OK to use the same ros queue
+				boost::bind( &SkinJointGazeboRos::emptyCB,this), ros::VoidPtr(), &this->ros_queue_);
 		this->ros_pub_layout_ = this->ros_node_->advertise(ao2);
 
 		ros::AdvertiseOptions ao3 = ros::AdvertiseOptions::create<visualization_msgs::MarkerArray>(
 				"rviz",1,
-				boost::bind( &SkinJointGazeboRos::emptyCB,this),
-				boost::bind( &SkinJointGazeboRos::emptyCB,this), ros::VoidPtr(), &this->ros_queue_);		// TODO check if it is OK to use the same ros queue
+				boost::bind( &SkinJointGazeboRos::RosConnectRviz,this),
+				boost::bind( &SkinJointGazeboRos::RosDisconnectRviz,this), ros::VoidPtr(), &this->ros_queue_);
 		this->ros_pub_rviz_ = this->ros_node_->advertise(ao3);
+
+		ros::AdvertiseOptions ao4 = ros::AdvertiseOptions::create<skinsim_ros_msgs::TactileData>(
+				"tactile_data",1,
+				boost::bind( &SkinJointGazeboRos::RosConnectTactile,this),
+				boost::bind( &SkinJointGazeboRos::RosDisconnectTactile,this), ros::VoidPtr(), &this->ros_queue_);		// TODO check if it is OK to use the same ros queue
+		this->ros_pub_tactile_ = this->ros_node_->advertise(ao4);
 
 		// ROS services
 		this->ros_srv_ = this->ros_node_->advertiseService("publish_layout", &SkinJointGazeboRos::serviceCB, this);
@@ -287,7 +287,43 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		// Custom Callback Queue
 		this->callback_ros_queue_thread_ = boost::thread( boost::bind( &SkinJointGazeboRos::RosQueueThread,this ) );
 
-		this->joint_msg_.dataArray.resize(this->num_joints_);
+		// ROS message initialization
+		this->msg_joint_.dataArray.resize(this->num_joints_);
+		this->msg_tactile_.data.resize(this->num_sensors_);
+
+		// RVIZ marker
+		visualization_msgs::Marker m_vizMarker;
+		m_vizMarker.header.frame_id = "world";
+
+		m_vizMarker.ns = "skinsim";
+
+		m_vizMarker.type = visualization_msgs::Marker::ARROW;
+		m_vizMarker.action = visualization_msgs::Marker::ADD;
+
+		m_vizMarker.pose.orientation.w = 0.70711;
+		m_vizMarker.pose.orientation.x = 0;
+		m_vizMarker.pose.orientation.y = 0.70711;
+		m_vizMarker.pose.orientation.z = 0;
+
+		m_vizMarker.scale.y = 0.01;
+		m_vizMarker.scale.z = 0.01;
+
+		m_vizMarker.color.a = 1.0;
+		m_vizMarker.color.b = 0.0;
+
+		m_vizMarker.header.stamp = ros::Time::now();
+
+		for(int i=0;i<this->joint_names_.size();i++)
+		{
+			m_vizMarker.id = i;
+			math::Pose p = this->joints_[i]->GetChild()->GetInitialRelativePose();
+
+			m_vizMarker.pose.position.x = p.pos.x*4;	// Increase spacing
+			m_vizMarker.pose.position.y = p.pos.y*4;
+			m_vizMarker.pose.position.z = p.pos.z;
+
+			msg_rviz_.markers.push_back(m_vizMarker);
+		}
 	}
 
 	// Update joints at every simulation iteration
@@ -328,39 +364,6 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	std::cout << this->joints_[0]->GetLocalAxis(0) <<"\n";
 	std::cout << this->joints_[0]->GetForce(0) <<"\n";
 
-	// RVIZ marker
-	visualization_msgs::Marker m_vizMarker;
-	m_vizMarker.header.frame_id = "world";
-
-	m_vizMarker.ns = "skinsim";
-
-	m_vizMarker.type = visualization_msgs::Marker::ARROW;
-	m_vizMarker.action = visualization_msgs::Marker::ADD;
-
-	m_vizMarker.pose.orientation.w = 0.70711;
-	m_vizMarker.pose.orientation.x = 0;
-	m_vizMarker.pose.orientation.y = 0.70711;
-	m_vizMarker.pose.orientation.z = 0;
-
-	m_vizMarker.scale.y = 0.01;
-	m_vizMarker.scale.z = 0.01;
-
-	m_vizMarker.color.a = 1.0;
-	m_vizMarker.color.b = 0.0;
-
-	m_vizMarker.header.stamp = ros::Time::now();
-
-	for(int i=0;i<this->joint_names_.size();i++)
-	{
-		m_vizMarker.id = i;
-		math::Pose p = this->joints_[i]->GetChild()->GetInitialRelativePose();
-
-		m_vizMarker.pose.position.x = p.pos.x*4;	// Increase spacing
-		m_vizMarker.pose.position.y = p.pos.y*4;
-		m_vizMarker.pose.position.z = p.pos.z;
-
-		msg_rviz_.markers.push_back(m_vizMarker);
-	}
 
 	// Set MSD parameters for Gazebo
 	for(int i=0;i<this->joint_names_.size();i++)
@@ -368,19 +371,13 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		//this->joints_[i]->SetStiffnessDamping(0,122,1.1,0);
 		this->joints_[i]->SetStiffnessDamping(0,0,0,0);			// TODO is this necessary?
 	}
+	this->rest_angle_ = 0.0;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Update the controller
 void SkinJointGazeboRos::UpdateJoints()
 {
-	// TODO make parameters
-	double rest_angle = 0.0;
-	double current_angle = 0;
-	//double current_force = 0;
-	double current_velocity = 0;
-	//double force = 0;
-	double force_dist =0;
 
 	common::Time cur_time = this->world_->GetSimTime();
 
@@ -421,13 +418,15 @@ void SkinJointGazeboRos::UpdateJoints()
     }
 
 	// Compute applied force
+    double current_velocity = 0;
+    double current_angle = 0;
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
 	{
 			current_angle = this->joints_[i]->GetAngle(0).Radian();
 			current_velocity = this->joints_[i]->GetVelocity(0);
 
 			// This sets the mass-spring-damper dynamics, currently only spring and damper
-			f_app_(i) = (rest_angle - current_angle) * sping_ - damper_ * current_velocity;
+			f_app_(i) = (rest_angle_ - current_angle) * sping_ - damper_ * current_velocity;
 	}
 
 	// Set Dynamics
@@ -440,6 +439,7 @@ void SkinJointGazeboRos::UpdateJoints()
 
 	}
 	// Compute sensed force
+	double force_dist = 0;
 	f_sen_.setZero();
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
 	{
@@ -483,65 +483,78 @@ void SkinJointGazeboRos::UpdateJoints()
 		//std::cout<<"\nSensor "<<i<<":\tf_app="<<sensors_[i].force_applied<<"\tf_sen="<<sensors_[i].force_sensed<<"\n";
 	}
 
-    // Publish RVIZ marker
-	this->lock_.lock();
-	ros::Time t_stamp = ros::Time::now();
-	for(int i=0;i<this->joint_names_.size();i++)
-	{
-		msg_rviz_.markers[i].header.stamp = t_stamp;
-		msg_rviz_.markers[i].pose.position.z = this->joints_[i]->GetAngle(0).Radian();
-
-		msg_rviz_.markers[ i ].scale.x = f_sen_(i); // this->joints_[ i ]->GetForce(0);
-		//msg_rviz_.markers[i].scale.x = -this->joints_[i]->GetForce(0);	// Get external force set by user
-																		// TODO not reliable so keep track of forces instead
-		if(collision_index_[i])
-		{
-			msg_rviz_.markers[i].color.r = 1.0;
-			msg_rviz_.markers[i].color.g = 0.0;
-		}
-		else
-		{
-			msg_rviz_.markers[i].color.r = 0.0;
-			msg_rviz_.markers[i].color.g = 1.0;
-		}
-	}
-	this->ros_pub_rviz_ .publish(this->msg_rviz_);
-	this->lock_.unlock();
-
-
     // Decide whether to publish
-	if (this->ros_connections_ == 0 || !pub_to_ros_)
+	if (!pub_to_ros_)
 		return;
 
-	this->lock_.lock();
-	// TODO: Copy data into ROS message
-//	this->skin_msg_.header.stamp.sec = (this->world_->GetSimTime()).sec;
-//	this->skin_msg_.header.stamp.nsec = (this->world_->GetSimTime()).nsec;
-//	this->skin_msg_.time = (this->world_->GetSimTime()).Double();
-
-	for(int i=0;i<this->num_joints_;i++)
+	// Publish joint data
+	if(this->ros_connections_joint_ > 0 )
 	{
-		this->joint_msg_.dataArray[i].position = this->joints_[i]->GetAngle(0).Radian();
+		this->lock_.lock();
+		// Copy data into ROS message
+		for(int i=0;i<this->num_joints_;i++)
+		{
+			this->msg_joint_.dataArray[i].position = this->joints_[i]->GetAngle(0).Radian();
 
-		this->joint_msg_.dataArray[i].velocity = this->joints_[i]->GetVelocity(0);
+			this->msg_joint_.dataArray[i].velocity = this->joints_[i]->GetVelocity(0);
 
-		this->joint_msg_.dataArray[i].force = msg_rviz_.markers[ i ].scale.x; //this->joints_[i]->GetForce(0);
-//		physics::JointWrench wrench = this->joints_[i]->GetForceTorque(0);	// Get internal + external forces
-//		math::Vector3 force = wrench.body2Force;
-//		//this->joint_msg_.dataArray[i].force = force.GetLength();
-//		std::cout<<force<<"\t"<<	this->joints_[i]->GetForce(0)*this->joints_[i]->GetLocalAxis(0) <<"\n";
+			this->msg_joint_.dataArray[i].force = msg_rviz_.markers[ i ].scale.x; //this->joints_[i]->GetForce(0);
+			//		physics::JointWrench wrench = this->joints_[i]->GetForceTorque(0);	// Get internal + external forces
+			//		math::Vector3 force = wrench.body2Force;
+			//		//this->joint_msg_.dataArray[i].force = force.GetLength();
+			//		std::cout<<force<<"\t"<<	this->joints_[i]->GetForce(0)*this->joints_[i]->GetLocalAxis(0) <<"\n";
 
-		//this->joint_msg_.dataArray[i].collisions = this->contact_mgr_->GetContactCount();
-		if(collision_index_[i])
-			this->joint_msg_.dataArray[i].collisions = 1;
-		else
-			this->joint_msg_.dataArray[i].collisions = 0;
+			if(collision_index_[i])
+				this->msg_joint_.dataArray[i].collisions = 1;
+			else
+				this->msg_joint_.dataArray[i].collisions = 0;
+		}
+
+		this->ros_pub_joint_.publish(this->msg_joint_);
+		this->lock_.unlock();
 	}
 
-	this->ros_pub_joint_.publish(this->joint_msg_);
-	this->lock_.unlock();
+	// Publish RVIZ marker
+	if(this->ros_connections_rviz_ > 0 )
+	{
+		this->lock_.lock();
+		ros::Time t_stamp = ros::Time::now();
+		for(int i=0;i<this->joint_names_.size();i++)
+		{
+			msg_rviz_.markers[i].header.stamp    = t_stamp;
+			msg_rviz_.markers[i].pose.position.z = this->joints_[i]->GetAngle(0).Radian();
+			msg_rviz_.markers[i].scale.x         = f_sen_(i); // this->joints_[ i ]->GetForce(0);
 
-	// save last time stamp
+			if(collision_index_[i])
+			{
+				msg_rviz_.markers[i].color.r = 1.0;
+				msg_rviz_.markers[i].color.g = 0.0;
+			}
+			else
+			{
+				msg_rviz_.markers[i].color.r = 0.0;
+				msg_rviz_.markers[i].color.g = 1.0;
+			}
+		}
+		this->ros_pub_rviz_ .publish(this->msg_rviz_);
+		this->lock_.unlock();
+	}
+
+	// Publish Tactile data
+	if(this->ros_connections_tactile_ > 0 )
+	{
+		this->lock_.lock();
+		// Copy data into ROS message
+		for(int i=0;i<this->num_sensors_;i++)
+		{
+			//msg_tactile_.data[i] = sensors_[i].force_sensed;
+			msg_tactile_.data[i] = sensors_[i].force_applied;		// For easier debugging FIXME
+		}
+		this->ros_pub_tactile_.publish(this->msg_tactile_);
+		this->lock_.unlock();
+	}
+
+	// Save last time stamp
 	this->last_time_ = cur_time;
 }
 
@@ -559,15 +572,15 @@ bool SkinJointGazeboRos::serviceCB(skinsim_ros_msgs::GetLayout::Request& req, sk
 	case skinsim_ros_msgs::GetLayout::Request::ELEMENTS:
 	{
 		// Copy position data into ROS message
-		layout_msg_.data.resize(this->num_joints_);
+		msg_layout_.data.resize(this->num_joints_);
 
 		for( int i=0; i < this->num_joints_; i++ )
 		{
 			p = this->joints_[i]->GetChild()->GetInitialRelativePose();
 
-			layout_msg_.data[i].x = p.pos.x;
-			layout_msg_.data[i].y = p.pos.y;
-			layout_msg_.data[i].z = p.pos.z;
+			msg_layout_.data[i].x = p.pos.x;
+			msg_layout_.data[i].y = p.pos.y;
+			msg_layout_.data[i].z = p.pos.z;
 		}
 		res.success = true;
 		break;
@@ -576,13 +589,13 @@ bool SkinJointGazeboRos::serviceCB(skinsim_ros_msgs::GetLayout::Request& req, sk
 	case skinsim_ros_msgs::GetLayout::Request::SENSORS:
 	{
 		// Copy position data into ROS message
-		layout_msg_.data.resize(this->num_sensors_);
+		msg_layout_.data.resize(this->num_sensors_);
 
 		for( int i = 0; i < this->num_sensors_; ++i )
 		{
-			layout_msg_.data[i].x = sensors_[i].position.x;
-			layout_msg_.data[i].y = sensors_[i].position.y;
-			layout_msg_.data[i].z = sensors_[i].position.z;
+			msg_layout_.data[i].x = sensors_[i].position.x;
+			msg_layout_.data[i].y = sensors_[i].position.y;
+			msg_layout_.data[i].z = sensors_[i].position.z;
 		}
 		res.success = true;
 		break;
@@ -594,33 +607,12 @@ bool SkinJointGazeboRos::serviceCB(skinsim_ros_msgs::GetLayout::Request& req, sk
 		break;
 	}
 
-	this->ros_pub_layout_.publish(this->layout_msg_);
+	this->ros_pub_layout_.publish(this->msg_layout_);
 
 	this->lock_.unlock();
 
 	return true;
 }
-
-//////////////////////////////////////////////////////////////////////////
-// Empty callback function
-void SkinJointGazeboRos::emptyCB()
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Callback function when subscriber connects
-void SkinJointGazeboRos::RosConnect()
-{
-	this->ros_connections_++;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Callback function when subscriber disconnects
-void SkinJointGazeboRos::RosDisconnect()
-{
-	this->ros_connections_--;
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Callback queue thread that processes messages
 void SkinJointGazeboRos::RosQueueThread()
@@ -632,5 +624,41 @@ void SkinJointGazeboRos::RosQueueThread()
 		this->ros_queue_.callAvailable(ros::WallDuration(timeout));
 	}
 }
-
+//////////////////////////////////////////////////////////////////////////
+// Empty callback function
+void SkinJointGazeboRos::emptyCB()
+{
 }
+//////////////////////////////////////////////////////////////////////////
+// Callback function when subscriber connects
+void SkinJointGazeboRos::RosConnectJoint()
+{
+	this->ros_connections_joint_++;
+}
+void SkinJointGazeboRos::RosConnectRviz()
+{
+	this->ros_connections_rviz_++;
+}
+void SkinJointGazeboRos::RosConnectTactile()
+{
+	this->ros_connections_tactile_++;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Callback function when subscriber disconnects
+void SkinJointGazeboRos::RosDisconnectJoint()
+{
+	this->ros_connections_joint_--;
+}
+void SkinJointGazeboRos::RosDisconnectRviz()
+{
+	this->ros_connections_rviz_--;
+}
+void SkinJointGazeboRos::RosDisconnectTactile()
+{
+	this->ros_connections_tactile_--;
+}
+
+
+} // namespace

@@ -57,6 +57,7 @@
 #include <skinsim_ros_msgs/Joint1DArray.h>
 #include <skinsim_ros_msgs/GetLayout.h>
 #include <skinsim_ros_msgs/PointArray.h>
+#include <skinsim_ros_msgs/TactileData.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 
@@ -142,6 +143,9 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief A pointer to the ROS node handle
   private: ros::NodeHandle* ros_node_;
 
+  /// \brief A toggle for publishing to ROS
+  private: bool pub_to_ros_;
+
   /// \brief A ROS service server
   private: ros::ServiceServer ros_srv_;
 
@@ -153,41 +157,49 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief A ROS publisher for the joint data
   private: ros::Publisher ros_pub_joint_;
 
+  /// \brief A ROS publisher for the tactile data
+  private: ros::Publisher ros_pub_tactile_;
+
   /// \brief A ROS publisher for the layout data
   private: ros::Publisher ros_pub_layout_;
 
   /// \brief A ROS publisher for RVIZ
   private: ros::Publisher ros_pub_rviz_;
 
-  /// \brief A toggle for publishing to ROS
-  private: bool pub_to_ros_;
-
   /// \brief A custom ROS message for the joint data
-  private: skinsim_ros_msgs::Joint1DArray joint_msg_;
+  private: skinsim_ros_msgs::Joint1DArray msg_joint_;
+
+  /// \brief A custom ROS message for the tactile data
+  private: skinsim_ros_msgs::TactileData msg_tactile_;
 
   /// \brief A custom ROS message for the layout data
-  private: skinsim_ros_msgs::PointArray layout_msg_;
+  private: skinsim_ros_msgs::PointArray msg_layout_;
 
   /// \brief A custom ROS message for the layout data
   private: visualization_msgs::MarkerArray msg_rviz_;
 
-  /// \brief Stores the ROS topic name
+  /// \brief Stores the ROS topic name for joint data
   private: std::string topic_name_;
 
   /// \brief Stores the ROS namespace
   private: std::string ros_namespace_;
 
-  /// \brief Count connections to ROS publisher
-  private: int ros_connections_;
-
   /// \brief: Empty callback function
   private: void emptyCB();
 
   /// \brief: Callback function when subscriber connects
-  private: void RosConnect();
-
+  private: void RosConnectJoint();
+  private: void RosConnectRviz();
+  private: void RosConnectTactile();
   /// \brief Callback function when subscriber disconnects
-  private: void RosDisconnect();
+  private: void RosDisconnectJoint();
+  private: void RosDisconnectRviz();
+  private: void RosDisconnectTactile();
+
+  /// \brief Count connections to ROS publisher
+  private: int ros_connections_joint_;
+  private: int ros_connections_rviz_;
+  private: int ros_connections_tactile_;
 
   /// \brief Callback queue thread that processes messages
   private: ros::CallbackQueue ros_queue_;
@@ -210,6 +222,7 @@ class SkinJointGazeboRos : public ModelPlugin
   private: double mass_;
   private: double sping_;
   private: double damper_;
+  private: double rest_angle_;
 
   /// \brief For loading YAML parameters
   YAML::Node    doc_;
