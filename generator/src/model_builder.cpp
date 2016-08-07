@@ -546,7 +546,7 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	// PLANE -> PATCH_X
 
 	out << YAML::BeginSeq;
-	out1 << YAML::BeginSeq;
+	out1 << YAML::BeginMap;
 
 	color  << 1.0, 1.0, 1.0, 1.0 ;
 
@@ -598,7 +598,7 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	}
 
 	out << YAML::EndSeq;
-	out1 << YAML::EndSeq;
+	out1 << YAML::EndMap;
 
 	// Write YAML file and close
 	std::cout<<"Saving: "<<joint_config_filename.c_str()<<"\n";
@@ -784,11 +784,7 @@ void ModelBuilder::createSkinPatchElements(
 				//std::cout<<spring_joint<<": "<<sensor_ind<<"\n";
 
 				// Store tactile sensor ID
-				out1 << YAML::BeginMap;
 				out1 << YAML::Key << spring_joint << YAML::Value << sensor_ind;
-				//out1 << YAML::Key << sensor_ind << YAML::Value << spring_joint;
-				out1 << YAML::EndMap;
-
 			}
 			else
 				skin_diffuse  << 1.0, 1.0, 1.0, 1.0;	// White
