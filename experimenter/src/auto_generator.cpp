@@ -86,6 +86,11 @@ int main(int argc, char** argv)
 	std::string filename_control = "ctrSpecs.yaml";
 
 	std::string mdlSpecPath = pathExp + "/" + filename_model;
+	std::string ctrSpecPath = pathExp + "/" + filename_control;
+
+	// ---------------------------------------------
+
+	// Generate model specifications
 
 	std::vector<BuildModelSpec>  modelSpecs;
 	BuildModelSpec defaultModelSpec;
@@ -118,7 +123,6 @@ int main(int argc, char** argv)
 	defaultModelSpec.spec.tactile_separation_x = 1;
 	defaultModelSpec.spec.tactile_separation_y = 1;
 
-	// Generate configurations
 	for(unsigned i  = 0; i < 3 ; i++ )
 	{
 		BuildModelSpec tempModelSpec = defaultModelSpec;
@@ -134,13 +138,7 @@ int main(int argc, char** argv)
 
 	// Save to YAML
 	YAML::Emitter mdlYAMLEmitter;
-
-	mdlYAMLEmitter << YAML::BeginSeq;
-	for(unsigned i = 0; i < modelSpecs.size() ;i++)
-	{
-		mdlYAMLEmitter << modelSpecs[i];
-	}
-	mdlYAMLEmitter << YAML::EndSeq;
+	mdlYAMLEmitter << modelSpecs;
 
 	// Write to YAML file
 	std::ofstream mdlOut(mdlSpecPath.c_str());
@@ -148,12 +146,53 @@ int main(int argc, char** argv)
 	mdlOut << mdlYAMLEmitter.c_str();;
 	mdlOut.close();
 
-	// Generate models
+	// ---------------------------------------------
+
+	// Generate and save SDF models
 	for(unsigned i = 0; i < modelSpecs.size() ;i++)
 	{
 		ModelBuilder skinSimModelBuilderObject( modelSpecs[i] );	// TODO store in exp directory and update Gazebo model path
 	}
 
+	// ---------------------------------------------
+
+	// Generate control specifications
+
+	std::vector<ControllerSpec> ctrSpecs;
+	ControllerSpec defaultControlSpec;
+
+	// Set default values
+	defaultControlSpec.name         = "efc_00_00_00" ;
+	defaultControlSpec.explFctr_Kp  = 2       ;
+	defaultControlSpec.explFctr_Ki  = 0.00005 ;
+	defaultControlSpec.explFctr_Kd  = 0.5     ;
+	defaultControlSpec.impCtr_Xnom  = 0.5     ;
+	defaultControlSpec.impCtr_M     = 5       ;
+	defaultControlSpec.impCtr_K     = 24      ;
+	defaultControlSpec.impCtr_D     = 10      ;
+	defaultControlSpec.ctrType      = 1       ;
+	defaultControlSpec.targetForce  = 0.01    ;
+
+	for(unsigned i  = 0; i < 2 ; i++ )
+	{
+		ControllerSpec tempControlSpec = defaultControlSpec;
+
+		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
+
+		ctrSpecs.push_back( tempControlSpec ) ;
+	}
+
+	// Save to YAML
+	YAML::Emitter ctrYAMLEmitter;
+	ctrYAMLEmitter << ctrSpecs;
+
+	// Write to YAML file
+	std::ofstream ctrOut(ctrSpecPath.c_str());
+	std::cout<<"Saving control specs to file: "<<ctrSpecPath<<"\n";
+	ctrOut << ctrYAMLEmitter.c_str();;
+	ctrOut.close();
+
+	// ---------------------------------------------
 
 	return 0;
 
