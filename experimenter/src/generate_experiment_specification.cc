@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, UT Arlington
+ *  Copyright (c) 2016, UT Arlington
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,9 @@
  *********************************************************************/
 
 /* Author: Isura Ranatunga
+ *         Sven Cremer
  *
- * genExpSpecs.cc
+ * generate_experiment_specification.cc
  *  Created on: Jul 28, 2014
  */
 
@@ -51,87 +52,129 @@
 
 int main(int argc, char** argv)
 {
-  std::vector<BuildModelSpec>  mdlSpecs;
+	std::string filename_model;
+	std::string filename_control = "ctrSpecs.yaml";
 
-  // Write YAML files
-  std::string pathString( getenv ("SKINSIM_PATH") );
-  std::string mdlSpecPath = pathString + "/experimenter/config/mdlSpecs.yaml";
+    // Check the number of command-line parameters
+    if (argc < 2)
+    {
+        // Use default values
+    	filename_model   = "mdlSpecs.yaml";
+    }
+    else if (argc == 2)
+    {
+    	// Set model file name
+    	filename_model = argv[1];
+	}
+    else
+    {
+    	std::cerr<<"Wrong usage.\n";
+    	return 1;
+    }
 
-  std::ofstream mdlOut(mdlSpecPath.c_str());
+	std::vector<BuildModelSpec>  modelSpecs;
+	BuildModelSpec defaultModelSpec;
 
-  YAML::Emitter mdlYAMLEmitter;
+	// Write YAML files
+	std::string pathString( getenv ("SKINSIM_PATH") );
+	std::string mdlSpecPath = pathString + "/experimenter/config/mdlSpecs.yaml";
 
-  BuildModelSpec tempMdlSpecs;
+	std::ofstream mdlOut(mdlSpecPath.c_str());
 
-  for(unsigned i  = 5; i < 100 ; i += 5 )
-  {
-    tempMdlSpecs.name              = "spring_array" + boost::lexical_cast<std::string>( i );
-    tempMdlSpecs.spec.xByX         = i   ;
-    tempMdlSpecs.spec.density      = 1.0 ;
-    tempMdlSpecs.spec.size_x       = 0.0525 ;
-    tempMdlSpecs.spec.size_y       = 0.0525 ;
-    tempMdlSpecs.spec.skin_height  = 0.04 ;
-    tempMdlSpecs.spec.tactile_height   = 0.03;
-    tempMdlSpecs.spec.plane_height = 0.4 ;
-    tempMdlSpecs.spec.skin_element_diameter        = 0.0025 ;
-    tempMdlSpecs.spec.tactile_length     = 1.0 ;
-    tempMdlSpecs.spec.tactile_separation    = 4.0 ;
-    mdlSpecs.push_back( tempMdlSpecs ) ;
-  }
-
-  // Save model specs
-  mdlYAMLEmitter << YAML::BeginSeq;
-  for(unsigned i  =0; i < mdlSpecs.size() ;i++)
-  {
-    mdlYAMLEmitter << mdlSpecs[i];
-  }
-  mdlYAMLEmitter << YAML::EndSeq;
-
-  std::cout<<"Saving model specs to file: "<<mdlSpecPath<<"\n";
-  mdlOut << mdlYAMLEmitter.c_str();;
-  mdlOut.close();
-
-  // ---------------------------------------------
-
-  std::vector<ControllerSpec> ctrSpecs;
-
-  // Write YAML files
-  std::string ctrSpecPath = pathString + "/experimenter/config/ctrSpecs.yaml";
-
-  std::ofstream ctrOut(ctrSpecPath.c_str());
-
-  YAML::Emitter ctrYAMLEmitter;
-
-  ControllerSpec tempSpec;
-
-  tempSpec.name         = "efc_00_00_00" ;
-  tempSpec.explFctr_Kp  = 2       ;
-  tempSpec.explFctr_Ki  = 0.00005 ;
-  tempSpec.explFctr_Kd  = 0.5     ;
-  tempSpec.impCtr_Xnom  = 0.5     ;
-  tempSpec.impCtr_M     = 5       ;
-  tempSpec.impCtr_K     = 24      ;
-  tempSpec.impCtr_D     = 10      ;
-  tempSpec.ctrType      = 1       ;
-  tempSpec.targetForce  = 0.01    ;
-
-  ctrSpecs.push_back( tempSpec );
-
-  // Save controller specs
-  ctrYAMLEmitter << YAML::BeginSeq;
-  for(unsigned i  =0; i < ctrSpecs.size() ;i++)
-  {
-     ctrYAMLEmitter << ctrSpecs;
-  }
-  std::cout<<"Saving ctr specs to file: "<<ctrSpecPath<<"\n";
-  ctrYAMLEmitter << YAML::EndSeq;
-
-  ctrOut << ctrYAMLEmitter.c_str();;
-  ctrOut.close();
+	YAML::Emitter mdlYAMLEmitter;
 
 
+	// Set default values
+	defaultModelSpec.name                      = "skin_array";
+	defaultModelSpec.spec.num_elements_x       = 8;
+	defaultModelSpec.spec.num_elements_y       = 8;
+	defaultModelSpec.spec.num_patches_x        = 1;
+	defaultModelSpec.spec.num_patches_y        = 1;
+	defaultModelSpec.spec.element_diameter     = 0.01;
+	defaultModelSpec.spec.element_height       = 0.01;
+	defaultModelSpec.spec.element_mass         = 0.0;
+	defaultModelSpec.spec.element_spring       = 122.24;
+	defaultModelSpec.spec.element_damping      = 1.183;
+	defaultModelSpec.spec.plane_thickness      = 0.002;
+	defaultModelSpec.spec.plane_height         = 0.001;
+	defaultModelSpec.spec.init_x               = 0.0;
+	defaultModelSpec.spec.init_y               = 0.0;
+	defaultModelSpec.spec.init_z               = 0.0;
+	defaultModelSpec.spec.parent               = "world";
+	defaultModelSpec.spec.ros_namespace        = "skinsim";
+	defaultModelSpec.spec.update_rate          = 0.0;
+	defaultModelSpec.spec.patch_length_x       = 0.0;
+	defaultModelSpec.spec.patch_length_y       = 0.0;
+	defaultModelSpec.spec.total_length_x       = 0.0;
+	defaultModelSpec.spec.total_length_y       = 0.0;
+	defaultModelSpec.spec.tactile_elements_x   = 2;
+	defaultModelSpec.spec.tactile_elements_y   = 2;
+	defaultModelSpec.spec.tactile_separation_x = 1;
+	defaultModelSpec.spec.tactile_separation_y = 1;
 
-  return 0;
+	// Generate configurations
+	for(unsigned i  = 0; i < 3 ; i++ )
+	{
+		BuildModelSpec  tempModelSpec = defaultModelSpec;
+
+		tempModelSpec.name              = "skin_array_" + boost::lexical_cast<std::string>( i );
+
+		modelSpecs.push_back( tempModelSpec ) ;
+	}
+
+	// Save model specs
+	mdlYAMLEmitter << YAML::BeginSeq;
+	for(unsigned i = 0; i < modelSpecs.size() ;i++)
+	{
+		mdlYAMLEmitter << modelSpecs[i];
+	}
+	mdlYAMLEmitter << YAML::EndSeq;
+
+	std::cout<<"Saving model specs to file: "<<mdlSpecPath<<"\n";
+	mdlOut << mdlYAMLEmitter.c_str();;
+	mdlOut.close();
+
+	// ---------------------------------------------
+
+	std::vector<ControllerSpec> ctrSpecs;
+
+	// Write YAML files
+	std::string ctrSpecPath = pathString + "/experimenter/config/ctrSpecs.yaml";
+
+	std::ofstream ctrOut(ctrSpecPath.c_str());
+
+	YAML::Emitter ctrYAMLEmitter;
+
+	ControllerSpec tempSpec;
+
+	tempSpec.name         = "efc_00_00_00" ;
+	tempSpec.explFctr_Kp  = 2       ;
+	tempSpec.explFctr_Ki  = 0.00005 ;
+	tempSpec.explFctr_Kd  = 0.5     ;
+	tempSpec.impCtr_Xnom  = 0.5     ;
+	tempSpec.impCtr_M     = 5       ;
+	tempSpec.impCtr_K     = 24      ;
+	tempSpec.impCtr_D     = 10      ;
+	tempSpec.ctrType      = 1       ;
+	tempSpec.targetForce  = 0.01    ;
+
+	ctrSpecs.push_back( tempSpec );
+
+	// Save controller specs
+	ctrYAMLEmitter << YAML::BeginSeq;
+	for(unsigned i  =0; i < ctrSpecs.size() ;i++)
+	{
+		ctrYAMLEmitter << ctrSpecs;
+	}
+	std::cout<<"Saving ctr specs to file: "<<ctrSpecPath<<"\n";
+	ctrYAMLEmitter << YAML::EndSeq;
+
+	ctrOut << ctrYAMLEmitter.c_str();;
+	ctrOut.close();
+
+
+
+	return 0;
 
 }
 
