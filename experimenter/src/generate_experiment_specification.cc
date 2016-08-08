@@ -52,32 +52,28 @@
 
 int main(int argc, char** argv)
 {
-	std::string filename_model;
+	std::string filename_model   = "mdlSpecs.yaml";;
 	std::string filename_control = "ctrSpecs.yaml";
 
-    // Check the number of command-line parameters
-    if (argc < 2)
-    {
-        // Use default values
-    	filename_model   = "mdlSpecs.yaml";
-    }
-    else if (argc == 2)
-    {
-    	// Set model file name
-    	filename_model = argv[1];
+	// Check the number of command-line parameters
+	if (argc == 2)
+	{
+		// Set model file name
+		filename_model = argv[1];
 	}
-    else
-    {
-    	std::cerr<<"Wrong usage.\n";
-    	return 1;
-    }
+	else
+	{
+		// Use default file name
+		std::cout<<"Usage: "<<argv[0]<<" [MODEL FILENAME]\n";
+	}
+
 
 	std::vector<BuildModelSpec>  modelSpecs;
 	BuildModelSpec defaultModelSpec;
 
 	// Write YAML files
 	std::string pathString( getenv ("SKINSIM_PATH") );
-	std::string mdlSpecPath = pathString + "/experimenter/config/mdlSpecs.yaml";
+	std::string mdlSpecPath = pathString + "/experimenter/config/" + filename_model;
 
 	std::ofstream mdlOut(mdlSpecPath.c_str());
 
@@ -139,7 +135,7 @@ int main(int argc, char** argv)
 	std::vector<ControllerSpec> ctrSpecs;
 
 	// Write YAML files
-	std::string ctrSpecPath = pathString + "/experimenter/config/ctrSpecs.yaml";
+	std::string ctrSpecPath = pathString + "/experimenter/config/" + filename_control;
 
 	std::ofstream ctrOut(ctrSpecPath.c_str());
 

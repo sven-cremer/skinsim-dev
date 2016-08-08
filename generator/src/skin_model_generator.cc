@@ -36,7 +36,7 @@
  *         Ahsan Habib
  *         Sven Cremer
  *
- *  skin_model__generator.cc
+ *  skin_model_generator.cc
  *  Created on: Jan 16, 2014
  */
 
@@ -53,9 +53,23 @@ using namespace std;
 int main(int argc, char** argv)
 {
 
+  std::string filename_model = "model_params.yaml";
+
+  // Check the number of command-line parameters
+  if (argc == 2)
+  {
+	  // Set model file name
+	  filename_model = argv[1];
+  }
+  else
+  {
+	  // Use default file name
+	  std::cout<<"Usage: "<<argv[0]<<" [MODEL FILENAME]\n";
+  }
+
   // Read YAML files
   std::string pathString( getenv ("SKINSIM_PATH") );
-  std::string configFilePath = pathString + "/generator/config/model_params.yaml";
+  std::string configFilePath = pathString + "/generator/config/" + filename_model;
   std::ifstream fin(configFilePath.c_str());
 
   std::cout<<"Loading: "<<configFilePath<<"\n";
