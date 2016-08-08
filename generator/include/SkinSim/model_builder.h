@@ -69,9 +69,9 @@ private:
 
 	int total_elements_x;		// elements/patch * patches
 	int total_elements_y;
-	int unit_size_x;			// sensors + separation
+	int unit_size_x;			// tactile elements + tactile separation
 	int unit_size_y;
-	int total_sensors_x;		// floor(total_elements/unit_size)
+	int total_sensors_x;		// floor(total_elements/unit_size) + 1 if there is room
 	int total_sensors_y;
 
 	void generateSDFHeader();

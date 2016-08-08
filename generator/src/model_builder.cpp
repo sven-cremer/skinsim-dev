@@ -496,10 +496,16 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	// Compute additional parameters
 	total_elements_x = m_.spec.num_elements_x*m_.spec.num_patches_x;
 	total_elements_y = m_.spec.num_elements_y*m_.spec.num_patches_y;
-	unit_size_x = m_.spec.tactile_elements_x+m_.spec.tactile_separation_x;
-	unit_size_y = m_.spec.tactile_elements_y+m_.spec.tactile_separation_y;
-	total_sensors_x = (total_elements_x+m_.spec.tactile_separation_x)/unit_size_x;	// Note: integer devision rounds down
-	total_sensors_y = (total_elements_y+m_.spec.tactile_separation_y)/unit_size_y;
+	unit_size_x      = m_.spec.tactile_elements_x+m_.spec.tactile_separation_x;
+	unit_size_y      = m_.spec.tactile_elements_y+m_.spec.tactile_separation_y;
+	total_sensors_x  = total_elements_x/unit_size_x;	// Note: integer devision rounds down
+	total_sensors_y  = total_elements_y/unit_size_y;
+
+	// Check if there is room for one more sensor
+	if(total_elements_x - total_sensors_x*unit_size_x >=  m_.spec.tactile_elements_x )
+		total_sensors_x++;
+	if(total_elements_y - total_sensors_y*unit_size_y >=  m_.spec.tactile_elements_y )
+		total_sensors_y++;
 
 	Eigen::Vector4d color;
 	color  << 1.0, 1.0, 1.0, 1.0 ;
@@ -777,21 +783,22 @@ void ModelBuilder::createSkinPatchElements(
 
 			// Check if element is part of a tactile sensor
 			bool sensor_x = false;
-			int global_ix = (patch_ix*m_.spec.num_elements_x + ix);				// Allow sensors to span across patches
-			int unit_ix = global_ix % unit_size_x;								// Index inside a unit
-			if(global_ix > total_elements_x - m_.spec.tactile_separation_x + 1)	// Check if enough elements are left to create a sensor
+			int global_ix = (patch_ix*m_.spec.num_elements_x + ix);			// Allow sensors to span across patches
+			int unit_ix = global_ix % unit_size_x;							// Index inside a unit
+
+			if(global_ix > unit_size_x*total_sensors_x - m_.spec.tactile_separation_x-1)	// Check if enough elements are left to create a sensor
 				sensor_x = false;
 			else
-				if(unit_ix<m_.spec.tactile_elements_x)							// Check if it could be a tactile element
+				if(unit_ix<m_.spec.tactile_elements_x)						// Check if it could be a tactile element
 					sensor_x = true;
 
 			bool sensor_y = false;
-			int global_iy = (patch_iy*m_.spec.num_elements_y + iy);				// Allow sensors to span across patches
-			int unit_iy = global_iy % unit_size_y;								// Index inside a unit
-			if(global_iy > total_elements_y - m_.spec.tactile_separation_y + 1)	// Check if enough elements are left to create a sensor
+			int global_iy = (patch_iy*m_.spec.num_elements_y + iy);			// Allow sensors to span across patches
+			int unit_iy = global_iy % unit_size_y;							// Index inside a unit
+			if(global_iy > unit_size_y*total_sensors_y - m_.spec.tactile_separation_y - 1)	// Check if enough elements are left to create a sensor
 				sensor_y = false;
 			else
-				if(unit_iy<m_.spec.tactile_elements_y)							// Check if it could be a tactile element
+				if(unit_iy<m_.spec.tactile_elements_y)						// Check if it could be a tactile element
 					sensor_y = true;
 
 			if(sensor_x && sensor_y)
