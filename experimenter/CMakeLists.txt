@@ -42,9 +42,9 @@ if(HAVE_DART)
   link_directories ( ${DARTCore_LIBRARY_DIRS} )
 endif()
 
-#add_executable( auto_experimenter src/auto_experimenter.cc )
-#target_link_libraries( auto_experimenter ${GAZEBO_LIBRARIES} yaml-cpp ${Boost_LIBRARIES} )
 
 add_executable( generate_experiment_specification src/generate_experiment_specification.cc )
 target_link_libraries( generate_experiment_specification ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES} yaml-cpp )
 
+add_executable( auto_generator src/auto_generator.cpp )
+target_link_libraries( auto_generator ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES} yaml-cpp model_builder )
