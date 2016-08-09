@@ -146,7 +146,6 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 		// ROS services
 		this->ros_srv_ = this->ros_node_->advertiseService("set_controller", &Plunger::serviceCB, this);
-		this->controller_type_.selected = skinsim_ros_msgs::ControllerType::DIRECT;
 
 		// Custom Callback Queue
 		this->callback_ros_queue_thread_ = boost::thread( boost::bind( &Plunger::RosQueueThread,this ) );
@@ -157,8 +156,12 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 			boost::bind(&Plunger::UpdateJoints, this));
 
 	// Controller
-	this->force_desired_ = 0.0;
-	this->force_prev_    = 0.0;
+	this->position_desired_ = 0.0;
+	this->velocity_desired_ = 0.0;
+	this->force_desired_    = 0.0;
+	this->force_prev_       = 0.0;
+	this->feedback_type_.selected   = skinsim_ros_msgs::FeedbackType::PLUNGER_LOAD_CELL;
+	this->controller_type_.selected = skinsim_ros_msgs::ControllerType::DIRECT;
 
 	// P-controller
 	this->pid_ = common::PID(JointPgain_, JointIgain_, JointDgain_, 15, -15);
@@ -215,13 +218,33 @@ void Plunger::UpdateJoints()
 	//		return;
 
 	this->position_current_ = this->joint_->GetAngle(0).Radian();
-	this->velocity_ 		= this->joint_->GetVelocity(0);
+	this->velocity_current_ = this->joint_->GetVelocity(0);
 	this->wrench_ 			= this->joint_->GetForceTorque(0);
 
 	this->force_  = this->wrench_.body2Force;
 	this->torque_ = this->wrench_.body2Torque;
 
-	this->force_current_ = this->force_.Dot(this->axis_global_);
+	// Select feedback
+	switch(this->feedback_type_.selected)
+	{
+	// Plunger
+	case skinsim_ros_msgs::FeedbackType::PLUNGER_LOAD_CELL:
+	{
+		this->force_current_ = this->force_.Dot(this->axis_global_);
+		break;
+	}
+	// Tactiles
+	case skinsim_ros_msgs::FeedbackType::TACTILE_SENSORS:
+	{
+		// TODO: Get tactile data
+		// this->force_current_ = sum(f_sen);;
+		// break;
+	}
+		// Default
+	default:
+		std::cerr<<"Feedback type not implemented.\n";
+		break;
+	}
 
 	double force_dot_ = (force_current_-force_prev_)/step_time.Double();
 
@@ -235,6 +258,7 @@ void Plunger::UpdateJoints()
 	//this->joint_pid_->SetPositionTarget(this->joint_->GetScopedName(),position_desired_);
 //	this->joint_pid_->Update();
 
+	// Select controller
 	switch(this->controller_type_.selected)
 	{
 	// Set force directly in Gazebo
@@ -247,8 +271,15 @@ void Plunger::UpdateJoints()
 	// Force-Based Explicit Force control
 	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
 	{
-		this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_;
-		this->joint_->SetForce(0, this->effort_);
+		if(num_contacts_>0)
+		{
+			this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_current_;
+			this->joint_->SetForce(0, this->effort_);
+		}
+		else
+		{
+			this->joint_->SetVelocity (0, velocity_desired_);
+		}
 		break;
 	}
 	// Position-Based Explicit Force control
@@ -264,7 +295,7 @@ void Plunger::UpdateJoints()
 	case skinsim_ros_msgs::ControllerType::IMPEDANCE_CONTROL:
 	// Default
 	default:
-		std::cout<<"Controller not implemented.\n";
+		std::cerr<<"Controller type not implemented.\n";
 		break;
 	}
 
@@ -309,10 +340,15 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 	case skinsim_ros_msgs::ControllerType::DIRECT:
 	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
 	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
-		this->force_desired_ = req.f_des;
+		this->force_desired_    = req.f_des;
+		this->position_desired_ = req.x_des;
+		this->velocity_desired_	= req.v_des;
+		this->feedback_type_.selected    = req.fb.selected;
+		res.success = true;
 		break;
 	default:
 		std::cout<<"Controller not implemented.\n";
+		res.success = false;
 		break;
 	}
 

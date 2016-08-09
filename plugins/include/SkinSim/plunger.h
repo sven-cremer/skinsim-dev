@@ -60,6 +60,7 @@
 #include <geometry_msgs/WrenchStamped.h>
 #include <skinsim_ros_msgs/SetController.h>
 #include <skinsim_ros_msgs/ControllerType.h>
+#include <skinsim_ros_msgs/FeedbackType.h>
 
 // Utilities
 #include <boost/thread.hpp>
@@ -110,6 +111,9 @@ class Plunger : public ModelPlugin
 
    /// \brief A custom ROS message
    private: skinsim_ros_msgs::ControllerType controller_type_;
+
+   /// \brief A custom ROS message
+   private: skinsim_ros_msgs::FeedbackType feedback_type_;
 
   /// \brief A ROS publisher
   private: ros::Publisher ros_pub_;
@@ -166,7 +170,8 @@ class Plunger : public ModelPlugin
   private: math::Vector3 torque_;
   private: double position_current_;
   private: double position_desired_;
-  private: double velocity_;
+  private: double velocity_current_;
+  private: double velocity_desired_;
   private: double force_current_;
   private: double force_prev_;
   private: double force_desired_;
