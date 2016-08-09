@@ -3,7 +3,9 @@
     <model name='plunger'>
         <pose>0 0 0.105 0 0 0</pose>
         <static>false</static>
+        
         <link name='plunger_link'>
+        
           <inertial>
               <mass>1</mass>
               <inertia>
@@ -15,6 +17,7 @@
                   <izz>0.125</izz>
               </inertia>
           </inertial>
+          
           <collision name='plunger_collision'>
               <geometry>
                   <cylinder>
@@ -33,6 +36,7 @@
                 </friction>
               </surface>
           </collision>
+          
           <visual name='plunger_visual'>
               <geometry>
                   <cylinder>
@@ -48,9 +52,18 @@
                 </script>
               </material>
           </visual>
+          
+          <sensor name='plunger_sensor' type='contact'>
+              <contact>
+                  <collision>plunger_collision</collision>
+              </contact>
+              <!--update_rate> 200 </update_rate-->
+          </sensor>
+          
           <self_collide>0</self_collide>
           <kinematic>0</kinematic>
           <gravity>0</gravity>
+          
         </link>
                   
         <joint name='plunger_joint' type='prismatic'>
@@ -76,9 +89,9 @@
             <file_name>plunger</file_name>
             <rosNamespace>skinsim</rosNamespace>
             <updateRate>0</updateRate>
-            <Kp>0.0</Kp>
+            <Kp>0.1</Kp>
             <Kd>0.0</Kd>
-            <Kv>0.0</Kv>
+            <Kv>0.1</Kv>
             <JointPgain>0.5</JointPgain>
             <JointIgain>0.01</JointIgain>
             <JointDgain>0.0</JointDgain>

@@ -43,10 +43,13 @@
 #define PLUNGER_H_
 
 // Gazebo
+#include <gazebo/gazebo.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/Events.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/transport/transport.hh>
+#include <gazebo/sensors/sensors.hh>
+#include <gazebo/sensors/SensorTypes.hh>
 
 // ROS
 #include <ros/ros.h>
@@ -177,6 +180,20 @@ class Plunger : public ModelPlugin
   /// \brief Joint PID controller
   private: physics::JointControllerPtr joint_pid_;
   private: common::PID pid_;
+
+  /// \brief Connection that maintains a link between the contact sensor's
+  /// updated signal and the OnContactUpdate callback.
+  private: event::ConnectionPtr update_contact_connection_;
+
+  /// \brief Callback that receives the contact sensor's update signal.
+  private: virtual void OnContactUpdate();
+
+  /// \brief Pointer to the contact sensor
+  private: sensors::ContactSensorPtr contact_sensor_ptr_;
+
+  /// \brief Number of contacts
+  private: int num_contacts_;
+
 };
 
 }

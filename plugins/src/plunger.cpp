@@ -180,6 +180,26 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	*/
 	//this->joint_->SetStiffnessDamping(0,122,1.1,0);
 	this->joint_->SetStiffnessDamping(0,0,0,0);
+
+	// Contact sensor
+
+	// Get the contact sensor
+	sensors::SensorPtr _sensor = sensors::get_sensor("plunger_sensor");
+	this->contact_sensor_ptr_  = boost::dynamic_pointer_cast<sensors::ContactSensor>(_sensor);
+
+	// Make sure the parent sensor is valid
+	if (!this->contact_sensor_ptr_)
+	{
+		std::cerr << "Error: ContactPlugin requires a ContactSensor.\n";
+	}
+
+	// Connect to the sensor update event
+	this->update_contact_connection_ = this->contact_sensor_ptr_->ConnectUpdated(
+			boost::bind(&Plunger::OnContactUpdate, this));
+
+	// Make sure the sensor is active
+	this->contact_sensor_ptr_->SetActive(true);
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -324,6 +344,16 @@ void Plunger::RosQueueThread()
 		this->ros_queue_.callAvailable(ros::WallDuration(timeout));
 	}
 }
-
+//////////////////////////////////////////////////////////////////////////
+// Callback that receives the contact sensor's update signal.
+void Plunger::OnContactUpdate()
+{
+	// Get all the contacts.
+//	msgs::Contacts contacts;
+//	contacts = this->contact_sensor_ptr_->GetContacts();
+	num_contacts_ = this->contact_sensor_ptr_->GetContacts().contact_size();
+//	std::cout<<num_contacts_<<", "<<this->contact_sensor_ptr_->GetCollisionContactCount("plunger::plunger_link::plunger_collision")<<"\n";
 }
+
+} // namespace
 
