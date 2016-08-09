@@ -108,7 +108,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	getModelConfigPath( fullname, _sdf );
 	fullname = fullname + std::string("/joint_names.yaml");
 	input_file_.open(fullname.c_str());
-	std::cout<<"Loading file: "<<fullname<<"\n";
+	std::cout<<"> Loading file: "<<fullname<<"\n";
 	YAML::Node doc;
 	doc = YAML::LoadAll(input_file_);
 	for(std::size_t i=0;i<doc[0].size();i++)
@@ -192,7 +192,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	getModelConfigPath( fullname, _sdf );
 	fullname = fullname + std::string("/tactile_id.yaml");
 	input_file_.open(fullname.c_str());
-	std::cout<<"Loading file: "<<fullname<<"\n";
+	std::cout<<"> Loading file: "<<fullname<<"\n";
 	YAML::Node node;
 	node = YAML::LoadAll(input_file_);
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
@@ -246,8 +246,8 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	{
 		this->pub_to_ros_ = false;
 
-		std::cout<<"Warning: The ROS node for Gazebo has not been initialized! \n"
-				 <<"Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package \n";
+		std::cerr<<" Warning: The ROS node for Gazebo has not been initialized! \n"
+				 <<"          Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package \n";
 	}
 	// Advertise ROS topics and services
 	else
@@ -332,6 +332,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 	// Debug
 	std::cout<<"> Model name: "<<model_name_<<"\n";
+	/*
 	std::cout<<"> Model child count: "<<model_->GetChildCount()<<"\n";
 	std::cout<<"> Model joint count: "<<model_->GetJointCount()<<"\n";
 	std::cout<<"> Joint names count: "<<num_joints_<<"\n";
@@ -363,7 +364,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	std::cout << "Has Slider joint? " << this->joints_[0]->HasType(physics::Base::SLIDER_JOINT) << "\n";
 	std::cout << this->joints_[0]->GetLocalAxis(0) <<"\n";
 	std::cout << this->joints_[0]->GetForce(0) <<"\n";
-
+	*/
 
 	// Set MSD parameters for Gazebo
 	for(int i=0;i<this->joint_names_.size();i++)
@@ -434,10 +435,10 @@ void SkinJointGazeboRos::UpdateJoints()
 	{
 		this->joints_[i]->SetForce(0, f_app_(i));
 
-//		if( fabs(force - this->joints_[ i ]->GetForce(0) ) > 0.00001 )
-//			std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Force "<<i<<": "<<force<<" -> "<<this->joints_[ i ]->GetForce(0)<<"\n";
-
+		//if( fabs(f_app_(i) - this->joints_[ i ]->GetForce(0) ) > 0.00001 )	// This works!
+		//	std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Force "<<i<<": "<<f_app_(i)<<" -> "<<this->joints_[ i ]->GetForce(0)<<"\n";
 	}
+
 	// Compute sensed force
 	double force_dist = 0;
 	f_sen_.setZero();

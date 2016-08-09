@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 	else
 	{
 		// Use default file name
-		std::cout<<"Usage: "<<argv[0]<<" [MODEL FILENAME]\n";
+		std::cout<<"\n\tUsage: "<<argv[0]<<" [MODEL FILENAME]\n\n";
 	}
 
 

@@ -157,7 +157,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 			boost::bind(&Plunger::UpdateJoints, this));
 
 	// Controller
-	this->force_desired_ = -2.5;
+	this->force_desired_ = -8.0;
 	this->force_prev_    = 0.0;
 
 	// P-controller
@@ -168,6 +168,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 	// Debug
 	std::cout<<"> Model name: "<<model_name_<<"\n";
+	/*
 	std::cout<<"> Joint scoped name: "<<this->joint_->GetScopedName()<<"\n";
 	std::cout<<"> Joint PID: "<<JointPgain_<<", "<<JointIgain_<<", "<<JointDgain_<<"\n";
 	std::cout<<"> Kp: "<<Kp_<<"\tKd: "<<Kd_<<"\n";
@@ -176,6 +177,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		std::cout<<"> Local axis  ["<<i<<"]: "<<this->joint_->GetLocalAxis(i)<<"\n";
 		std::cout<<"> Global axis ["<<i<<"]: "<<this->joint_->GetGlobalAxis(i)<<"\n";
 	}
+	*/
 	//this->joint_->SetStiffnessDamping(0,122,1.1,0);
 	this->joint_->SetStiffnessDamping(0,0,0,0);
 }
@@ -247,8 +249,8 @@ void Plunger::UpdateJoints()
 	}
 
 	// Debug
-	std::cout<<"F cur: "<<force_current_<<" \tF dot: "<<force_dot_<<" \tEffort: "<<effort_;//<<" \t<-\t"<<force_<<"\n";
-	std::cout<<"\tPos cur: "<<position_current_<<"\tPos des: "<<position_desired_<<"\n";
+	//std::cout<<"F cur: "<<force_current_<<" \tEffort: "<<effort_<<" \tF dot: "<<force_dot_;//<<" \t<-\t"<<force_<<"\n";
+	//std::cout<<"\tPos cur: "<<position_current_<<"\tPos des: "<<position_desired_<<"\n";
 
 	// Decide whether to publish
 	if (this->ros_connections_ == 0 || !pub_to_ros_)
