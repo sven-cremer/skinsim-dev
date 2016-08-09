@@ -157,7 +157,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 			boost::bind(&Plunger::UpdateJoints, this));
 
 	// Controller
-	this->force_desired_ = -8.0;
+	this->force_desired_ = 0.0;
 	this->force_prev_    = 0.0;
 
 	// P-controller

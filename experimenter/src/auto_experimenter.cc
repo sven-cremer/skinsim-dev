@@ -242,7 +242,7 @@ void runTests(std::string exp_name)
 	doc_control = YAML::LoadAll(fin2);
 
 	// Gazebo parameters
-	m_gazeboParams["iterations"] = "2000";	// Number of iterations
+	m_gazeboParams["iterations"] = "1500";	// Number of iterations
 
 	//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
 	//	    std::cout << it->first << " => " << it->second << '\n';
@@ -250,7 +250,7 @@ void runTests(std::string exp_name)
 
 
 	std::string _worldFilename("~");
-	bool _paused = false;
+	bool _paused = true;
 	std::string _physics = "ode";
 
 	BuildModelSpec modelSpec;
@@ -319,6 +319,11 @@ void runTests(std::string exp_name)
 					<< static_cast<double>(maxWaitCount)/10.0
 					<< " seconds\n" ;
 
+			// Set plunger force
+			system("rosservice call /skinsim/set_controller \"type:\n  selected: 0\nf_des: -8.0\nx_des: 0.0\"");
+
+			// Start simulation
+			this->SetPause(false);
 
 			while( physics::worlds_running() )
 			{

@@ -77,6 +77,10 @@ int main(int argc, char** argv)
 	boost::filesystem::path dir(pathExp);
 	if(!boost::filesystem::create_directory(dir))
 	{
+		if( boost::filesystem::exists(dir) )
+		{
+			std::cerr << "Experiment folder already exists!" << "\n";
+		}
 		std::cerr << "Failed to create experiment directory!" << "\n";
 		return 1;
 	}
@@ -173,7 +177,7 @@ int main(int argc, char** argv)
 	defaultControlSpec.ctrType      = 1       ;
 	defaultControlSpec.targetForce  = 0.01    ;
 
-	for(unsigned i  = 0; i < 2 ; i++ )
+	for(unsigned i  = 0; i < 1 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
