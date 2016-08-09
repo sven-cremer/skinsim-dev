@@ -15,6 +15,7 @@ add_message_files(FILES
   Joint1DArray.msg
   PointArray.msg
   ControllerType.msg
+  FeedbackType.msg
   TactileData.msg
 )
 
