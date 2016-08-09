@@ -80,7 +80,7 @@ using namespace gazebo;
 class SkinSimTestingFramework
 {
 
-protected: Server *server;
+protected: Server* server;
 protected: boost::thread *serverThread;
 
 protected: common::StrStr_M m_gazeboParams;
@@ -121,7 +121,7 @@ void SetPause(bool _pause)
 
 void Unload()
 {
-	gzdbg << "ServerFixture::Unload" << std::endl;
+	std::cout<< "ServerFixture::Unload" << std::endl;
 	this->serverRunning = false;
 	if (this->node)
 		this->node->Fini();
@@ -143,31 +143,68 @@ void Unload()
 void RunServer(const std::string &_worldFilename, bool _paused, const std::string &_physics)
 {
 
-	std::cout << "SkinSimTestingFramework::RunServer()" << std::endl;
-	this->server = new Server();
-	this->server->PreLoad();
-	if (_physics.length())
-		this->server->LoadFile(_worldFilename,  _physics);
-	else
-		this->server->LoadFile(_worldFilename);
+	std::cout << "SkinSimTestingFramework::RunServer() - START" << std::endl;
 
-	if (!rendering::get_scene(
-			gazebo::physics::get_world()->GetName()))
+	this->server = new Server();
+
+	std::string ros_api_plugin  = "/opt/ros/jade/lib/libgazebo_ros_api_plugin.so";
+	std::string ros_path_plugin = "/opt/ros/jade/lib/libgazebo_ros_paths_plugin.so";
+	std::string world_file = _worldFilename; //"/home/sven/skin_ws/src/skinsim-dev/model/worlds/skin_array_0.world";
+
+	// Create fake command-line parameters for Gazebo server
+	// This seems to be the best way to set parameters such as sensor plugins
+	int numArgs = 6;
+	char **v = new char * [numArgs];
+
+	v[0] = new char [strlen( "--verbose"             ) + 1];
+	v[1] = new char [strlen( "-s"                    ) + 1];
+	v[2] = new char [strlen( ros_path_plugin.c_str() ) + 1];
+	v[3] = new char [strlen( "-s"                    ) + 1];
+	v[4] = new char [strlen( ros_api_plugin.c_str()  ) + 1];
+	v[5] = new char [strlen( world_file.c_str()      ) + 1];
+
+	strcpy( v[0] , "--verbose"             );
+	strcpy( v[1] , "-s"                    );
+	strcpy( v[2] , ros_path_plugin.c_str() );
+	strcpy( v[3] , "-s"                    );
+	strcpy( v[4] , ros_api_plugin.c_str()  );
+	strcpy( v[5] , world_file.c_str()      );
+
+	if (!server->ParseArgs(numArgs, v))
 	{
-		rendering::create_scene(
-				gazebo::physics::get_world()->GetName(), false, true);
+		std::cerr<<"Failed parsing server arguments!\n";
 	}
 
-	this->server->SetParams( m_gazeboParams );
+	//	if(! this->server->PreLoad() )
+	//		std::cerr<<"Failed to preload the Gazebo server";
 
+	//	if (_physics.length())
+	//		this->server->LoadFile(_worldFilename, _physics);
+	//	else
+	//		this->server->LoadFile(_worldFilename);
+	//
+	//	if (!rendering::get_scene(
+	//			gazebo::physics::get_world()->GetName()))
+	//	{
+	//		rendering::create_scene(
+	//				gazebo::physics::get_world()->GetName(), false, true);
+	//	}
+
+	this->server->SetParams(m_gazeboParams);
 	this->SetPause(_paused);
 
 	this->server->Run();
 
 	this->server->Fini();
 
+	std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
+
 	delete this->server;
 	this->server = NULL;
+
+	for(int i = 0; i < numArgs; i++)
+		delete v[i];
+	delete v;
 }
 
 void saveData( std::string exp_name )
@@ -201,6 +238,13 @@ void runTests(std::string exp_name)
 	std::cout<<"Loading file: "<<ctrSpecPath<<"\n";
 	doc_control = YAML::LoadAll(fin2);
 
+	// Gazebo parameters
+	m_gazeboParams["iterations"] = "2000";	// Number of iterations
+
+	//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
+	//	    std::cout << it->first << " => " << it->second << '\n';
+	//	std::cout<<"\n\n";
+
 
 	std::string _worldFilename("~");
 	bool _paused = false;
@@ -231,7 +275,7 @@ void runTests(std::string exp_name)
 
 			std::ostringstream ss;
 			ss << std::setw(3) << std::setfill('0')
-			   << index << "_" << skin_size << "-" << tactile_size << "-" << tactile_sep;
+			<< index << "_" << skin_size << "-" << tactile_size << "-" << tactile_sep;
 			std::string exp_name = "exp_" + ss.str()  ;
 
 			// Print info
@@ -239,11 +283,6 @@ void runTests(std::string exp_name)
 
 			// Point model world file location
 			_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
-
-			delete this->server;
-			this->server = NULL;
-
-			m_gazeboParams["iterations"] = "5000";
 
 			std::cout << "Initializing World" << std::endl;
 			// Create, load, and run the server in its own thread
@@ -282,6 +321,8 @@ void runTests(std::string exp_name)
 
 			// Save data
 			saveData( exp_name );
+
+			index++;
 		}
 	}
 
