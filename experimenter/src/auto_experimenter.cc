@@ -170,6 +170,8 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 	strcpy( v[4] , ros_api_plugin.c_str()  );
 	strcpy( v[5] , world_file.c_str()      );
 
+	// TODO --physics ode, --seed 0.0
+
 	if (!server->ParseArgs(numArgs, v))
 	{
 		std::cerr<<"Failed parsing server arguments!\n";
@@ -199,6 +201,7 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 
 	std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
 
+	// Deallocate variables
 	delete this->server;
 	this->server = NULL;
 
@@ -279,7 +282,7 @@ void runTests(std::string exp_name)
 			std::string exp_name = "exp_" + ss.str()  ;
 
 			// Print info
-			std::cout << "# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
+			std::cout << "\n# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
 
 			// Point model world file location
 			_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
@@ -290,17 +293,23 @@ void runTests(std::string exp_name)
 					boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
 							_paused, _physics));
 
-			/********/
+			// Initialize transport node
 			this->node = transport::NodePtr(new transport::Node());
 			this->node->Init();
 			this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
 			std::cout << "Initialized Transport Node" << std::endl;
-			/*******/
+			// TODO subscribe to ~/physics/contacts
+
+			// Save ROS topic data to file
+			std::string topic = "/skinsim/tactile_data";
+			std::string cmd1 = std::string("rostopic echo -p ") + topic.c_str() + std::string(" > ") + pathExp.c_str() + std::string("/") + exp_name.c_str() + std::string(".csv &");
+			std::cout<<"$ "<<cmd1.c_str()<<"\n";
+			system( cmd1.c_str() );
 
 			std::cout << "Waiting for world completion" << std::endl;
 			// Wait for the server to come up
 			// Use a 20 second timeout.
-			int waitCount = 0, maxWaitCount = 2000;
+			int waitCount = 0, maxWaitCount = 100;
 			while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )
 				common::Time::MSleep(100);
 
@@ -310,12 +319,18 @@ void runTests(std::string exp_name)
 					<< static_cast<double>(maxWaitCount)/10.0
 					<< " seconds\n" ;
 
+
 			while( physics::worlds_running() )
 			{
 				common::Time::MSleep(100);
 			}
 
 			std::cout << std::endl << "Time: " << simTime.sec << " sec " << simTime.nsec << " nsec " << std::endl;
+
+			// Stop saving rtp file
+			std::string cmd2 = std::string("pkill -9 -f ") + topic.c_str();
+			std::cout<<"$ "<<cmd2.c_str()<<"\n";
+			system( cmd2.c_str() );
 
 			Unload();
 
