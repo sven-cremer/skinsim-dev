@@ -58,6 +58,7 @@
 #include <skinsim_ros_msgs/GetLayout.h>
 #include <skinsim_ros_msgs/PointArray.h>
 #include <skinsim_ros_msgs/TactileData.h>
+#include <skinsim_ros_msgs/ForceFeedback.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 
@@ -132,7 +133,10 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief Vector containing the collision names
   private: std::vector<std::string> collision_names_;
 
-  /// \brief Vector containing the collision names
+  /// \brief Number of contacts in one iteration step
+  private: int num_contacts_;
+
+  /// \brief Vector storing which elements are in contact in one iteration step
   private: std::vector<bool> collision_index_;
 
   private: Eigen::VectorXd f_app_;
@@ -160,6 +164,9 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief A ROS publisher for the tactile data
   private: ros::Publisher ros_pub_tactile_;
 
+  /// \brief A ROS publisher for force feedback
+  private: ros::Publisher ros_pub_fb_;
+
   /// \brief A ROS publisher for the layout data
   private: ros::Publisher ros_pub_layout_;
 
@@ -171,6 +178,9 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief A custom ROS message for the tactile data
   private: skinsim_ros_msgs::TactileData msg_tactile_;
+
+  /// \brief A custom ROS message for the tactile data
+  private: skinsim_ros_msgs::ForceFeedback msg_fb_;
 
   /// \brief A custom ROS message for the layout data
   private: skinsim_ros_msgs::PointArray msg_layout_;
@@ -191,15 +201,18 @@ class SkinJointGazeboRos : public ModelPlugin
   private: void RosConnectJoint();
   private: void RosConnectRviz();
   private: void RosConnectTactile();
+  private: void RosConnectFb();
   /// \brief Callback function when subscriber disconnects
   private: void RosDisconnectJoint();
   private: void RosDisconnectRviz();
   private: void RosDisconnectTactile();
+  private: void RosDisconnectFb();
 
   /// \brief Count connections to ROS publisher
   private: int ros_connections_joint_;
   private: int ros_connections_rviz_;
   private: int ros_connections_tactile_;
+  private: int ros_connections_fb_;
 
   /// \brief Callback queue thread that processes messages
   private: ros::CallbackQueue ros_queue_;

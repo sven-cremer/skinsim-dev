@@ -53,6 +53,7 @@ SkinJointGazeboRos::SkinJointGazeboRos()
 	this->ros_connections_joint_   = 0;
 	this->ros_connections_rviz_    = 0;
 	this->ros_connections_tactile_ = 0;
+	this->ros_connections_fb_      = 0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -281,6 +282,12 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 				boost::bind( &SkinJointGazeboRos::RosDisconnectTactile,this), ros::VoidPtr(), &this->ros_queue_);		// TODO check if it is OK to use the same ros queue
 		this->ros_pub_tactile_ = this->ros_node_->advertise(ao4);
 
+		ros::AdvertiseOptions ao5 = ros::AdvertiseOptions::create<skinsim_ros_msgs::ForceFeedback>(
+				"force_feedback",1,
+				boost::bind( &SkinJointGazeboRos::RosConnectFb,this),
+				boost::bind( &SkinJointGazeboRos::RosDisconnectFb,this), ros::VoidPtr(), &this->ros_queue_);
+		this->ros_pub_fb_ = this->ros_node_->advertise(ao5);
+
 		// ROS services
 		this->ros_srv_ = this->ros_node_->advertiseService("publish_layout", &SkinJointGazeboRos::serviceCB, this);
 
@@ -391,6 +398,7 @@ void SkinJointGazeboRos::UpdateJoints()
 	{
 		collision_index_[i] = false;
 	}
+	num_contacts_ = 0;
 
 	// Check for contacts
 	// FIXME: If there are no subscribers to ~/physics/contacts, then the return value will be NULL.
@@ -405,6 +413,7 @@ void SkinJointGazeboRos::UpdateJoints()
     	if (idx < collision_names_.size()) // Name found
     	{
     		collision_index_[idx] = true;
+    		num_contacts_++;
     	}
     	else	// Name not found
     	{
@@ -414,6 +423,7 @@ void SkinJointGazeboRos::UpdateJoints()
     		if (idx < collision_names_.size()) // Name found
         	{
     			collision_index_[idx] = true;
+    			num_contacts_++;
         	}
     	}
     }
@@ -485,8 +495,8 @@ void SkinJointGazeboRos::UpdateJoints()
 	}
 
     // Decide whether to publish
-	if (!pub_to_ros_)
-		return;
+//	if (!pub_to_ros_)
+//		return;
 
 	// Publish joint data
 	if(this->ros_connections_joint_ > 0 )
@@ -552,6 +562,19 @@ void SkinJointGazeboRos::UpdateJoints()
 			msg_tactile_.data[i] = sensors_[i].force_applied;		// For easier debugging FIXME
 		}
 		this->ros_pub_tactile_.publish(this->msg_tactile_);
+		this->lock_.unlock();
+	}
+
+	// Publish force feedback
+	if(this->ros_connections_fb_ > 0 )
+	{
+		this->lock_.lock();
+		// Copy data into ROS message
+		msg_fb_.force_applied = f_app_.sum();
+		msg_fb_.force_sensed  = f_sen_.sum();
+		msg_fb_.contacts      = num_contacts_;
+
+		this->ros_pub_fb_.publish(this->msg_fb_);
 		this->lock_.unlock();
 	}
 
@@ -644,7 +667,10 @@ void SkinJointGazeboRos::RosConnectTactile()
 {
 	this->ros_connections_tactile_++;
 }
-
+void SkinJointGazeboRos::RosConnectFb()
+{
+	this->ros_connections_fb_++;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Callback function when subscriber disconnects
@@ -659,6 +685,10 @@ void SkinJointGazeboRos::RosDisconnectRviz()
 void SkinJointGazeboRos::RosDisconnectTactile()
 {
 	this->ros_connections_tactile_--;
+}
+void SkinJointGazeboRos::RosDisconnectFb()
+{
+	this->ros_connections_fb_--;
 }
 
 
