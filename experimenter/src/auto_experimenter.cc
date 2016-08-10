@@ -121,7 +121,7 @@ void SetPause(bool _pause)
 
 void Unload()
 {
-	std::cout<< "ServerFixture::Unload" << std::endl;
+	//std::cout<< "ServerFixture::Unload" << std::endl;
 	this->serverRunning = false;
 	if (this->node)
 		this->node->Fini();
@@ -242,7 +242,7 @@ void runTests(std::string exp_name)
 	doc_control = YAML::LoadAll(fin2);
 
 	// Gazebo parameters
-	m_gazeboParams["iterations"] = "1500";	// Number of iterations
+	m_gazeboParams["iterations"] = "2000";	// Number of iterations
 
 	//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
 	//	    std::cout << it->first << " => " << it->second << '\n';
@@ -320,7 +320,11 @@ void runTests(std::string exp_name)
 					<< " seconds\n" ;
 
 			// Set plunger force
-			system("rosservice call /skinsim/set_controller \"type:\n  selected: 0\nf_des: -8.0\nx_des: 0.0\"");
+			//system("rosservice call /skinsim/set_controller \"type:\n  selected: 0\nf_des: -8.0\nx_des: 0.0\"");
+			std::string kp = boost::lexical_cast<std::string>(controlSpec.explFctr_Kp);
+			std::string cmd3 = "rosservice call /skinsim/set_controller \"type: {selected: 1}\nfb: {selected: 0}\nf_des: -8.0\nx_des: "+kp+"\nv_des: -0.005\"";
+			std::cout<<"$ "<<cmd3.c_str()<<"\n";
+			system(cmd3.c_str());
 
 			// Start simulation
 			this->SetPause(false);
@@ -330,7 +334,7 @@ void runTests(std::string exp_name)
 				common::Time::MSleep(100);
 			}
 
-			std::cout << std::endl << "Time: " << simTime.sec << " sec " << simTime.nsec << " nsec " << std::endl;
+			std::cout << "Completion time: " << simTime.Double() << " seconds!\n";// << simTime.nsec << " nsec " << std::endl;
 
 			// Stop saving rtp file
 			std::string cmd2 = std::string("pkill -9 -f ") + topic.c_str();
