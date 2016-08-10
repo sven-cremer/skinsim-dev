@@ -17,6 +17,7 @@ add_message_files(FILES
   ControllerType.msg
   FeedbackType.msg
   TactileData.msg
+  ForceFeedback.msg
 )
 
 add_service_files(DIRECTORY srv FILES
