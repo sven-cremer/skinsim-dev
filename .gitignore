@@ -50,3 +50,4 @@ Thumbs.db
 bin/
 build/
 model/models/spring*
+data/exp*
