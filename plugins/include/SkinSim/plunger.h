@@ -57,7 +57,7 @@
 #include <ros/advertise_options.h>
 
 // ROS messages
-#include <geometry_msgs/WrenchStamped.h>
+#include <skinsim_ros_msgs/PlungerData.h>
 #include <skinsim_ros_msgs/SetController.h>
 #include <skinsim_ros_msgs/ControllerType.h>
 #include <skinsim_ros_msgs/FeedbackType.h>
@@ -132,7 +132,7 @@ class Plunger : public ModelPlugin
   private: bool pub_to_ros_;
 
   /// \brief A custom ROS message
-  private: geometry_msgs::WrenchStamped msg_wrench_;
+  private: skinsim_ros_msgs::PlungerData msg_data_;
 
   /// \brief Stores the ROS topic name
   private: std::string topic_name_;
@@ -167,8 +167,9 @@ class Plunger : public ModelPlugin
   private: double update_rate_;
 
   /// \brief Explicit force controller parameters
-  private: double Kp_;		// Proportional force gain
-  private: double Kd_;		// Derivative force gain
+  private: double Kp_;		// Proportional gain
+  private: double Ki_;		// Integral gain
+  private: double Kd_;		// Derivative gain
   private: double Kv_;		// Velocity gain for active damping
 
   /// \brief Force command
@@ -185,6 +186,7 @@ class Plunger : public ModelPlugin
   private: double force_current_;
   private: double force_prev_;
   private: double force_desired_;
+  private: double force_dot_;
 
   /// \brief Joint axis of rotation in the global frame.
   private: math::Vector3 axis_global_;

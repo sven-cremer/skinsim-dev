@@ -78,7 +78,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	this->joint_pid_ = this->model_->GetJointController();
 
 	this->model_name_ = model_->GetName();
-	this->topic_name_ = model_name_;
+	this->topic_name_ = "plunger_data";
 	this->joint_name_ = "plunger_joint"; //model_name_+"_joint";
 
 	// Set default values
@@ -137,12 +137,11 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
 
 		// ROS topics
-		ros::AdvertiseOptions ao = ros::AdvertiseOptions::create<geometry_msgs::WrenchStamped>(
+		ros::AdvertiseOptions ao = ros::AdvertiseOptions::create<skinsim_ros_msgs::PlungerData>(
 				this->topic_name_,1,
 				boost::bind( &Plunger::RosConnect,this),
 				boost::bind( &Plunger::RosDisconnect,this), ros::VoidPtr(), &this->ros_queue_);
 		this->ros_pub_ = this->ros_node_->advertise(ao);
-		this->msg_wrench_.header.frame_id = "world";
 
 		// ROS subscribers
 		this->ros_sub_fb_ = this->ros_node_->subscribe("/skinsim/force_feedback", 1, &Plunger::ForceFeedbackCB, this);
@@ -254,7 +253,7 @@ void Plunger::UpdateJoints()
 		break;
 	}
 
-	double force_dot_ = (force_current_-force_prev_)/step_time.Double();
+	this->force_dot_ = (force_current_-force_prev_)/step_time.Double();
 
 	// FIXME Controller dynamics
 	//position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
@@ -313,22 +312,17 @@ void Plunger::UpdateJoints()
 	//std::cout<<"\tPos cur: "<<position_current_<<"\tPos des: "<<position_desired_<<"\n";
 
 	// Decide whether to publish
-	if (this->ros_connections_ == 0 || !pub_to_ros_)
-		return;
-
-	this->lock_.lock();
-	// Copy data into ROS message
-	this->msg_wrench_.header.stamp.sec  = (this->world_->GetSimTime()).sec;
-	this->msg_wrench_.header.stamp.nsec = (this->world_->GetSimTime()).nsec;
-	this->msg_wrench_.wrench.force.x  = force_ .x;
-	this->msg_wrench_.wrench.force.y  = force_ .y;
-	this->msg_wrench_.wrench.force.z  = force_ .z;
-	this->msg_wrench_.wrench.torque.x = torque_.x;
-	this->msg_wrench_.wrench.torque.y = torque_.y;
-	this->msg_wrench_.wrench.torque.z = torque_.z;
-	// Publish data
-	this->ros_pub_.publish(this->msg_wrench_);
-	this->lock_.unlock();
+	if (this->ros_connections_ > 0 && pub_to_ros_)
+	{
+		this->lock_.lock();
+		// Copy data into ROS message
+		this->msg_data_.effort    = this->effort_;
+		this->msg_data_.force     = this->force_current_;
+		this->msg_data_.force_dot = this->force_dot_;
+		// Publish data
+		this->ros_pub_.publish(this->msg_data_);
+		this->lock_.unlock();
+	}
 
 	// Save last time stamp
 	this->last_time_ = cur_time;
@@ -343,6 +337,7 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 {
 	// Store data
 	this->controller_type_.selected = req.type.selected;
+	this->feedback_type_  .selected = req.fb.selected;
 
 	switch(this->controller_type_.selected)
 	{
@@ -350,9 +345,12 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
 	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
 		this->force_desired_    = req.f_des;
-		this->Kp_ = req.x_des;
+		this->position_desired_ = req.x_des;
 		this->velocity_desired_	= req.v_des;
-		this->feedback_type_.selected    = req.fb.selected;
+		this->Kp_               = req.Kp;
+		this->Ki_               = req.Ki;
+		this->Kd_               = req.Kd;
+
 		res.success = true;
 		break;
 	default:
