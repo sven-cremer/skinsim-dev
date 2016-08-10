@@ -127,7 +127,7 @@ int main(int argc, char** argv)
 	defaultModelSpec.spec.tactile_separation_x = 1;
 	defaultModelSpec.spec.tactile_separation_y = 1;
 
-	for(unsigned i  = 0; i < 3 ; i++ )
+	for(unsigned i  = 1; i < 2 ; i++ )
 	{
 		BuildModelSpec tempModelSpec = defaultModelSpec;
 
@@ -167,9 +167,9 @@ int main(int argc, char** argv)
 
 	// Set default values
 	defaultControlSpec.name         = "efc_00_00_00" ;
-	defaultControlSpec.explFctr_Kp  = 2       ;
-	defaultControlSpec.explFctr_Ki  = 0.00005 ;
-	defaultControlSpec.explFctr_Kd  = 0.5     ;
+	defaultControlSpec.explFctr_Kp  = 0.1     ;
+	defaultControlSpec.explFctr_Ki  = 0.0     ;
+	defaultControlSpec.explFctr_Kd  = 0.0     ;
 	defaultControlSpec.impCtr_Xnom  = 0.5     ;
 	defaultControlSpec.impCtr_M     = 5       ;
 	defaultControlSpec.impCtr_K     = 24      ;
@@ -177,12 +177,12 @@ int main(int argc, char** argv)
 	defaultControlSpec.ctrType      = 1       ;
 	defaultControlSpec.targetForce  = 0.01    ;
 
-	for(unsigned i  = 0; i < 1 ; i++ )
+	for(unsigned i  = 0; i < 20 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
 		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
-
+		tempControlSpec.explFctr_Kp = 0.03*i;
 		ctrSpecs.push_back( tempControlSpec ) ;
 	}
 
