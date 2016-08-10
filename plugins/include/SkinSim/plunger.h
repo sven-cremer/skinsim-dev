@@ -194,10 +194,12 @@ class Plunger : public ModelPlugin
   private: virtual void OnContactUpdate();
 
   /// \brief Pointer to the contact sensor
-  private: sensors::ContactSensorPtr contact_sensor_ptr_;
+  //private: sensors::ContactSensorPtr contact_sensor_ptr_;
+  private: sensors::ForceTorqueSensorPtr ft_sensor_ptr_;
 
   /// \brief Number of contacts
   private: int num_contacts_;
+  private: math::Vector3 ft_value_;
 
 };
 

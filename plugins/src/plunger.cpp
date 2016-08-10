@@ -182,26 +182,27 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	}
 	*/
 	//this->joint_->SetStiffnessDamping(0,122,1.1,0);
-	this->joint_->SetStiffnessDamping(0,0,0,0);
+	//this->joint_->SetStiffnessDamping(0,0,0,0);
 
 	// Contact sensor
 
 	// Get the contact sensor
 	sensors::SensorPtr _sensor = sensors::get_sensor("plunger_sensor");
-	this->contact_sensor_ptr_  = boost::dynamic_pointer_cast<sensors::ContactSensor>(_sensor);
+	//this->contact_sensor_ptr_  = boost::dynamic_pointer_cast<sensors::ContactSensor>(_sensor);
+	this->ft_sensor_ptr_       = boost::dynamic_pointer_cast<sensors::ForceTorqueSensor>(_sensor);
 
 	// Make sure the parent sensor is valid
-	if (!this->contact_sensor_ptr_)
+	if (!this->ft_sensor_ptr_)
 	{
 		std::cerr << "Error: ContactPlugin requires a ContactSensor.\n";
 	}
 
 	// Connect to the sensor update event
-	this->update_contact_connection_ = this->contact_sensor_ptr_->ConnectUpdated(
+	this->update_contact_connection_ = this->ft_sensor_ptr_->ConnectUpdated(
 			boost::bind(&Plunger::OnContactUpdate, this));
 
 	// Make sure the sensor is active
-	this->contact_sensor_ptr_->SetActive(true);
+	this->ft_sensor_ptr_->SetActive(true);
 
 }
 
@@ -273,7 +274,8 @@ void Plunger::UpdateJoints()
 	{
 		if(num_contacts_>0)
 		{
-			this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_current_;
+			//this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_current_;
+			this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
 			this->joint_->SetForce(0, this->effort_);
 		}
 		else
@@ -314,9 +316,9 @@ void Plunger::UpdateJoints()
 	this->msg_wrench_.wrench.force.x  = force_ .x;
 	this->msg_wrench_.wrench.force.y  = force_ .y;
 	this->msg_wrench_.wrench.force.z  = force_ .z;
-	this->msg_wrench_.wrench.torque.x = torque_.x;
-	this->msg_wrench_.wrench.torque.y = torque_.y;
-	this->msg_wrench_.wrench.torque.z = torque_.z;
+	this->msg_wrench_.wrench.torque.x = ft_value_.x;
+	this->msg_wrench_.wrench.torque.y = ft_value_.y;
+	this->msg_wrench_.wrench.torque.z = ft_value_.z; //torque_.z;
 	// Publish data
 	this->ros_pub_.publish(this->msg_wrench_);
 	this->lock_.unlock();
@@ -341,7 +343,7 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
 	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
 		this->force_desired_    = req.f_des;
-		this->position_desired_ = req.x_des;
+		this->Kp_ = req.x_des;
 		this->velocity_desired_	= req.v_des;
 		this->feedback_type_.selected    = req.fb.selected;
 		res.success = true;
@@ -387,8 +389,9 @@ void Plunger::OnContactUpdate()
 	// Get all the contacts.
 //	msgs::Contacts contacts;
 //	contacts = this->contact_sensor_ptr_->GetContacts();
-	num_contacts_ = this->contact_sensor_ptr_->GetContacts().contact_size();
+	//num_contacts_ = this->contact_sensor_ptr_->GetContacts().contact_size();
 //	std::cout<<num_contacts_<<", "<<this->contact_sensor_ptr_->GetCollisionContactCount("plunger::plunger_link::plunger_collision")<<"\n";
+	ft_value_ = this->ft_sensor_ptr_->GetForce();
 }
 
 } // namespace
