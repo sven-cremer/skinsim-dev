@@ -188,21 +188,20 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 	// Get the contact sensor
 	sensors::SensorPtr _sensor = sensors::get_sensor("plunger_sensor");
-	//this->contact_sensor_ptr_  = boost::dynamic_pointer_cast<sensors::ContactSensor>(_sensor);
-	this->ft_sensor_ptr_       = boost::dynamic_pointer_cast<sensors::ForceTorqueSensor>(_sensor);
+	this->contact_sensor_ptr_  = boost::dynamic_pointer_cast<sensors::ContactSensor>(_sensor);
 
 	// Make sure the parent sensor is valid
-	if (!this->ft_sensor_ptr_)
+	if (!this->contact_sensor_ptr_)
 	{
 		std::cerr << "Error: ContactPlugin requires a ContactSensor.\n";
 	}
 
 	// Connect to the sensor update event
-	this->update_contact_connection_ = this->ft_sensor_ptr_->ConnectUpdated(
+	this->update_contact_connection_ = this->contact_sensor_ptr_->ConnectUpdated(
 			boost::bind(&Plunger::OnContactUpdate, this));
 
 	// Make sure the sensor is active
-	this->ft_sensor_ptr_->SetActive(true);
+	this->contact_sensor_ptr_->SetActive(true);
 
 }
 
@@ -316,9 +315,9 @@ void Plunger::UpdateJoints()
 	this->msg_wrench_.wrench.force.x  = force_ .x;
 	this->msg_wrench_.wrench.force.y  = force_ .y;
 	this->msg_wrench_.wrench.force.z  = force_ .z;
-	this->msg_wrench_.wrench.torque.x = ft_value_.x;
-	this->msg_wrench_.wrench.torque.y = ft_value_.y;
-	this->msg_wrench_.wrench.torque.z = ft_value_.z; //torque_.z;
+	this->msg_wrench_.wrench.torque.x = torque_.x;
+	this->msg_wrench_.wrench.torque.y = torque_.y;
+	this->msg_wrench_.wrench.torque.z = torque_.z;
 	// Publish data
 	this->ros_pub_.publish(this->msg_wrench_);
 	this->lock_.unlock();
@@ -389,9 +388,8 @@ void Plunger::OnContactUpdate()
 	// Get all the contacts.
 //	msgs::Contacts contacts;
 //	contacts = this->contact_sensor_ptr_->GetContacts();
-	//num_contacts_ = this->contact_sensor_ptr_->GetContacts().contact_size();
+	num_contacts_ = this->contact_sensor_ptr_->GetContacts().contact_size();
 //	std::cout<<num_contacts_<<", "<<this->contact_sensor_ptr_->GetCollisionContactCount("plunger::plunger_link::plunger_collision")<<"\n";
-	ft_value_ = this->ft_sensor_ptr_->GetForce();
 }
 
 } // namespace
