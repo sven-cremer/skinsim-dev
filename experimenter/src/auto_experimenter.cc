@@ -242,7 +242,7 @@ void runTests(std::string exp_name)
 	doc_control = YAML::LoadAll(fin2);
 
 	// Gazebo parameters
-	m_gazeboParams["iterations"] = "2000";	// Number of iterations
+	m_gazeboParams["iterations"] = "12000";	// Number of iterations (time/step_size)
 
 	//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
 	//	    std::cout << it->first << " => " << it->second << '\n';
@@ -301,7 +301,7 @@ void runTests(std::string exp_name)
 			// TODO subscribe to ~/physics/contacts
 
 			// Save ROS topic data to file
-			std::string topic = "/skinsim/tactile_data";
+			std::string topic = "/skinsim/force_feedback";
 			std::string cmd1 = std::string("rostopic echo -p ") + topic.c_str() + std::string(" > ") + pathExp.c_str() + std::string("/") + exp_name.c_str() + std::string(".csv &");
 			std::cout<<"$ "<<cmd1.c_str()<<"\n";
 			system( cmd1.c_str() );
@@ -322,7 +322,7 @@ void runTests(std::string exp_name)
 			// Set plunger force
 			//system("rosservice call /skinsim/set_controller \"type:\n  selected: 0\nf_des: -8.0\nx_des: 0.0\"");
 			std::string kp = boost::lexical_cast<std::string>(controlSpec.explFctr_Kp);
-			std::string cmd3 = "rosservice call /skinsim/set_controller \"type: {selected: 1}\nfb: {selected: 0}\nf_des: -8.0\nx_des: "+kp+"\nv_des: -0.005\"";
+			std::string cmd3 = "rosservice call /skinsim/set_controller \"type: {selected: 1}\nfb: {selected: 1}\nf_des: -8.0\nx_des: "+kp+"\nv_des: -0.005\"";
 			std::cout<<"$ "<<cmd3.c_str()<<"\n";
 			system(cmd3.c_str());
 
