@@ -144,6 +144,9 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		this->ros_pub_ = this->ros_node_->advertise(ao);
 		this->msg_wrench_.header.frame_id = "world";
 
+		// ROS subscribers
+		this->ros_sub_fb_ = this->ros_node_->subscribe("/skinsim/force_feedback", 1, &Plunger::ForceFeedbackCB, this);
+
 		// ROS services
 		this->ros_srv_ = this->ros_node_->advertiseService("set_controller", &Plunger::serviceCB, this);
 
@@ -160,7 +163,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	this->velocity_desired_ = 0.0;
 	this->force_desired_    = 0.0;
 	this->force_prev_       = 0.0;
-	this->feedback_type_.selected   = skinsim_ros_msgs::FeedbackType::PLUNGER_LOAD_CELL;
+	this->feedback_type_.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
 	this->controller_type_.selected = skinsim_ros_msgs::ControllerType::DIRECT;
 
 	// P-controller
@@ -201,7 +204,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 			boost::bind(&Plunger::OnContactUpdate, this));
 
 	// Make sure the sensor is active
-	this->contact_sensor_ptr_->SetActive(true);
+	this->contact_sensor_ptr_->SetActive(false);
 
 }
 
@@ -230,17 +233,22 @@ void Plunger::UpdateJoints()
 	// Plunger
 	case skinsim_ros_msgs::FeedbackType::PLUNGER_LOAD_CELL:
 	{
-		this->force_current_ = this->force_.Dot(this->axis_global_);
+		this->force_current_ = -this->force_.Dot(this->axis_global_);
 		break;
 	}
-	// Tactiles
-	case skinsim_ros_msgs::FeedbackType::TACTILE_SENSORS:
+	// Tactile applied
+	case skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED:
 	{
-		// TODO: Get tactile data
-		// this->force_current_ = sum(f_sen);;
-		// break;
+		 this->force_current_ = -msg_fb_.force_applied;
+		 break;
 	}
-		// Default
+	// Tactile sensed
+	case skinsim_ros_msgs::FeedbackType::TACTILE_SENSED:
+	{
+		 this->force_current_ = msg_fb_.force_sensed;
+		 break;
+	}
+	// Default
 	default:
 		std::cerr<<"Feedback type not implemented.\n";
 		break;
@@ -354,6 +362,15 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 	}
 
 	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Callback function for force feedback subscriber
+void Plunger::ForceFeedbackCB(const skinsim_ros_msgs::ForceFeedback::ConstPtr& _msg)
+{
+	msg_fb_.force_applied = _msg->force_applied;
+	msg_fb_.force_sensed  = _msg->force_sensed;
+	num_contacts_         = _msg->contacts;
 }
 
 //////////////////////////////////////////////////////////////////////////

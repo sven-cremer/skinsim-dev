@@ -61,6 +61,7 @@
 #include <skinsim_ros_msgs/SetController.h>
 #include <skinsim_ros_msgs/ControllerType.h>
 #include <skinsim_ros_msgs/FeedbackType.h>
+#include <skinsim_ros_msgs/ForceFeedback.h>
 
 // Utilities
 #include <boost/thread.hpp>
@@ -114,6 +115,15 @@ class Plunger : public ModelPlugin
 
    /// \brief A custom ROS message
    private: skinsim_ros_msgs::FeedbackType feedback_type_;
+
+   /// \brief A ROS subscriber for the force feedback
+   private: ros::Subscriber ros_sub_fb_;
+
+   /// \brief A callback for the force feedback subscriber
+   private: void ForceFeedbackCB(const skinsim_ros_msgs::ForceFeedback::ConstPtr& _msg);
+
+   /// \brief A custom ROS message for the force feedback
+   skinsim_ros_msgs::ForceFeedback msg_fb_;
 
   /// \brief A ROS publisher
   private: ros::Publisher ros_pub_;
