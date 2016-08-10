@@ -424,6 +424,13 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 {
 	std::ostringstream modelConfig;
 
+	// Place plunger 0.2 cm above skin
+	double plunger_length = 0.10;
+	double plunger_height = 0.10;
+	double plunger_z  =  m_.spec.element_height + m_.spec.element_diameter
+			            +(plunger_height-0.5*plunger_length) + 0.002;
+	std::string p_z = boost::lexical_cast<std::string>(plunger_z);
+
 	modelConfig << "<?xml version='1.0'?>                                              \n"
 			<< "<sdf version='1.5'>                                                    \n"
 			<< "  <world name='default'>                                               \n"
@@ -443,7 +450,8 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
             << "                                                                       \n"
             << "    <include>                                                          \n"
             << "      <uri>model://plunger</uri>                                       \n"
-            << "      <pose>0 0 0.08 0 0 0</pose>                                       \n"
+            << "      <pose>0 0 "<<p_z.c_str()<<" 0 0 0</pose>                         \n"
+//            << "      <pose>0 0 0.075 0 0 0</pose>                                     \n"
             << "    </include>                                                         \n"
 			<< "                                                                       \n"
 			<< "    <physics type='ode'>                                               \n"
