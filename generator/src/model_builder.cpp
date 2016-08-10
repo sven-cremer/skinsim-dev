@@ -456,9 +456,10 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 			<< "                                                                       \n"
 			<< "    <physics type='ode'>                                               \n"
 			<< "      <gravity>0.0 0.0 -9.8</gravity>                                  \n"
-			<< "      <max_step_size>0.001</max_step_size>                             \n"
-			<< "      <real_time_factor>1</real_time_factor>                           \n"
-			<< "      <real_time_update_rate>1000</real_time_update_rate>              \n"
+			<< "      <max_step_size>0.0001</max_step_size>                             \n"
+//			<< "      <real_time_factor>1</real_time_factor>                           \n"
+			// Run the simulation as fast as possible
+			<< "      <real_time_update_rate>0</real_time_update_rate>                 \n"
 			<< "      <ode>                                                            \n"
 			<< "        <solver>                                                       \n"
 			<< "          <iters>200</iters>                                           \n"
