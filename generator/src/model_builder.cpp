@@ -272,7 +272,7 @@ void ModelBuilder::addJoint( std::string joint_name,
 			<< "        <xyz>" << axis.transpose() << "</xyz>\n"
 			<< "        <limit>\n"
 			<< "          <lower>" << -0.5 << "</lower>\n"
-			<< "          <upper>" <<  2.0 << "</upper>\n"
+			<< "          <upper>" <<  0.5 << "</upper>\n"
 			<< "        </limit>\n"
 			<< "      </axis>\n"
 			//				<< "    <sensor name='contact_" + joint_name + "' type='force_torque'>"
@@ -429,7 +429,13 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 	double plunger_height = 0.10;
 	double plunger_z  =  m_.spec.element_height + m_.spec.element_diameter
 			            +(plunger_height-0.5*plunger_length) + 0.001;
-	std::string p_z = boost::lexical_cast<std::string>(plunger_z);
+	std::string pz = boost::lexical_cast<std::string>(plunger_z);
+
+	// Move plunger to center of tactile patches
+	double p_x = (total_sensors_x*unit_size_x - total_elements_x - m_.spec.tactile_separation_x)*m_.spec.element_diameter*0.5;
+	double p_y = (total_sensors_y*unit_size_y - total_elements_y - m_.spec.tactile_separation_y)*m_.spec.element_diameter*0.5;
+	std::string px = boost::lexical_cast<std::string>(p_x);
+	std::string py = boost::lexical_cast<std::string>(p_y);
 
 	modelConfig << "<?xml version='1.0'?>                                              \n"
 			<< "<sdf version='1.5'>                                                    \n"
@@ -450,8 +456,7 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
             << "                                                                       \n"
             << "    <include>                                                          \n"
             << "      <uri>model://plunger</uri>                                       \n"
-            << "      <pose>0 0 "<<p_z.c_str()<<" 0 0 0</pose>                         \n"
-//            << "      <pose>0 0 0.075 0 0 0</pose>                                     \n"
+            << "      <pose>"<<px.c_str()<<" "<<py.c_str()<<" "<<pz.c_str()<<" 0 0 0</pose> \n"
             << "    </include>                                                         \n"
 			<< "                                                                       \n"
 			<< "    <physics type='ode'>                                               \n"
