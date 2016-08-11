@@ -46,6 +46,10 @@
 #include <vector>
 #include <map>
 
+// ROS
+#include <ros/ros.h>
+#include <skinsim_ros_msgs/SetController.h>
+
 #include <sdf/sdf.hh>
 
 #include <boost/thread.hpp>
@@ -91,6 +95,11 @@ private: bool paused;
 private: bool serverRunning;
 protected: transport::NodePtr node;
 protected: transport::SubscriberPtr statsSub;
+
+private: ros::NodeHandle* ros_node_;
+private: std::string ros_namespace_;
+private: ros::ServiceClient ros_srv_;
+private: skinsim_ros_msgs::SetController msg_srv_;
 
 public:
 SkinSimTestingFramework()
@@ -242,7 +251,7 @@ void runTests(std::string exp_name)
 	doc_control = YAML::LoadAll(fin2);
 
 	// Gazebo parameters
-	m_gazeboParams["iterations"] = "12000";	// Number of iterations (time/step_size)
+	m_gazeboParams["iterations"] = "10000";	// Number of iterations (time/step_size)
 
 	//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
 	//	    std::cout << it->first << " => " << it->second << '\n';
@@ -282,7 +291,8 @@ void runTests(std::string exp_name)
 			std::string exp_name = "exp_" + ss.str()  ;
 
 			// Print info
-			std::cout << "\n# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
+			std::cout << "\n#########################################\n";
+			std::cout << "# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
 
 			// Point model world file location
 			_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
@@ -300,41 +310,72 @@ void runTests(std::string exp_name)
 			std::cout << "Initialized Transport Node" << std::endl;
 			// TODO subscribe to ~/physics/contacts
 
+			// Make sure the ROS node for Gazebo has already been initialized
+			if (!ros::isInitialized())
+			{
+				std::cerr<<"Error: ROS has not been initialized! \n";
+				exit(1);
+			}
+
+			// Create ROS service client
+			ros_namespace_ = "skinsim";
+			this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
+			this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+
 			// Save ROS topic data to file
-			std::string topic = "/skinsim/force_feedback";
+			std::string topic = "/skinsim/plunger_data";
 			std::string cmd1 = std::string("rostopic echo -p ") + topic.c_str() + std::string(" > ") + pathExp.c_str() + std::string("/") + exp_name.c_str() + std::string(".csv &");
 			std::cout<<"$ "<<cmd1.c_str()<<"\n";
 			system( cmd1.c_str() );
 
 			std::cout << "Waiting for world completion" << std::endl;
-			// Wait for the server to come up
-			// Use a 20 second timeout.
+			// Wait for the server to come up (10 second timeout)
 			int waitCount = 0, maxWaitCount = 100;
 			while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )
 				common::Time::MSleep(100);
 
-			std::cout << "ServerFixture load in "
-					<< static_cast<double>(waitCount)/10.0
-					<< " seconds, timeout after "
-					<< static_cast<double>(maxWaitCount)/10.0
-					<< " seconds\n" ;
+			std::cout << "Gazebo server loaded in "<<(double)waitCount*0.1<<" seconds (timeout after "<<(double)maxWaitCount*0.1<<" seconds)\n";
 
-			// Set plunger force
+			// Set plunger force message
+			msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL;
+			msg_srv_.request.fb.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
+			msg_srv_.request.f_des = -8.0;
+			msg_srv_.request.x_des = 0.0;
+			msg_srv_.request.v_des = -0.005;
+			msg_srv_.request.Kp    = controlSpec.explFctr_Kp;
+			msg_srv_.request.Ki    = controlSpec.explFctr_Ki;
+			msg_srv_.request.Kd    = controlSpec.explFctr_Kd;
+			std::cout<<"Control message:\n"<<msg_srv_.request;
+
 			//system("rosservice call /skinsim/set_controller \"type:\n  selected: 0\nf_des: -8.0\nx_des: 0.0\"");
-			std::string kp = boost::lexical_cast<std::string>(controlSpec.explFctr_Kp);
-			std::string cmd3 = "rosservice call /skinsim/set_controller \"type: {selected: 1}\nfb: {selected: 1}\nf_des: -8.0\nx_des: "+kp+"\nv_des: -0.005\"";
-			std::cout<<"$ "<<cmd3.c_str()<<"\n";
-			system(cmd3.c_str());
+//			std::string kp = boost::lexical_cast<std::string>(controlSpec.explFctr_Kp);
+//			std::string cmd3 = "rosservice call /skinsim/set_controller \"type: {selected: 1}\nfb: {selected: 1}\nf_des: -8.0\nx_des: "+kp+"\nv_des: -0.005\"";
+//			std::cout<<"$ "<<cmd3.c_str()<<"\n";
+//			system(cmd3.c_str());
 
 			// Start simulation
 			this->SetPause(false);
 
+			// Execute experiment
+			bool message_sent = false;
 			while( physics::worlds_running() )
 			{
-				common::Time::MSleep(100);
+				// Send control message to plunger
+				if(!message_sent)
+				{
+					if (ros_srv_.call(msg_srv_))
+					{
+						message_sent = true;
+						std::cout<<"Experiment started!\n";
+					}
+					else
+						std::cerr<<"Failed to call service \"skinsim\\set_controller\"\n";
+				}
+				common::Time::MSleep(10);
 			}
 
-			std::cout << "Completion time: " << simTime.Double() << " seconds!\n";// << simTime.nsec << " nsec " << std::endl;
+			// Experiment finished
+			std::cout << "Experiment run time: " << simTime.Double() << " seconds!\n";// << simTime.nsec << " nsec " << std::endl;
 
 			// Stop saving rtp file
 			std::string cmd2 = std::string("pkill -9 -f ") + topic.c_str();
@@ -342,6 +383,7 @@ void runTests(std::string exp_name)
 			system( cmd2.c_str() );
 
 			Unload();
+			delete ros_node_;
 
 			// Save data
 			saveData( exp_name );
