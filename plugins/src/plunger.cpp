@@ -336,6 +336,7 @@ void Plunger::UpdateJoints()
 bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_ros_msgs::SetController::Response& res)
 {
 	// Store data
+	this->lock_.lock();
 	this->controller_type_.selected = req.type.selected;
 	this->feedback_type_  .selected = req.fb.selected;
 
@@ -358,7 +359,7 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		res.success = false;
 		break;
 	}
-
+	this->lock_.unlock();
 	return true;
 }
 
@@ -366,9 +367,11 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 // Callback function for force feedback subscriber
 void Plunger::ForceFeedbackCB(const skinsim_ros_msgs::ForceFeedback::ConstPtr& _msg)
 {
+	this->lock_.lock();
 	msg_fb_.force_applied = _msg->force_applied;
 	msg_fb_.force_sensed  = _msg->force_sensed;
 	num_contacts_         = _msg->contacts;
+	this->lock_.unlock();
 }
 
 //////////////////////////////////////////////////////////////////////////

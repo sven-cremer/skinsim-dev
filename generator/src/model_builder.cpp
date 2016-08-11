@@ -428,7 +428,7 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 	double plunger_length = 0.10;
 	double plunger_height = 0.10;
 	double plunger_z  =  m_.spec.element_height + m_.spec.element_diameter
-			            +(plunger_height-0.5*plunger_length) + 0.002;
+			            +(plunger_height-0.5*plunger_length) + 0.001;
 	std::string p_z = boost::lexical_cast<std::string>(plunger_z);
 
 	modelConfig << "<?xml version='1.0'?>                                              \n"

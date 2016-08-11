@@ -177,12 +177,23 @@ int main(int argc, char** argv)
 	defaultControlSpec.ctrType      = 1       ;
 	defaultControlSpec.targetForce  = 0.01    ;
 
-	for(unsigned i  = 0; i < 20 ; i++ )
+	for(unsigned i  = 0; i < 10 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
 		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
-		tempControlSpec.explFctr_Kp = 0.03*i;
+		tempControlSpec.explFctr_Kp = 0.2*i;
+		tempControlSpec.explFctr_Kd = 0.0;
+		ctrSpecs.push_back( tempControlSpec ) ;
+	}
+
+	for(unsigned i  = 0; i < 10 ; i++ )
+	{
+		ControllerSpec tempControlSpec = defaultControlSpec;
+
+		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
+		tempControlSpec.explFctr_Kp = 1.6;
+		tempControlSpec.explFctr_Kd = 0.1*i;
 		ctrSpecs.push_back( tempControlSpec ) ;
 	}
 
