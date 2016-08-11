@@ -33,3 +33,4 @@
       tactile_elements_y           : 2					# Number of skin elements per sensor in y-direction
       tactile_separation_x         : 1					# Spaceing between sensors in terms of number of elements in x-direction
       tactile_separation_y         : 1					# Spaceing between sensors in terms of number of elements in x-direction
+      # TODO add plunger properties

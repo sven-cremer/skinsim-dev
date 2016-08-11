@@ -79,10 +79,13 @@ int main(int argc, char** argv)
 	{
 		if( boost::filesystem::exists(dir) )
 		{
-			std::cerr << "Experiment folder already exists!" << "\n";
+			std::cout << "Warning: Experiment folder already exists ... will replace files!" << "\n";
 		}
-		std::cerr << "Failed to create experiment directory!" << "\n";
-		return 1;
+		else
+		{
+			std::cerr << "Failed to create experiment directory!" << "\n";
+			return 1;
+		}
 	}
 
 	// Parameters
@@ -103,13 +106,13 @@ int main(int argc, char** argv)
 	defaultModelSpec.name                      = "skin_array";
 	defaultModelSpec.spec.num_elements_x       = 8;
 	defaultModelSpec.spec.num_elements_y       = 8;
-	defaultModelSpec.spec.num_patches_x        = 1;
-	defaultModelSpec.spec.num_patches_y        = 1;
+	defaultModelSpec.spec.num_patches_x        = 2;
+	defaultModelSpec.spec.num_patches_y        = 2;
 	defaultModelSpec.spec.element_diameter     = 0.01;
 	defaultModelSpec.spec.element_height       = 0.01;
 	defaultModelSpec.spec.element_mass         = 0.0;
-	defaultModelSpec.spec.element_spring       = 122.24;
-	defaultModelSpec.spec.element_damping      = 1.183;
+	defaultModelSpec.spec.element_spring       = 122.24;    // TODO compute this from plunger area
+	defaultModelSpec.spec.element_damping      = 1.183;     // TODO compute this from plunger area
 	defaultModelSpec.spec.plane_thickness      = 0.002;
 	defaultModelSpec.spec.plane_height         = 0.001;
 	defaultModelSpec.spec.init_x               = 0.0;
@@ -127,17 +130,20 @@ int main(int argc, char** argv)
 	defaultModelSpec.spec.tactile_separation_x = 1;
 	defaultModelSpec.spec.tactile_separation_y = 1;
 
-	for(unsigned i  = 1; i < 2 ; i++ )
+	for(unsigned i  = 1; i < 3 ; i++ )		// Tactile size
 	{
+		for(unsigned j  = 1; j < 3 ; j++ )	// Tactile separtion
+		{
 		BuildModelSpec tempModelSpec = defaultModelSpec;
 
-		tempModelSpec.name = "skin_array_" + boost::lexical_cast<std::string>( i );
-		tempModelSpec.spec.tactile_elements_x   = i+1;
-		tempModelSpec.spec.tactile_elements_y   = i+1;
-		tempModelSpec.spec.tactile_separation_x = 1;
-		tempModelSpec.spec.tactile_separation_y = 1;
+		tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
+		tempModelSpec.spec.tactile_elements_x   = i;
+		tempModelSpec.spec.tactile_elements_y   = i;
+		tempModelSpec.spec.tactile_separation_x = j;
+		tempModelSpec.spec.tactile_separation_y = j;
 
 		modelSpecs.push_back( tempModelSpec ) ;
+		}
 	}
 
 	// Save to YAML
@@ -167,35 +173,39 @@ int main(int argc, char** argv)
 
 	// Set default values
 	defaultControlSpec.name         = "efc_00_00_00" ;
-	defaultControlSpec.explFctr_Kp  = 0.1     ;
+	defaultControlSpec.explFctr_Kp  = 0.2     ;
 	defaultControlSpec.explFctr_Ki  = 0.0     ;
 	defaultControlSpec.explFctr_Kd  = 0.0     ;
-	defaultControlSpec.impCtr_Xnom  = 0.5     ;
-	defaultControlSpec.impCtr_M     = 5       ;
-	defaultControlSpec.impCtr_K     = 24      ;
-	defaultControlSpec.impCtr_D     = 10      ;
-	defaultControlSpec.ctrType      = 1       ;
-	defaultControlSpec.targetForce  = 0.01    ;
+	defaultControlSpec.impCtr_Xnom  = 0       ;
+	defaultControlSpec.impCtr_M     = 0       ;
+	defaultControlSpec.impCtr_K     = 0       ;
+	defaultControlSpec.impCtr_D     = 0       ;
+	defaultControlSpec.ctrType      = 1       ;		// TACTILE_APPLIED=1, TACTILE_SENSED=2
+	defaultControlSpec.targetForce  = -2      ;
 
-	for(unsigned i  = 0; i < 10 ; i++ )
+	for(unsigned j  = 1; j < 3; j++ ) // Controller type
 	{
-		ControllerSpec tempControlSpec = defaultControlSpec;
+		for(unsigned i  = 0; i < 2; i++ ) // Kp
+		{
+			ControllerSpec tempControlSpec = defaultControlSpec;
 
-		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
-		tempControlSpec.explFctr_Kp = 0.2*i;
-		tempControlSpec.explFctr_Kd = 0.0;
-		ctrSpecs.push_back( tempControlSpec ) ;
+			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
+			tempControlSpec.explFctr_Kp = 0.5*i;
+			tempControlSpec.explFctr_Kd = 0.0;
+			tempControlSpec.ctrType = j;
+			ctrSpecs.push_back( tempControlSpec ) ;
+		}
 	}
 
-	for(unsigned i  = 0; i < 10 ; i++ )
-	{
-		ControllerSpec tempControlSpec = defaultControlSpec;
-
-		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
-		tempControlSpec.explFctr_Kp = 1.6;
-		tempControlSpec.explFctr_Kd = 0.1*i;
-		ctrSpecs.push_back( tempControlSpec ) ;
-	}
+//	for(unsigned i  = 0; i < 10 ; i++ )
+//	{
+//		ControllerSpec tempControlSpec = defaultControlSpec;
+//
+//		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
+//		tempControlSpec.explFctr_Kp = 1.6;
+//		tempControlSpec.explFctr_Kd = 0.1*i;
+//		ctrSpecs.push_back( tempControlSpec ) ;
+//	}
 
 	// Save to YAML
 	YAML::Emitter ctrYAMLEmitter;
@@ -208,6 +218,10 @@ int main(int argc, char** argv)
 	ctrOut.close();
 
 	// ---------------------------------------------
+
+	std::cout<<"\nNumber of models generated:      "<<modelSpecs.size();
+	std::cout<<"\nNumber of controllers generated: "<<ctrSpecs.size();
+	std::cout<<"\nTotal configurations: "<<modelSpecs.size()*ctrSpecs.size()<<"\n";
 
 	return 0;
 
