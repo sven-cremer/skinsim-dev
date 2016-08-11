@@ -66,6 +66,19 @@ struct ControllerSpec
   double targetForce  ;
 };
 
+inline void print(ControllerSpec c)
+{
+	std::cout<<"Name         : "<<c.name           <<"\n";
+	std::cout<<" explFctr_Kp : "<<c.explFctr_Kp    <<"\n";
+	std::cout<<" explFctr_Ki : "<<c.explFctr_Ki    <<"\n";
+	std::cout<<" explFctr_Kd : "<<c.explFctr_Kd    <<"\n";
+	std::cout<<" impCtr_Xnom : "<<c.impCtr_Xnom    <<"\n";
+	std::cout<<" impCtr_K    : "<<c.impCtr_K       <<"\n";
+	std::cout<<" impCtr_D    : "<<c.impCtr_D       <<"\n";
+	std::cout<<" ctrType     : "<<c.ctrType        <<"\n";
+	std::cout<<" targetForce : "<<c.targetForce    <<"\n";
+}
+
 inline void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
 {
   ctrSpec.name        = node["name"       ].as<std::string>() ;
