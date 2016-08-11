@@ -93,6 +93,7 @@ protected: common::Time simTime, realTime, pauseTime;
 private: double percentRealTime;
 private: bool paused;
 private: bool serverRunning;
+private: int iterations;
 protected: transport::NodePtr node;
 protected: transport::SubscriberPtr statsSub;
 
@@ -100,17 +101,19 @@ private: ros::NodeHandle* ros_node_;
 private: std::string ros_namespace_;
 private: ros::ServiceClient ros_srv_;
 private: skinsim_ros_msgs::SetController msg_srv_;
+private: int iterations_max;
+
+// Color for terminal text
+private: static const char RED[];
+private: static const char GREEN[];
+private: static const char YELLOW[];
+private: static const char RESET[];
 
 public:
 SkinSimTestingFramework()
 {
 	std::cout << "SkinSim Testing Framework Constructor" << std::endl;
 	this->server = NULL;
-
-	//	this->node = transport::NodePtr(new transport::Node());
-	//	this->node->Init();
-	//	this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
-	//	std::cout << "Initialized Transport Node" << std::endl;
 }
 
 void OnStats(ConstWorldStatisticsPtr &_msg)
@@ -119,6 +122,7 @@ void OnStats(ConstWorldStatisticsPtr &_msg)
 	this->realTime = msgs::Convert(_msg->real_time());
 	this->pauseTime = msgs::Convert(_msg->pause_time());
 	this->paused = _msg->paused();
+	this->iterations = _msg->iterations();
 
 	this->serverRunning = true;
 }
@@ -152,7 +156,7 @@ void Unload()
 void RunServer(const std::string &_worldFilename, bool _paused, const std::string &_physics)
 {
 
-	std::cout << "SkinSimTestingFramework::RunServer() - START" << std::endl;
+	//std::cout << "SkinSimTestingFramework::RunServer() - START" << std::endl;
 
 	this->server = new Server();
 
@@ -208,7 +212,7 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 
 	this->server->Fini();
 
-	std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
+	//std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
 
 	// Deallocate variables
 	delete this->server;
@@ -251,7 +255,8 @@ void runTests(std::string exp_name)
 	doc_control = YAML::LoadAll(fin2);
 
 	// Gazebo parameters
-	m_gazeboParams["iterations"] = "10000";	// Number of iterations (time/step_size)
+	iterations_max = 5000;					// Number of iterations (time/step_size)
+	m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
 
 	//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
 	//	    std::cout << it->first << " => " << it->second << '\n';
@@ -286,12 +291,13 @@ void runTests(std::string exp_name)
 			int tactile_sep  = modelSpec.spec.tactile_separation_x * modelSpec.spec.tactile_separation_y;
 
 			std::ostringstream ss;
-			ss << std::setw(3) << std::setfill('0')
-			<< index << "_" << skin_size << "-" << tactile_size << "-" << tactile_sep;
+			ss << std::setw(2) << std::setfill('0')
+			<< index << "_tac_" << tactile_size << "-" << tactile_sep
+			<< index << "_con_" << (int)controlSpec.ctrType << "-" << std::setprecision(2) <<std::fixed << controlSpec.explFctr_Kp;
 			std::string exp_name = "exp_" + ss.str()  ;
 
 			// Print info
-			std::cout << "\n#########################################\n";
+			std::cout << RED << "\n"<<std::string(60,'#')<<"\n" << RESET;
 			std::cout << "# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
 
 			// Point model world file location
@@ -303,11 +309,11 @@ void runTests(std::string exp_name)
 					boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
 							_paused, _physics));
 
-			// Initialize transport node
+			// Initialize Gazebo transport node (to get simulation time)
 			this->node = transport::NodePtr(new transport::Node());
 			this->node->Init();
 			this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
-			std::cout << "Initialized Transport Node" << std::endl;
+			//std::cout << "Initialized Transport Node" << std::endl;
 			// TODO subscribe to ~/physics/contacts
 
 			// Make sure the ROS node for Gazebo has already been initialized
@@ -338,25 +344,21 @@ void runTests(std::string exp_name)
 
 			// Set plunger force message
 			msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL;
-			msg_srv_.request.fb.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
-			msg_srv_.request.f_des = -8.0;
+			msg_srv_.request.fb.selected   = (int)controlSpec.ctrType; //skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
+			msg_srv_.request.f_des = controlSpec.targetForce;
 			msg_srv_.request.x_des = 0.0;
 			msg_srv_.request.v_des = -0.005;
 			msg_srv_.request.Kp    = controlSpec.explFctr_Kp;
 			msg_srv_.request.Ki    = controlSpec.explFctr_Ki;
 			msg_srv_.request.Kd    = controlSpec.explFctr_Kd;
-			std::cout<<"Control message:\n"<<msg_srv_.request;
-
-			//system("rosservice call /skinsim/set_controller \"type:\n  selected: 0\nf_des: -8.0\nx_des: 0.0\"");
-//			std::string kp = boost::lexical_cast<std::string>(controlSpec.explFctr_Kp);
-//			std::string cmd3 = "rosservice call /skinsim/set_controller \"type: {selected: 1}\nfb: {selected: 1}\nf_des: -8.0\nx_des: "+kp+"\nv_des: -0.005\"";
-//			std::cout<<"$ "<<cmd3.c_str()<<"\n";
-//			system(cmd3.c_str());
+			std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
 
 			// Start simulation
+			std::cout<<"Starting simulation...\n";
 			this->SetPause(false);
 
 			// Execute experiment
+			waitCount = 0;
 			bool message_sent = false;
 			while( physics::worlds_running() )
 			{
@@ -366,27 +368,31 @@ void runTests(std::string exp_name)
 					if (ros_srv_.call(msg_srv_))
 					{
 						message_sent = true;
-						std::cout<<"Experiment started!\n";
+						std::cout<<"Control message sent!\n";
 					}
 					else
-						std::cerr<<"Failed to call service \"skinsim\\set_controller\"\n";
+						std::cerr<<"Failed to send control message, trying again ...\n";
 				}
 				common::Time::MSleep(10);
+				waitCount++;
+
+				// Print status
+				if(waitCount>100)
+					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << std::flush << RESET;
 			}
 
 			// Experiment finished
-			std::cout << "Experiment run time: " << simTime.Double() << " seconds!\n";// << simTime.nsec << " nsec " << std::endl;
+			std::cout << "\nSimulation completed in "<<(double)waitCount*0.01<<" seconds.\n";
+			std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
 
 			// Stop saving rtp file
 			std::string cmd2 = std::string("pkill -9 -f ") + topic.c_str();
 			std::cout<<"$ "<<cmd2.c_str()<<"\n";
 			system( cmd2.c_str() );
 
+			// Cleanup
 			Unload();
 			delete ros_node_;
-
-			// Save data
-			saveData( exp_name );
 
 			index++;
 		}
@@ -398,8 +404,13 @@ void runTests(std::string exp_name)
 
 };
 
+// Color for terminal text
+const char SkinSimTestingFramework::RED[]    = "\033[0;31m";
+const char SkinSimTestingFramework::GREEN[]  = "\033[0;32m";
+const char SkinSimTestingFramework::YELLOW[] = "\033[0;33m";
+const char SkinSimTestingFramework::RESET[]  = "\033[0m";
 
-
+// Main
 int main(int argc, char** argv)
 {
 
@@ -423,6 +434,4 @@ int main(int argc, char** argv)
 	return 0;
 
 }
-
-
 
