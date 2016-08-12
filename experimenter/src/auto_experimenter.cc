@@ -44,34 +44,35 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <map>
+//#include <map>
 
 // ROS
 #include <ros/ros.h>
 #include <skinsim_ros_msgs/SetController.h>
 
-#include <sdf/sdf.hh>
+//#include <sdf/sdf.hh>
 
+// Boost
 #include <boost/thread.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/chrono.hpp>
 
-#include "gazebo/transport/transport.hh"
-
-#include "gazebo/common/CommonIface.hh"
-#include "gazebo/common/SystemPaths.hh"
-#include "gazebo/common/Console.hh"
-#include "gazebo/physics/World.hh"
-#include "gazebo/physics/PhysicsTypes.hh"
+#include "gazebo/Server.hh"
 #include "gazebo/physics/PhysicsIface.hh"
-#include "gazebo/sensors/sensors.hh"
-#include "gazebo/rendering/rendering.hh"
+#include "gazebo/transport/transport.hh"
 #include "gazebo/msgs/msgs.hh"
 
-#include "gazebo/gazebo_config.h"
-#include "gazebo/Server.hh"
+//#include "gazebo/common/CommonIface.hh"
+//#include "gazebo/common/SystemPaths.hh"
+//#include "gazebo/common/Console.hh"
+//#include "gazebo/physics/World.hh"
+//#include "gazebo/physics/PhysicsTypes.hh"
+//#include "gazebo/sensors/sensors.hh"
+//#include "gazebo/rendering/rendering.hh"
+//#include "gazebo/gazebo_config.h"
 
-#include <Eigen/Core>
+//#include <Eigen/Core>
 #include <yaml-cpp/yaml.h>
 
 #include <SkinSim/ModelSpecYAML.hh>
@@ -230,7 +231,7 @@ void saveData( std::string exp_name )
 
 void runTests(std::string exp_name)
 {
-	std::cout << "TestingFramework::runTests()" << std::endl;
+	//std::cout << "TestingFramework::runTests()" << std::endl;
 
 	// Parameters
 	std::string filename_model   = "mdlSpecs.yaml";;
@@ -255,7 +256,7 @@ void runTests(std::string exp_name)
 	doc_control = YAML::LoadAll(fin2);
 
 	// Gazebo parameters
-	iterations_max = 5000;					// Number of iterations (time/step_size)
+	iterations_max = 10000;					// Number of iterations (time/step_size)
 	m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
 
 	//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
@@ -273,31 +274,32 @@ void runTests(std::string exp_name)
 	int index = 1;
 	int N = doc_model[0].size() * doc_control[0].size();
 
-	// Loop over models
-	for(unsigned i=0;i<doc_model[0].size();i++)
+	// Loop over control settings
+	for(unsigned j=0;j<doc_control[0].size();j++)
 	{
-		doc_model[0][i] >> modelSpec;
-		//print(modelSpec);
+		doc_control[0][j] >> controlSpec;
+		//print(controlSpec);
 
-		// Loop over control settings
-		for(unsigned j=0;j<doc_control[0].size();j++)
+		// Loop over models
+		for(unsigned i=0;i<doc_model[0].size();i++)
 		{
-			doc_control[0][j] >> controlSpec;
-			//print(controlSpec);
+			doc_model[0][i] >> modelSpec;
+			//print(modelSpec);
 
 			// Generate experiment name
 			int skin_size    = modelSpec.spec.num_elements_x * modelSpec.spec.num_elements_y;
-			int tactile_size = modelSpec.spec.tactile_elements_x * modelSpec.spec.tactile_elements_x;
-			int tactile_sep  = modelSpec.spec.tactile_separation_x * modelSpec.spec.tactile_separation_y;
+			int tactile_size = modelSpec.spec.tactile_elements_x;// * modelSpec.spec.tactile_elements_x;
+			int tactile_sep  = modelSpec.spec.tactile_separation_x;// * modelSpec.spec.tactile_separation_y;
 
 			std::ostringstream ss;
-			ss << std::setw(2) << std::setfill('0')
-			<< index << "_tac_" << tactile_size << "-" << tactile_sep
-			<< index << "_con_" << (int)controlSpec.ctrType << "-" << std::setprecision(2) <<std::fixed << controlSpec.explFctr_Kp;
+			ss << std::setw(2) << std::setfill('0') << index
+			<< "_FB_" << (int)controlSpec.ctrType << "_Kp_" << std::setprecision(1) <<std::fixed << controlSpec.explFctr_Kp
+			<< "_tSize_" << tactile_size << "_tSep_" << tactile_sep;
+
 			std::string exp_name = "exp_" + ss.str()  ;
 
 			// Print info
-			std::cout << RED << "\n"<<std::string(60,'#')<<"\n" << RESET;
+			std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
 			std::cout << "# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
 
 			// Point model world file location
@@ -308,6 +310,14 @@ void runTests(std::string exp_name)
 			this->serverThread = new boost::thread(
 					boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
 							_paused, _physics));
+
+			std::cout << "Waiting for world completion" << std::endl;
+			// Wait for the server to come up (15 second timeout)
+			int waitCount = 0, maxWaitCount = 150;
+			while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )		// TODO error handling if timeout occurs
+				common::Time::MSleep(100);
+
+			std::cout << "Gazebo server loaded in "<<(double)waitCount*0.1<<" seconds (timeout after "<<(double)maxWaitCount*0.1<<" seconds)\n";
 
 			// Initialize Gazebo transport node (to get simulation time)
 			this->node = transport::NodePtr(new transport::Node());
@@ -328,20 +338,6 @@ void runTests(std::string exp_name)
 			this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
 			this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
 
-			// Save ROS topic data to file
-			std::string topic = "/skinsim/plunger_data";
-			std::string cmd1 = std::string("rostopic echo -p ") + topic.c_str() + std::string(" > ") + pathExp.c_str() + std::string("/") + exp_name.c_str() + std::string(".csv &");
-			std::cout<<"$ "<<cmd1.c_str()<<"\n";
-			system( cmd1.c_str() );
-
-			std::cout << "Waiting for world completion" << std::endl;
-			// Wait for the server to come up (10 second timeout)
-			int waitCount = 0, maxWaitCount = 100;
-			while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )
-				common::Time::MSleep(100);
-
-			std::cout << "Gazebo server loaded in "<<(double)waitCount*0.1<<" seconds (timeout after "<<(double)maxWaitCount*0.1<<" seconds)\n";
-
 			// Set plunger force message
 			msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL;
 			msg_srv_.request.fb.selected   = (int)controlSpec.ctrType; //skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
@@ -357,10 +353,15 @@ void runTests(std::string exp_name)
 			std::cout<<"Starting simulation...\n";
 			this->SetPause(false);
 
-			// Execute experiment
-			waitCount = 0;
+			// Save ROS topic data to file
+			std::string topic = "/skinsim/plunger_data";
+			std::string cmd1 = std::string("rostopic echo -p ") + topic.c_str() + std::string(" > ") + pathExp.c_str() + std::string("/") + exp_name.c_str() + std::string(".csv &");
+			std::cout<<"$ "<<cmd1.c_str()<<"\n";
+			system( cmd1.c_str() );
+
+			// Send control message
 			bool message_sent = false;
-			while( physics::worlds_running() )
+			while( !message_sent )
 			{
 				// Send control message to plunger
 				if(!message_sent)
@@ -370,22 +371,30 @@ void runTests(std::string exp_name)
 						message_sent = true;
 						std::cout<<"Control message sent!\n";
 					}
-					else
-						std::cerr<<"Failed to send control message, trying again ...\n";
+					//else
+					//	std::cerr<<"Failed to send control message, trying again ...\n";
 				}
 				common::Time::MSleep(10);
+			}
+
+			// Wait for simulation to end
+			waitCount = 0;
+			while( physics::worlds_running() )
+			{
+				common::Time::MSleep(100);
 				waitCount++;
 
 				// Print status
-				if(waitCount>100)
-					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << std::flush << RESET;
+				if(waitCount > 10)
+					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << std::flush;
 			}
 
-			// Experiment finished
-			std::cout << "\nSimulation completed in "<<(double)waitCount*0.01<<" seconds.\n";
+			// Simulation finished
+			std::cout << RESET;
+			std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";
 			std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
 
-			// Stop saving rtp file
+			// Stop saving ROS topic data to file
 			std::string cmd2 = std::string("pkill -9 -f ") + topic.c_str();
 			std::cout<<"$ "<<cmd2.c_str()<<"\n";
 			system( cmd2.c_str() );
@@ -414,22 +423,28 @@ const char SkinSimTestingFramework::RESET[]  = "\033[0m";
 int main(int argc, char** argv)
 {
 
-	std::string exp_name = "exp01";
+	std::string exp_name = "exp01";		// Default experiment name
 
 	// Check the number of command-line parameters
 	if (argc == 2)
 	{
-		// Set model file name
-		exp_name = argv[1];
+		exp_name = argv[1];				// Set experiment name
 	}
 	else
 	{
-		// Use default file name
 		std::cout<<"\n\tUsage: "<<argv[0]<<" [EXPERIMENT NAME]\n\n";
 	}
 
+	// Save current time
+	boost::chrono::steady_clock::time_point start = boost::chrono::steady_clock::now();
+
+	// Run simulation
 	SkinSimTestingFramework skinSimTestingFrameworkObject;
 	skinSimTestingFrameworkObject.runTests(exp_name);
+
+	// Print time elapsed
+	boost::chrono::duration<double> sec = boost::chrono::steady_clock::now() - start;
+	std::cout << "\n -> Auto experimenter completed in " << sec.count() << " seconds.\n\n";
 
 	return 0;
 

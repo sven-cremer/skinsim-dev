@@ -17,6 +17,7 @@ find_package( Boost     COMPONENTS
                         system
                         filesystem
                         thread
+                        chrono
                         REQUIRED )
 
 include_directories ("${PROJECT_SOURCE_DIR}/../generator/include")
