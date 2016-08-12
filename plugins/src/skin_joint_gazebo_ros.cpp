@@ -456,7 +456,7 @@ void SkinJointGazeboRos::UpdateJoints()
 	{
 		if(collision_index_[i])
 		{
-			f_sen_(i) = -0.9*f_app_(i);	// TODO scale force
+			f_sen_(i) = -0.6*f_app_(i);	// TODO scale force
 
 			// Force distribution
 			for (int j = 1; j < this->num_joints_; ++j)	// skip first

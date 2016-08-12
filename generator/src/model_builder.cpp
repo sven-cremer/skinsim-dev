@@ -424,11 +424,11 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 {
 	std::ostringstream modelConfig;
 
-	// Place plunger 0.2 cm above skin
+	// Place plunger 0.05 cm above skin
 	double plunger_length = 0.10;
 	double plunger_height = 0.10;
 	double plunger_z  =  m_.spec.element_height + m_.spec.element_diameter
-			            +(plunger_height-0.5*plunger_length) + 0.001;
+			            +(plunger_height-0.5*plunger_length) + 0.0005;
 	std::string pz = boost::lexical_cast<std::string>(plunger_z);
 
 	// Move plunger to center of tactile patches

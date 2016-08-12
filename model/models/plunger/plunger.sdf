@@ -21,7 +21,7 @@
           <collision name='plunger_collision'>
               <geometry>
                   <cylinder>
-                        <radius>0.03</radius>
+                        <radius>0.08</radius>
                         <length>0.10</length>
                   </cylinder>
               </geometry>
@@ -40,7 +40,7 @@
           <visual name='plunger_visual'>
               <geometry>
                   <cylinder>
-                      <radius>0.03</radius>
+                      <radius>0.08</radius>
                       <length>0.10</length>
                   </cylinder>
               </geometry>

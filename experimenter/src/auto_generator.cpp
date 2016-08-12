@@ -104,15 +104,35 @@ int main(int argc, char** argv)
 
 	// Set default values
 	defaultModelSpec.name                      = "skin_array";
-	defaultModelSpec.spec.num_elements_x       = 8;
-	defaultModelSpec.spec.num_elements_y       = 8;
-	defaultModelSpec.spec.num_patches_x        = 2;
-	defaultModelSpec.spec.num_patches_y        = 2;
+	defaultModelSpec.spec.num_elements_x       = 10;
+	defaultModelSpec.spec.num_elements_y       = 10;
+	defaultModelSpec.spec.num_patches_x        = 3;
+	defaultModelSpec.spec.num_patches_y        = 3;
 	defaultModelSpec.spec.element_diameter     = 0.01;
 	defaultModelSpec.spec.element_height       = 0.01;
+	/* Shook, "Experimental testbed for robotic skin characterization and interaction control", 2014.
+	 * Table 4-6: Parameters for 4mm Frubber skin
+	 *   k = k1+k2 = 1523+481  = 2004 [N/m]
+	 *   b = b1+b2 = 242.6+243 = 485.6 [Ns/m]
+	 *
+	 * Assumption 1:  # elements inside circle    pi*r^2   pi
+	 *                ------------------------- = ------= ---
+	 *                # elements inside square    (2r)^2   4
+	 *
+	 * Assumption 2: element diameter is fixed to 1.00cm
+	 *               skin patch is 30 elements wide
+	 *               plunger is 16 spheres wide, i.e. d=0.16
+	 *
+	 *                               pi
+	 * (# elements inside circle) = --- * (16^2) = 201
+	 *                               4
+	 * k_element =  2004  * (0.16/0.99) * (1/201) = 1.611 [N/m]
+	 * b_element =  485.6 * (0.16/0.99) * (1/201) = 0.390 [N/m]
+	 *
+	 */
 	defaultModelSpec.spec.element_mass         = 0.0;
-	defaultModelSpec.spec.element_spring       = 122.24;    // TODO compute this from plunger area
-	defaultModelSpec.spec.element_damping      = 1.183;     // TODO compute this from plunger area
+	defaultModelSpec.spec.element_spring       = 1.60;	// TODO compute this automatically from plunger diameter
+	defaultModelSpec.spec.element_damping      = 0.40;  // TODO compute this automatically from plunger diameter
 	defaultModelSpec.spec.plane_thickness      = 0.002;
 	defaultModelSpec.spec.plane_height         = 0.001;
 	defaultModelSpec.spec.init_x               = 0.0;
@@ -130,9 +150,9 @@ int main(int argc, char** argv)
 	defaultModelSpec.spec.tactile_separation_x = 1;
 	defaultModelSpec.spec.tactile_separation_y = 1;
 
-	for(unsigned i  = 1; i < 3 ; i++ )		// Tactile size
+	for(unsigned i  = 1; i < 4 ; i++ )		// Tactile size
 	{
-		for(unsigned j  = 1; j < 3 ; j++ )	// Tactile separtion
+		for(unsigned j  = 1; j < 4 ; j++ )	// Tactile separtion
 		{
 		BuildModelSpec tempModelSpec = defaultModelSpec;
 
@@ -183,17 +203,19 @@ int main(int argc, char** argv)
 	defaultControlSpec.ctrType      = 1       ;		// TACTILE_APPLIED=1, TACTILE_SENSED=2
 	defaultControlSpec.targetForce  = -2      ;
 
+	int num = 0;
 	for(unsigned j  = 1; j < 3; j++ ) // Controller type
 	{
-		for(unsigned i  = 0; i < 2; i++ ) // Kp
+		for(unsigned i  = 1; i < 2; i++ ) // Kp
 		{
 			ControllerSpec tempControlSpec = defaultControlSpec;
 
-			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
+			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( num );
 			tempControlSpec.explFctr_Kp = 0.5*i;
 			tempControlSpec.explFctr_Kd = 0.0;
 			tempControlSpec.ctrType = j;
 			ctrSpecs.push_back( tempControlSpec ) ;
+			num++;
 		}
 	}
 
