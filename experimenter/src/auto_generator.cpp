@@ -131,8 +131,8 @@ int main(int argc, char** argv)
 	 *
 	 */
 	defaultModelSpec.spec.element_mass         = 0.0;
-	defaultModelSpec.spec.element_spring       = 1.60;	// TODO compute this automatically from plunger diameter
-	defaultModelSpec.spec.element_damping      = 0.40;  // TODO compute this automatically from plunger diameter
+	defaultModelSpec.spec.element_spring       = 10.0;  // TODO compute this automatically from plunger diameter
+	defaultModelSpec.spec.element_damping      = 0.1;   // TODO compute this automatically from plunger diameter
 	defaultModelSpec.spec.plane_thickness      = 0.002;
 	defaultModelSpec.spec.plane_height         = 0.001;
 	defaultModelSpec.spec.init_x               = 0.0;
@@ -145,26 +145,40 @@ int main(int argc, char** argv)
 	defaultModelSpec.spec.patch_length_y       = 0.0;
 	defaultModelSpec.spec.total_length_x       = 0.0;
 	defaultModelSpec.spec.total_length_y       = 0.0;
-	defaultModelSpec.spec.tactile_elements_x   = 2;
-	defaultModelSpec.spec.tactile_elements_y   = 2;
-	defaultModelSpec.spec.tactile_separation_x = 1;
-	defaultModelSpec.spec.tactile_separation_y = 1;
+	defaultModelSpec.spec.tactile_elements_x   = 3;
+	defaultModelSpec.spec.tactile_elements_y   = 3;
+	defaultModelSpec.spec.tactile_separation_x = 3;
+	defaultModelSpec.spec.tactile_separation_y = 3;
 
+/*
+	// Tactile layout
 	for(unsigned i  = 1; i < 4 ; i++ )		// Tactile size
 	{
-		for(unsigned j  = 1; j < 4 ; j++ )	// Tactile separtion
+		for(unsigned j  = 1; j < 4 ; j++ )	// Tactile separation
 		{
-		BuildModelSpec tempModelSpec = defaultModelSpec;
+			BuildModelSpec tempModelSpec = defaultModelSpec;
 
-		tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
-		tempModelSpec.spec.tactile_elements_x   = i;
-		tempModelSpec.spec.tactile_elements_y   = i;
-		tempModelSpec.spec.tactile_separation_x = j;
-		tempModelSpec.spec.tactile_separation_y = j;
+			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
+			tempModelSpec.spec.tactile_elements_x   = i;
+			tempModelSpec.spec.tactile_elements_y   = i;
+			tempModelSpec.spec.tactile_separation_x = j;
+			tempModelSpec.spec.tactile_separation_y = j;
 
-		modelSpecs.push_back( tempModelSpec ) ;
+			modelSpecs.push_back( tempModelSpec ) ;
 		}
 	}
+*/
+	// Model parameters
+	for(unsigned i  = 0; i < 4 ; i++ )
+	{
+		BuildModelSpec tempModelSpec = defaultModelSpec;
+
+		tempModelSpec.name = "skin_array_" + boost::lexical_cast<std::string>( i );
+		tempModelSpec.spec.element_spring       = 10.0;
+		tempModelSpec.spec.element_damping      = 0.10*i;
+		modelSpecs.push_back( tempModelSpec ) ;
+	}
+
 
 	// Save to YAML
 	YAML::Emitter mdlYAMLEmitter;
@@ -204,9 +218,9 @@ int main(int argc, char** argv)
 	defaultControlSpec.targetForce  = -2      ;
 
 	int num = 0;
-	for(unsigned j  = 1; j < 3; j++ ) // Controller type
+	for(unsigned j  = 1; j < 2; j++ ) // Controller type
 	{
-		for(unsigned i  = 1; i < 2; i++ ) // Kp
+		for(unsigned i  = 0; i < 1; i++ ) // Kp
 		{
 			ControllerSpec tempControlSpec = defaultControlSpec;
 
