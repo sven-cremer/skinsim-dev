@@ -319,6 +319,8 @@ void Plunger::UpdateJoints()
 		this->msg_data_.effort    = this->effort_;
 		this->msg_data_.force     = this->force_current_;
 		this->msg_data_.force_dot = this->force_dot_;
+		this->msg_data_.position  = this->position_current_;
+		this->msg_data_.velocity  = this->velocity_current_;
 		// Publish data
 		this->ros_pub_.publish(this->msg_data_);
 		this->lock_.unlock();
