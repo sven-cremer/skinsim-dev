@@ -167,7 +167,7 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 
 	// Create fake command-line parameters for Gazebo server
 	// This seems to be the best way to set parameters such as sensor plugins
-	int numArgs = 6;
+	int numArgs = 8;
 	char **v = new char * [numArgs];
 
 	v[0] = new char [strlen( "--verbose"             ) + 1];
@@ -176,6 +176,8 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 	v[3] = new char [strlen( "-s"                    ) + 1];
 	v[4] = new char [strlen( ros_api_plugin.c_str()  ) + 1];
 	v[5] = new char [strlen( world_file.c_str()      ) + 1];
+	v[6] = new char [strlen( "--seed"                ) + 1];
+	v[7] = new char [strlen( "0.0"                   ) + 1];
 
 	strcpy( v[0] , "--verbose"             );
 	strcpy( v[1] , "-s"                    );
@@ -183,8 +185,10 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 	strcpy( v[3] , "-s"                    );
 	strcpy( v[4] , ros_api_plugin.c_str()  );
 	strcpy( v[5] , world_file.c_str()      );
+	strcpy( v[6] , "--seed"                );
+	strcpy( v[7] , "0.0"                   );
 
-	// TODO --physics ode, --seed 0.0
+	// TODO --physics ode
 
 	if (!server->ParseArgs(numArgs, v))
 	{
