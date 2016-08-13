@@ -184,7 +184,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	}
 	*/
 	//this->joint_->SetStiffnessDamping(0,122,1.1,0);
-	//this->joint_->SetStiffnessDamping(0,0,0,0);
+	this->joint_->SetStiffnessDamping(0,0,0,0);			// No force caused by moving plunger
 
 	// Contact sensor
 

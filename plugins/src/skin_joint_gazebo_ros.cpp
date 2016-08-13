@@ -374,12 +374,12 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	*/
 
 	// Set MSD parameters for Gazebo
+	this->rest_angle_ = 0.0;
 	for(int i=0;i<this->joint_names_.size();i++)
 	{
 		//this->joints_[i]->SetStiffnessDamping(0,122,1.1,0);
-		this->joints_[i]->SetStiffnessDamping(0,0,0,0);			// TODO is this necessary?
+		this->joints_[i]->SetStiffnessDamping(0,this->sping_,this->damper_,this->rest_angle_);			// TODO is this necessary?
 	}
-	this->rest_angle_ = 0.0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -441,6 +441,7 @@ void SkinJointGazeboRos::UpdateJoints()
 	}
 
 	// Set Dynamics
+	/*
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
 	{
 		this->joints_[i]->SetForce(0, f_app_(i));
@@ -448,6 +449,7 @@ void SkinJointGazeboRos::UpdateJoints()
 		//if( fabs(f_app_(i) - this->joints_[ i ]->GetForce(0) ) > 0.00001 )	// This works!
 		//	std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Force "<<i<<": "<<f_app_(i)<<" -> "<<this->joints_[ i ]->GetForce(0)<<"\n";
 	}
+	*/
 
 	// Compute sensed force
 	double force_dist = 0;

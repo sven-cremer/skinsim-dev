@@ -200,9 +200,19 @@ void ModelBuilder::addVisual( std::string visual_name,
 
 void ModelBuilder::addInertia( double mass )
 {
-	m_sdfStream << "    <inertial>\n"
-			<< "      <mass>"<< mass <<"</mass>\n"
-			<< "    </inertial>\n";
+	double Ixx = 0.4*mass*pow((0.5*m_.spec.element_diameter),2);
+	std::string I = boost::lexical_cast<std::string>(Ixx);
+    m_sdfStream << "    <inertial>\n"
+                << "        <mass>"<< mass <<"</mass>\n"
+//                << "        <inertia>                      \n"
+//                << "            <ixx>"<<I.c_str()<<"</ixx> \n"
+//                << "            <ixy>0</ixy>               \n"
+//                << "            <ixz>0</ixz>               \n"
+//                << "            <iyy>"<<I.c_str()<<"</iyy> \n"
+//                << "            <iyz>0</iyz>               \n"
+//                << "            <izz>"<<I.c_str()<<"</izz> \n"
+//                << "        </inertia>                     \n"
+                << "    </inertial>\n";
 }
 
 void ModelBuilder::addLink( std::string link_name,
@@ -546,8 +556,8 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	generateModelStart( m_.name, pose );
 
 	// Parameters
-	double plane_mass   = 0.010;
-	double element_mass = 0.001;		// Mass of Gazebo model, not MSD (has to be > 0, crashes otherwise)
+	double plane_mass   = 0.001;
+	//double element_mass = 0.0001;		// Mass of Gazebo model, not MSD (has to be > 0, crashes otherwise)
 
 	// TODO check if length > 0
 
@@ -635,7 +645,7 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 					out_joint_names,
 					out_tactile_id,
 					m_.spec.element_diameter,
-					element_mass,
+					m_.spec.element_mass,
 					m_.spec.num_elements_x,
 					m_.spec.num_elements_y,
 					x,
@@ -710,6 +720,7 @@ void ModelBuilder::createPlane(
 	std::string link_joint = link_name + "_joint";
 	std::string link_collision = link_name + "_collision";
 
+	// TODO Make a plane link
 	addLink(link_name,
 			link_mass,
 			link_collision,

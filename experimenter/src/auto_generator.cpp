@@ -130,7 +130,7 @@ int main(int argc, char** argv)
 	 * b_element =  485.6 * (0.16/0.99) * (1/201) = 0.390 [N/m]
 	 *
 	 */
-	defaultModelSpec.spec.element_mass         = 0.0;
+	defaultModelSpec.spec.element_mass         = 0.0001;
 	defaultModelSpec.spec.element_spring       = 10.0;  // TODO compute this automatically from plunger diameter
 	defaultModelSpec.spec.element_damping      = 0.1;   // TODO compute this automatically from plunger diameter
 	defaultModelSpec.spec.plane_thickness      = 0.002;
@@ -169,13 +169,14 @@ int main(int argc, char** argv)
 	}
 */
 	// Model parameters
-	for(unsigned i  = 0; i < 4 ; i++ )
+	for(unsigned i  = 0; i < 3 ; i++ )
 	{
 		BuildModelSpec tempModelSpec = defaultModelSpec;
 
 		tempModelSpec.name = "skin_array_" + boost::lexical_cast<std::string>( i );
 		tempModelSpec.spec.element_spring       = 10.0;
-		tempModelSpec.spec.element_damping      = 0.10*i;
+		tempModelSpec.spec.element_damping      = 0.10;
+		defaultModelSpec.spec.element_mass      = 0.0001*pow(10,i+1);
 		modelSpecs.push_back( tempModelSpec ) ;
 	}
 
