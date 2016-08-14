@@ -332,12 +332,14 @@ void ModelBuilder::addPlugin( std::string plugin_name, std::string plugin_filena
 {
 
 	m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
-			<< "    <fileName>"     << m_.name << "</fileName>\n"
-			<< "    <rosNamespace>" << m_.spec.ros_namespace   << "</rosNamespace>\n"
-			<< "    <updateRate>"   << m_.spec.update_rate     << "</updateRate>\n"
-			<< "    <mass>"         << m_.spec.element_mass    << "</mass>\n"
-			<< "    <spring>"       << m_.spec.element_spring  << "</spring>\n"
-			<< "    <damping>"      << m_.spec.element_damping << "</damping>\n"
+			<< "    <fileName>"       << m_.name << "</fileName>\n"
+			<< "    <rosNamespace>"   << m_.spec.ros_namespace   << "</rosNamespace>\n"
+			<< "    <updateRate>"     << m_.spec.update_rate     << "</updateRate>\n"
+			<< "    <mass>"           << m_.spec.element_mass    << "</mass>\n"
+			<< "    <spring>"         << m_.spec.element_spring  << "</spring>\n"
+			<< "    <damping>"        << m_.spec.element_damping << "</damping>\n"
+			<< "    <spreadScaling>"  << m_.spec.spread_scaling  << "</spreadScaling>\n"
+			<< "    <spreadSigma>"    << m_.spec.spread_sigma    << "</spreadSigma>\n"
 			<< "  </plugin>";
 }
 
@@ -447,57 +449,61 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 	std::string px = boost::lexical_cast<std::string>(p_x);
 	std::string py = boost::lexical_cast<std::string>(p_y);
 
-	modelConfig << "<?xml version='1.0'?>                                              \n"
-			<< "<sdf version='1.5'>                                                    \n"
-			<< "  <world name='default'>                                               \n"
-			<< "                                                                       \n"
-			<< "    <include>                                                          \n"
-			<< "      <uri>model://ground_plane</uri>                                  \n"
-			<< "    </include>                                                         \n"
-			<< "                                                                       \n"
-			<< "    <include>                                                          \n"
-			<< "      <uri>model://sun</uri>                                           \n"
-			<< "    </include>                                                         \n"
-			<< "                                                                       \n"
-			<< "    <include>                                                          \n"
-			<< "      <uri>model://" << model_name << "</uri>                          \n"
-			<< "      <pose>0 0 0.0 0 0 0</pose>                                       \n"
-			<< "    </include>                                                         \n"
-            << "                                                                       \n"
-            << "    <include>                                                          \n"
-            << "      <uri>model://plunger</uri>                                       \n"
-            << "      <pose>"<<px.c_str()<<" "<<py.c_str()<<" "<<pz.c_str()<<" 0 0 0</pose> \n"
-            << "    </include>                                                         \n"
-			<< "                                                                       \n"
-			<< "    <physics type='ode'>                                               \n"
-			<< "      <gravity>0.0 0.0 -9.8</gravity>                                  \n"
-			<< "      <max_step_size>0.0001</max_step_size>                             \n"
-//			<< "      <real_time_factor>1</real_time_factor>                           \n"
-			// Run the simulation as fast as possible
-			<< "      <real_time_update_rate>0</real_time_update_rate>                 \n"
-			<< "      <ode>                                                            \n"
-			<< "        <solver>                                                       \n"
-			<< "          <iters>200</iters>                                           \n"
-			<< "          <sor>1.3</sor>                                               \n"
-			<< "        </solver>                                                      \n"
-			<< "        <constraints>                                                  \n"
-			<< "          <cfm>0.0</cfm>                                               \n"
-			<< "          <erp>0.2</erp>                                               \n"
-			<< "          <contact_max_correcting_vel>100</contact_max_correcting_vel> \n"
-			<< "          <contact_surface_layer>0.001</contact_surface_layer>         \n"
-			<< "        </constraints>                                                 \n"
-			<< "      </ode>                                                           \n"
-			<< "    </physics>                                                         \n"
-			<< "                                                                       \n"
-			<< "    <gui fullscreen='0'>                                               \n"
-			<< "      <camera name='user_camera'>                                      \n"
-			<< "        <pose>0.0 -0.46 0.27 0.0 0.48 1.56</pose>                      \n"
-			<< "        <view_controller>orbit</view_controller>                       \n"
-			<< "      </camera>                                                        \n"
-			<< "    </gui>                                                             \n"
-			<< "                                                                       \n"
-			<< "  </world>                                                             \n"
-			<< "</sdf>                                                                 \n";
+	// Physics engine
+	std::string step_size = boost::lexical_cast<std::string>(m_.spec.step_size);
+	std::string iters     = boost::lexical_cast<std::string>(m_.spec.solver_iterations);
+
+	modelConfig << "<?xml version='1.0'?>"                                                   <<"\n"
+			<< "<sdf version='1.5'>"                                                         <<"\n"
+			<< "  <world name='default'>"                                                    <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <include>"                                                               <<"\n"
+			<< "      <uri>model://ground_plane</uri>"                                       <<"\n"
+			<< "    </include>"                                                              <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <include>"                                                               <<"\n"
+			<< "      <uri>model://sun</uri>"                                                <<"\n"
+			<< "    </include>"                                                              <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <include>"                                                               <<"\n"
+			<< "      <uri>model://" << model_name << "</uri>"                               <<"\n"
+			<< "      <pose>0 0 0.0 0 0 0</pose>"                                            <<"\n"
+			<< "    </include>"                                                              <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <include>"                                                               <<"\n"
+			<< "      <uri>model://plunger</uri>"                                            <<"\n"
+			<< "      <pose>"<<px.c_str()<<" "<<py.c_str()<<" "<<pz.c_str()<<" 0 0 0</pose>" <<"\n"
+			<< "    </include>"                                                              <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <physics type='ode'>"                                                    <<"\n"
+			<< "      <gravity>0.0 0.0 -9.8</gravity>"                                       <<"\n"
+			<< "      <max_step_size>"<<step_size.c_str()<<"</max_step_size>"                <<"\n"
+//			<< "      <real_time_factor>1</real_time_factor>"                                <<"\n"
+			<< "      <real_time_update_rate>0</real_time_update_rate>"                      <<"\n" 	// Run the simulation as fast as possible
+			<< "      <ode>"                                                                 <<"\n"
+			<< "        <solver>"                                                            <<"\n"
+//			<< "          <type>quick</type>"                                                <<"\n"		// TODO define solver type
+			<< "          <iters>"<<iters.c_str()<<"</iters>"                                <<"\n"
+			<< "          <sor>1.3</sor>"                                                    <<"\n"
+			<< "        </solver>"                                                           <<"\n"
+			<< "        <constraints>"                                                       <<"\n"
+			<< "          <cfm>0.0</cfm>"                                                    <<"\n"
+			<< "          <erp>0.2</erp>"                                                    <<"\n"
+			<< "          <contact_max_correcting_vel>100</contact_max_correcting_vel>"      <<"\n"
+			<< "          <contact_surface_layer>0.001</contact_surface_layer>"              <<"\n"
+			<< "        </constraints>"                                                      <<"\n"
+			<< "      </ode>"                                                                <<"\n"
+			<< "    </physics>"                                                              <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <gui fullscreen='0'>"                                                    <<"\n"
+			<< "      <camera name='user_camera'>"                                           <<"\n"
+			<< "        <pose>0.0 -0.46 0.27 0.0 0.48 1.56</pose>"                           <<"\n"
+			<< "        <view_controller>orbit</view_controller>"                            <<"\n"
+			<< "      </camera>"                                                             <<"\n"
+			<< "    </gui>"                                                                  <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "  </world>"                                                                  <<"\n"
+			<< "</sdf>"                                                                      <<"\n";
 
 	std::string filename = genWorldDirectory( model_name ) + model_name + ".world";
 	saveFile( filename, modelConfig );
@@ -556,11 +562,9 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	generateModelStart( m_.name, pose );
 
 	// Parameters
-	double plane_mass   = 0.001;
-	//double element_mass = 0.0001;		// Mass of Gazebo model, not MSD (has to be > 0, crashes otherwise)
+	double plane_mass   = 0.01;		    // Not too small because of stability issue (but has otherwise no effect)
 
 	// TODO check if length > 0
-
 	m_.spec.patch_length_x  = m_.spec.num_elements_x*m_.spec.element_diameter;
 	m_.spec.patch_length_y  = m_.spec.num_elements_y*m_.spec.element_diameter;
 
