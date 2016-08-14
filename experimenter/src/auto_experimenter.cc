@@ -260,14 +260,6 @@ void runTests(std::string exp_name)
 	doc_control = YAML::LoadAll(fin2);
 
 	// Gazebo parameters
-	iterations_max = 10000;					// Number of iterations (time/step_size)
-	m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
-
-	//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
-	//	    std::cout << it->first << " => " << it->second << '\n';
-	//	std::cout<<"\n\n";
-
-
 	std::string _worldFilename("~");
 	bool _paused = true;
 	std::string _physics = "ode";
@@ -309,6 +301,13 @@ void runTests(std::string exp_name)
 			// Point model world file location
 			_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
 
+			// Compute number of iterations
+			iterations_max = modelSpec.spec.max_sim_time/modelSpec.spec.step_size;
+			m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
+			//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
+			//	    std::cout << it->first << " => " << it->second << '\n';
+
+			// Create Gazebo world
 			std::cout << "Initializing World" << std::endl;
 			// Create, load, and run the server in its own thread
 			this->serverThread = new boost::thread(
@@ -358,7 +357,7 @@ void runTests(std::string exp_name)
 			this->SetPause(false);
 
 			// Save ROS topic data to file
-			std::string topic = "/skinsim/plunger_data";
+			std::string topic = modelSpec.spec.topic;
 			std::string cmd1 = std::string("rostopic echo -p ") + topic.c_str() + std::string(" > ") + pathExp.c_str() + std::string("/") + exp_name.c_str() + std::string(".csv &");
 			std::cout<<"$ "<<cmd1.c_str()<<"\n";
 			system( cmd1.c_str() );
