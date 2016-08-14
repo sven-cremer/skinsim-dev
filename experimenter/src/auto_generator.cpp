@@ -95,6 +95,8 @@ int main(int argc, char** argv)
 	std::string mdlSpecPath = pathExp + "/" + filename_model;
 	std::string ctrSpecPath = pathExp + "/" + filename_control;
 
+	std::string defaultModelSpecPath = pathSkinSim + "/generator/config/model_params.yaml";
+
 	// ---------------------------------------------
 
 	// Generate model specifications
@@ -102,14 +104,17 @@ int main(int argc, char** argv)
 	std::vector<BuildModelSpec>  modelSpecs;
 	BuildModelSpec defaultModelSpec;
 
+	// Read default YAML model file
+	std::ifstream fin(defaultModelSpecPath.c_str());
+	YAML::Node doc_model;
+	std::cout<<"Loading file: "<<defaultModelSpecPath<<"\n";
+	doc_model = YAML::LoadAll(fin);
+	doc_model[0][0] >> defaultModelSpec;
+	std::cout<<"DEFAULT VALUES:\n";
+	print(defaultModelSpec);
+
 	// Set default values
-	defaultModelSpec.name                      = "skin_array";
-	defaultModelSpec.spec.num_elements_x       = 10;
-	defaultModelSpec.spec.num_elements_y       = 10;
-	defaultModelSpec.spec.num_patches_x        = 3;
-	defaultModelSpec.spec.num_patches_y        = 3;
-	defaultModelSpec.spec.element_diameter     = 0.01;
-	defaultModelSpec.spec.element_height       = 0.01;
+
 	/* Shook, "Experimental testbed for robotic skin characterization and interaction control", 2014.
 	 * Table 4-6: Parameters for 4mm Frubber skin
 	 *   k = k1+k2 = 1523+481  = 2004 [N/m]
@@ -130,27 +135,12 @@ int main(int argc, char** argv)
 	 * b_element =  485.6 * (0.16/0.99) * (1/201) = 0.390 [N/m]
 	 *
 	 */
-	defaultModelSpec.spec.element_mass         = 0.0001;
-	defaultModelSpec.spec.element_spring       = 10.0;  // TODO compute this automatically from plunger diameter
-	defaultModelSpec.spec.element_damping      = 0.1;   // TODO compute this automatically from plunger diameter
-	defaultModelSpec.spec.plane_thickness      = 0.002;
-	defaultModelSpec.spec.plane_height         = 0.001;
-	defaultModelSpec.spec.init_x               = 0.0;
-	defaultModelSpec.spec.init_y               = 0.0;
-	defaultModelSpec.spec.init_z               = 0.0;
-	defaultModelSpec.spec.parent               = "world";
-	defaultModelSpec.spec.ros_namespace        = "skinsim";
-	defaultModelSpec.spec.update_rate          = 0.0;
-	defaultModelSpec.spec.patch_length_x       = 0.0;
-	defaultModelSpec.spec.patch_length_y       = 0.0;
-	defaultModelSpec.spec.total_length_x       = 0.0;
-	defaultModelSpec.spec.total_length_y       = 0.0;
-	defaultModelSpec.spec.tactile_elements_x   = 3;
-	defaultModelSpec.spec.tactile_elements_y   = 3;
-	defaultModelSpec.spec.tactile_separation_x = 3;
-	defaultModelSpec.spec.tactile_separation_y = 3;
+	//defaultModelSpec.spec.element_spring       = 10.0;  // TODO compute this automatically from plunger diameter
+	//defaultModelSpec.spec.element_damping      = 0.1;   // TODO compute this automatically from plunger diameter
 
-/*
+	//modelSpecs.push_back( defaultModelSpec ) ;
+
+
 	// Tactile layout
 	for(unsigned i  = 1; i < 4 ; i++ )		// Tactile size
 	{
@@ -167,7 +157,7 @@ int main(int argc, char** argv)
 			modelSpecs.push_back( tempModelSpec ) ;
 		}
 	}
-*/
+/*
 	// Model parameters
 	for(unsigned i  = 0; i < 3 ; i++ )
 	{
@@ -179,7 +169,7 @@ int main(int argc, char** argv)
 		defaultModelSpec.spec.element_mass      = 0.0001*pow(10,i+1);
 		modelSpecs.push_back( tempModelSpec ) ;
 	}
-
+*/
 
 	// Save to YAML
 	YAML::Emitter mdlYAMLEmitter;
@@ -219,7 +209,7 @@ int main(int argc, char** argv)
 	defaultControlSpec.targetForce  = -2      ;
 
 	int num = 0;
-	for(unsigned j  = 1; j < 2; j++ ) // Controller type
+	for(unsigned j  = 1; j < 3; j++ ) // Feedback type
 	{
 		for(unsigned i  = 0; i < 1; i++ ) // Kp
 		{
