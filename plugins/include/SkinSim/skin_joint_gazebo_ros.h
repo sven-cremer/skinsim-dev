@@ -237,6 +237,11 @@ class SkinJointGazeboRos : public ModelPlugin
   private: double damper_;
   private: double rest_angle_;
 
+  // Force spread model
+  private: double spread_scaling;
+  private: double spread_sigma;
+  private: double spread_variance;
+
   /// \brief For loading YAML parameters
   YAML::Node    doc_;
   std::ifstream input_file_;

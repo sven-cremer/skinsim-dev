@@ -87,6 +87,8 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	this->mass_          = 0.0;
     this->sping_         = 122.24;
     this->damper_        = 1.83;
+    this->spread_scaling = 1.0;
+    this->spread_sigma   = 0.01;
 
 	// Load parameters from model SDF file
 	if (_sdf->HasElement("rosNamespace"))
@@ -103,6 +105,16 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 	if (_sdf->HasElement("damping"))
 		this->damper_ = _sdf->GetElement("damping")->Get<double>();
+
+	if (_sdf->HasElement("spreadScaling"))
+		this->spread_scaling = _sdf->GetElement("spreadScaling")->Get<double>();
+
+	if (_sdf->HasElement("spreadSigma"))
+		this->spread_sigma = _sdf->GetElement("spreadSigma")->Get<double>();
+
+	// Compute force spread parameters
+	this->spread_variance = spread_sigma*spread_sigma;
+    //this->K_spread = spread_scaling / sqrt( 2*spread_variance*M_PI );
 
 	// Load joint names from file
 	std::string fullname;
@@ -378,8 +390,8 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	for(int i=0;i<this->joint_names_.size();i++)
 	{
 		//this->joints_[i]->SetStiffnessDamping(0,122,1.1,0);
-		this->joints_[i]->SetStiffnessDamping(0,this->sping_,this->damper_,this->rest_angle_);			// TODO is this necessary?
-	}
+		this->joints_[i]->SetStiffnessDamping(0,this->sping_,this->damper_,this->rest_angle_);			// Use ODE to simulate MSD (this is slightly faster)
+	}																									// Note that this->joints_[i]->GetForce(0) measures externally applied forces, so this will be zero!
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -437,7 +449,11 @@ void SkinJointGazeboRos::UpdateJoints()
 			current_velocity = this->joints_[i]->GetVelocity(0);
 
 			// This sets the mass-spring-damper dynamics, currently only spring and damper
-			f_app_(i) = (rest_angle_ - current_angle) * sping_ - damper_ * current_velocity;
+			f_app_(i) = (rest_angle_ - current_angle) * sping_ - damper_ * current_velocity;	// This is the same value that ODE computes, TODO could maybe get this from GetForceTorque()
+
+//			physics::JointWrench wrench = this->joints_[i]->GetForceTorque(0);	// Get internal + external forces
+//			math::Vector3 force = wrench.body2Force;
+//			std::cout<<force<<"\t"<<	this->joints_[i]->GetForce(0)*this->joints_[i]->GetLocalAxis(0) <<"\n";
 	}
 
 	// Set Dynamics
@@ -451,32 +467,27 @@ void SkinJointGazeboRos::UpdateJoints()
 	}
 	*/
 
-	// Compute sensed force
+	// Compute Sensed Force
 	double force_dist = 0;
 	f_sen_.setZero();
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
 	{
+		// Force distribution model
 		if(collision_index_[i])
 		{
-			f_sen_(i) = -0.6*f_app_(i);	// TODO scale force
-
-			// Force distribution
-			for (int j = 1; j < this->num_joints_; ++j)	// skip first
+			for (int j = 0; j < this->num_joints_; ++j)	// First entry has 0 distance, i.e. i == layout[i].index[0]
 			{
-				if(!collision_index_[ layout[i].index[j] ])
-				{
-					// Apply force distribution model
-					force_dist = -f_app_(i) * exp(- 1.0 * pow(layout[i].distance[j]/0.01,2) );
+				// Apply force distribution model
+				force_dist = -f_app_(i) * spread_scaling * exp( -pow(layout[i].distance[j],2) / (2*spread_variance) );
 
-					f_sen_( layout[i].index[j] ) += force_dist;
+				f_sen_( layout[i].index[j] ) += force_dist;
 
-					if( fabs(force_dist)<0.00001 )	// Stop once force becomes negligible
-						break;
+				if( fabs(force_dist)<0.00001 )	// Stop once force becomes negligible
+					break;
 
-//					if( fabs(force_dist - this->joints_[ layout[i].index[j] ]->GetForce(0) ) > 0.00001 )
-//						std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Dist "<<i<<" ("<<j<<"): "<<force_dist<<" -> "<<this->joints_[ layout[i].index[j] ]->GetForce(0)<<"\n";
+//				if( fabs(force_dist - this->joints_[ layout[i].index[j] ]->GetForce(0) ) > 0.00001 )
+//					std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Dist "<<i<<" ("<<j<<"): "<<force_dist<<" -> "<<this->joints_[ layout[i].index[j] ]->GetForce(0)<<"\n";
 
-				}
 			}
 		}
 	}
@@ -511,16 +522,13 @@ void SkinJointGazeboRos::UpdateJoints()
 
 			this->msg_joint_.dataArray[i].velocity = this->joints_[i]->GetVelocity(0);
 
-			this->msg_joint_.dataArray[i].force = msg_rviz_.markers[ i ].scale.x; //this->joints_[i]->GetForce(0);
-			//		physics::JointWrench wrench = this->joints_[i]->GetForceTorque(0);	// Get internal + external forces
-			//		math::Vector3 force = wrench.body2Force;
-			//		//this->joint_msg_.dataArray[i].force = force.GetLength();
-			//		std::cout<<force<<"\t"<<	this->joints_[i]->GetForce(0)*this->joints_[i]->GetLocalAxis(0) <<"\n";
+			this->msg_joint_.dataArray[i].force_applied = f_app_(i);
+			this->msg_joint_.dataArray[i].force_sensed  = f_sen_(i);
 
 			if(collision_index_[i])
-				this->msg_joint_.dataArray[i].collisions = 1;
+				this->msg_joint_.dataArray[i].contact = 1;
 			else
-				this->msg_joint_.dataArray[i].collisions = 0;
+				this->msg_joint_.dataArray[i].contact = 0;
 		}
 
 		this->ros_pub_joint_.publish(this->msg_joint_);
@@ -536,7 +544,7 @@ void SkinJointGazeboRos::UpdateJoints()
 		{
 			msg_rviz_.markers[i].header.stamp    = t_stamp;
 			msg_rviz_.markers[i].pose.position.z = this->joints_[i]->GetAngle(0).Radian();
-			msg_rviz_.markers[i].scale.x         = f_sen_(i); // this->joints_[ i ]->GetForce(0);
+			msg_rviz_.markers[i].scale.x         = f_sen_(i);
 
 			if(collision_index_[i])
 			{
