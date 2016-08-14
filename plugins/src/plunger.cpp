@@ -183,8 +183,8 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		std::cout<<"> Global axis ["<<i<<"]: "<<this->joint_->GetGlobalAxis(i)<<"\n";
 	}
 	*/
-	//this->joint_->SetStiffnessDamping(0,122,1.1,0);
-	this->joint_->SetStiffnessDamping(0,0,0,0);			// No force caused by moving plunger
+
+	this->joint_->SetStiffnessDamping(0,0,0,0);	// A position change does not result in a force
 
 	// Contact sensor
 
@@ -280,8 +280,8 @@ void Plunger::UpdateJoints()
 	{
 		if(num_contacts_>0)
 		{
-			//this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_current_;
-			this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
+			this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_current_;
+			//this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
 			this->joint_->SetForce(0, this->effort_);
 		}
 		else

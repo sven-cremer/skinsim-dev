@@ -83,7 +83,7 @@
             <updateRate>0</updateRate>
             <Kp>0.1</Kp>
             <Kd>0.0</Kd>
-            <Kv>0.1</Kv>
+            <Kv>0.0</Kv>
             <JointPgain>0.5</JointPgain>
             <JointIgain>0.01</JointIgain>
             <JointDgain>0.0</JointDgain>
