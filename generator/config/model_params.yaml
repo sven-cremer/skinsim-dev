@@ -1,36 +1,59 @@
-# Configuration file for model generator
+# Default Configuration file for model generator
+# Used by skin model generator and auto generator
 - name: skin_array
   spec:
+      #############################
+      # MODEL BUILDER             #
+      #############################
       # Skin element and patch count
-    - num_elements_x               : 8					# Number of skin elements per patch in x-direction
-      num_elements_y               : 8					# Number of skin elements per patch in y-direction  (note: total number of elements per patch < 100)
-      num_patches_x                : 1					# Number of skin patches in x-direction
-      num_patches_y                : 1					# Number of skin patches in y-direction
+    - num_elements_x               : 8                  # Number of skin elements per patch in x-direction
+      num_elements_y               : 8                  # Number of skin elements per patch in y-direction  (note: total number of elements per patch < 100)
+      num_patches_x                : 3                  # Number of skin patches in x-direction
+      num_patches_y                : 3                  # Number of skin patches in y-direction
       # Skin element properties
-      element_diameter             : 0.010			 	# Diameter of each skin element [meters]
-      element_height               : 0.010				# The height of the skin element from the ground [meters]
-      element_mass                 : 0.0				# Mass of skin element [kg]
-      element_spring               : 122.24				# Spring constant of skin element [N/m]
-      element_damping              : 1.183				# Damping of skin element
+      element_diameter             : 0.010              # Diameter of each skin element [meters]
+      element_height               : 0.010              # The height of the skin element from the ground [meters]
+      element_mass                 : 0.001              # Mass of skin element [kg]  (note: doesn't matter since model gravity is turned off but has to >0)
+      element_spring               : 10.0               # Spring constant of skin element [N/m] (note: also used by plugin)
+      element_damping              : 0.1                # Damping of skin element (note: also used by plugin)
       # Skin plane properties
-      plane_thickness              : 0.002				# Thickness of the skin plane [meters]
-      plane_height                 : 0.001				# The height of the plane from the ground [meters]
+      plane_thickness              : 0.002              # Thickness of the skin plane [meters]
+      plane_height                 : 0.001              # The height of the plane from the ground [meters]
       # Skin array placement
-      init_x                       : 0.0				# Initial x position [meters]
-      init_y                       : 0.0				# Initial y position [meters]
-      init_z                       : 0.03				# Initial z position [meters]
-      parent                       : world				# Name of parent link
-      # Data collection with ROS
-      ros_namespace                : skinsim			# Namespace for ROS topic
-      update_rate                  : 0.0				# Update rate of plugin (0 means as fast as possible)
+      init_x                       : 0.0                # Initial x position [meters]
+      init_y                       : 0.0                # Initial y position [meters]
+      init_z                       : 0.03               # Initial z position [meters]
+      parent                       : world              # Name of parent link
       # TODO: override count settings if length > 0
-      patch_length_x               : 0.0				# Length of skin patch in x-direction
-      patch_length_y               : 0.0				# Length of skin patch in y-direction
-      total_length_x               : 0.0				# Length of skin array in x-direction
-      total_length_y               : 0.0				# Length of skin array in y-direction
+      patch_length_x               : 0.0                # Length of skin patch in x-direction
+      patch_length_y               : 0.0                # Length of skin patch in y-direction
+      total_length_x               : 0.0                # Length of skin array in x-direction
+      total_length_y               : 0.0                # Length of skin array in y-direction
       # Tactile sensor properties
-      tactile_elements_x           : 2					# Number of skin elements per sensor in x-direction
-      tactile_elements_y           : 2					# Number of skin elements per sensor in y-direction
-      tactile_separation_x         : 1					# Spaceing between sensors in terms of number of elements in x-direction
-      tactile_separation_y         : 1					# Spaceing between sensors in terms of number of elements in x-direction
-      # TODO add plunger properties
+      tactile_elements_x           : 2                  # Number of skin elements per sensor in x-direction
+      tactile_elements_y           : 2                  # Number of skin elements per sensor in y-direction
+      tactile_separation_x         : 1                  # Spaceing between sensors in terms of number of elements in x-direction
+      tactile_separation_y         : 1                  # Spaceing between sensors in terms of number of elements in x-direction
+      # Plunger properties <-- TODO
+      plunger_radius               : 0.08
+      plunger_length               : 0.10
+      plunger_mass                 : 1.0                # Mass of plunger [kg]
+      plunger_spring               : 0.0                # Stiffness [N/m] (note: also used by plugin)
+      plunger_damping              : 0.0                # Damping (note: also used by plugin)
+      plunger_gravity              : false              # Turn on gravity for plunger
+      #############################
+      # PLUGIN                    #
+      #############################
+      # Force spread model
+      spread_scaling               : 0.159              # Force spread scaling factor (note: discrete sum of normal distribution should add up to <=1)
+      spread_sigma                 : 0.010              # Force spread standard deviation [meters]
+      # Data collection with ROS
+      ros_namespace                : skinsim            # Namespace for ROS topic
+      update_rate                  : 0.0                # Update rate of plugin (0 means as fast as possible)
+      #############################
+      # AUTO GENERATOR            #
+      #############################
+      solver_iterations            : 200                # Physics engine solver iterations
+      step_size                    : 0.0001             # Max step size of simulation [seconds]
+      max_sim_time                 : 1.0                # When to stop simulation [seconds]
+      topic : /skinsim/plunger_data                     # Which ROS topic to save during simulation
