@@ -1,0 +1,6 @@
+uint8 ELEMENTS=0	# Get position of each skin element
+uint8 SENSORS=1		# Get position of each tactile sensor
+
+uint8 selected		# Layout selected
+---
+bool success		# Found layout selected

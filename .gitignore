@@ -49,4 +49,7 @@ Thumbs.db
 ###############
 bin/
 build/
-model/models/spring*
+model/models/skin_array*
+model/worlds/skin_array*
+model/worlds/spring_array*
+data/exp*

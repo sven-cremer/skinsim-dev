@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="rviz" type="rviz" name="$(anon rviz)" args="-d $(find skinsim_ros)/config/skinArray.rviz">
+  </node>
+</launch>

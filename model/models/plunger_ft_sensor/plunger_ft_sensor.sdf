@@ -1,0 +1,147 @@
+<?xml version="1.0" ?>
+<sdf version='1.4'>
+    <model name='plunger_ft_sensor'>
+        <pose>0 0 0.10 0 0 0</pose>
+        <static>false</static>
+        
+        <link name='plunger_link'>
+          <inertial>
+              <mass>1</mass>
+              <inertia>
+                  <ixx>0.145833</ixx>
+                  <ixy>0</ixy>
+                  <ixz>0</ixz>
+                  <iyy>0.145833</iyy>
+                  <iyz>0</iyz>
+                  <izz>0.125</izz>
+              </inertia>
+          </inertial>
+          <collision name='plunger_collision'>
+              <geometry>
+                  <cylinder>
+                        <radius>0.02</radius>
+                        <length>0.10</length>
+                  </cylinder>
+              </geometry>
+              <max_contacts>50</max_contacts>
+              <surface>
+                <contact>
+                  <ode/>
+                </contact>
+                <bounce/>
+                <friction>
+                  <ode/>
+                </friction>
+              </surface>
+          </collision>
+          <visual name='plunger_visual'>
+              <geometry>
+                  <cylinder>
+                      <radius>0.02</radius>
+                      <length>0.10</length>
+                  </cylinder>
+              </geometry>
+              <material>
+                <script>
+                  <uri>file://media/materials/scripts/gazebo.material</uri>
+                  <name>Gazebo/Blue</name>
+                  <!--name>Gazebo/BlueTransparent</name-->
+                </script>
+              </material>
+          </visual>
+          <self_collide>1</self_collide>
+          <kinematic>0</kinematic>
+          <gravity>0</gravity>
+        </link>
+        
+        <link name="fake_link">
+        <pose>0 0 0.15 0 0 0</pose>
+        <inertial>
+          <pose>0 0 0.0 0 0 0</pose>
+          <inertia>
+            <ixx>0.100000</ixx>
+            <ixy>0.000000</ixy>
+            <ixz>0.000000</ixz>
+            <iyy>0.100000</iyy>
+            <iyz>0.000000</iyz>
+            <izz>0.100000</izz>
+          </inertia>
+          <mass>1.0</mass>
+        </inertial>
+        <visual name="fake_link_visual">
+          <pose>0 0 0.0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.02 0.02</size>
+            </box>
+          </geometry>
+          <material>
+                <script>
+                  <uri>file://media/materials/scripts/gazebo.material</uri>
+                  <name>Gazebo/Red</name>
+                </script>
+          </material>
+        </visual>
+        <collision name="fake_link_collision">
+          <pose>0 0 0.0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.02 0.02</size>
+            </box>
+          </geometry>
+        </collision>
+        <self_collide>1</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>0</gravity>
+        </link>
+        
+        <joint name="fixed_joint" type="prismatic">
+          <parent>world</parent>
+          <child>fake_link</child>
+          <axis>
+              <xyz>0 0 1</xyz>
+              <limit>
+                  <lower>0.0</lower>
+                  <upper>0.0</upper>
+              </limit>
+              <use_parent_model_frame>1</use_parent_model_frame>
+          </axis>
+        </joint>
+        
+        <joint name='plunger_joint' type='prismatic'>
+          <parent>fake_link</parent>
+          <child>plunger_link</child>
+          <axis>
+              <xyz>0 0 1</xyz>
+              <limit>
+                  <lower>-0.5</lower>
+                  <upper>1.0</upper>
+              </limit>
+              <use_parent_model_frame>0</use_parent_model_frame>
+          </axis>
+          <physics>
+             <provide_feedback>1</provide_feedback>
+             <ode>
+                <implicit_spring_damper>0</implicit_spring_damper>
+             </ode>
+          </physics>
+          <sensor name='plunger_sensor' type='force_torque'>
+              <!--update_rate> 30 </update_rate-->
+          </sensor>
+        </joint>
+          
+        <plugin name='Plunger' filename='libPlunger.so'>
+            <file_name>plunger</file_name>
+            <rosNamespace>skinsim</rosNamespace>
+            <updateRate>0</updateRate>
+            <Kp>0.05</Kp>
+            <Kd>0.0</Kd>
+            <Kv>0.0</Kv>
+            <JointPgain>0.5</JointPgain>
+            <JointIgain>0.01</JointIgain>
+            <JointDgain>0.0</JointDgain>
+        </plugin>
+    
+    </model>
+</sdf>
+
