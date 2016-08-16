@@ -1,0 +1,10 @@
+skinsim_ros_msgs/ControllerType type    # Type of controller
+skinsim_ros_msgs/FeedbackType fb        # Type of feedback
+float64 f_des                           # Desired force
+float64 x_des                           # Desired position
+float64 v_des                           # Desired velocity
+float64 Kp                              # Proportional gain
+float64 Ki                              # Integral gain
+float64 Kd                              # Derivative gain
+---
+bool success

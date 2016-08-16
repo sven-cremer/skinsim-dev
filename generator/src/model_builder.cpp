@@ -91,11 +91,13 @@ void ModelBuilder::generateModelStart( std::string name, Eigen::VectorXd & pose 
 
 void ModelBuilder::addGeometry( double radius )
 {
+	double scaled_radius = radius*1.0;
 	m_sdfStream << "      <geometry>\n"
 			<< "        <sphere>\n"
-			<< "          <radius>" << radius*0.95 << "</radius>\n"
+			<< "          <radius>" << scaled_radius << "</radius>\n"
 			<< "        </sphere>\n"
 			<< "      </geometry>\n";
+	//std::cout<<"[ModelBuilder::addGeometry] Actual radius used: "<<scaled_radius<<"\n"; 	// TODO remove scaling
 }
 
 void ModelBuilder::addGeometry( Eigen::Vector3d & box_size )
@@ -149,7 +151,7 @@ void ModelBuilder::addMaterial( Eigen::Vector4d & ambient ,
 void ModelBuilder::addCollision( std::string collision_name,  double radius )
 {
 	m_sdfStream << "    <collision name='" + collision_name + "'>\n";
-	m_sdfStream << "		<pose>0.000000 0.000000 0.0 0.000000 -0.000000 0.000000</pose>\n";
+	m_sdfStream << "		<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>\n";
 	addGeometry( radius );
 	addSurface();
 	m_sdfStream << "    </collision>\n";
@@ -158,7 +160,7 @@ void ModelBuilder::addCollision( std::string collision_name,  double radius )
 void ModelBuilder::addCollision( std::string collision_name, Eigen::Vector3d & box_size )
 {
 	m_sdfStream << "    <collision name='" + collision_name + "'>\n";
-	m_sdfStream << "		<pose>0.000000 0.000000 0.0 0.000000 -0.000000 0.000000</pose>\n";
+	m_sdfStream << "		<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>\n";
 	addGeometry( box_size );
 	addSurface();
 	m_sdfStream << "    </collision>\n";
@@ -198,9 +200,19 @@ void ModelBuilder::addVisual( std::string visual_name,
 
 void ModelBuilder::addInertia( double mass )
 {
-	m_sdfStream << "    <inertial>\n"
-			<< "      <mass>"<< mass <<"</mass>\n"
-			<< "    </inertial>\n";
+	double Ixx = 0.4*mass*pow((0.5*m_.spec.element_diameter),2);
+	std::string I = boost::lexical_cast<std::string>(Ixx);
+    m_sdfStream << "    <inertial>\n"
+                << "        <mass>"<< mass <<"</mass>\n"
+//                << "        <inertia>                      \n"
+//                << "            <ixx>"<<I.c_str()<<"</ixx> \n"
+//                << "            <ixy>0</ixy>               \n"
+//                << "            <ixz>0</ixz>               \n"
+//                << "            <iyy>"<<I.c_str()<<"</iyy> \n"
+//                << "            <iyz>0</iyz>               \n"
+//                << "            <izz>"<<I.c_str()<<"</izz> \n"
+//                << "        </inertia>                     \n"
+                << "    </inertial>\n";
 }
 
 void ModelBuilder::addLink( std::string link_name,
@@ -247,7 +259,7 @@ void ModelBuilder::addLink( std::string link_name,
 			<< "    <pose>"<< pose.transpose() << "</pose>\n";
 
 	addInertia( mass );
-	addCollision( collision_name, box_size );
+	//addCollision( collision_name, box_size );			// FIXME uncomment
 	addVisual( visual_name,
 			box_size,
 			ambient ,
@@ -270,7 +282,7 @@ void ModelBuilder::addJoint( std::string joint_name,
 			<< "        <xyz>" << axis.transpose() << "</xyz>\n"
 			<< "        <limit>\n"
 			<< "          <lower>" << -0.5 << "</lower>\n"
-			<< "          <upper>" <<  2.0 << "</upper>\n"
+			<< "          <upper>" <<  0.5 << "</upper>\n"
 			<< "        </limit>\n"
 			<< "      </axis>\n"
 			//				<< "    <sensor name='contact_" + joint_name + "' type='force_torque'>"
@@ -284,6 +296,14 @@ void ModelBuilder::addJoint( std::string joint_name,
 			//				<< "            <stddev>0.01</stddev>"
 			//				<< " 		</noise>"
 			//				<< "   	</sensor>"
+			<< "      <physics>\n"
+			// Toggle for ODEJoint::GetForceTorque
+			<< "            <provide_feedback>false</provide_feedback>\n"
+			// Switch between implicit and explicit in ODEJoint::ApplyStiffnessDamping()
+			<< "            <ode>\n"
+			<< "                  <implicit_spring_damper>false</implicit_spring_damper>\n"
+			<< "            </ode>\n"
+			<< "      </physics>\n"
 			<< "  </joint>\n";
 }
 
@@ -312,12 +332,14 @@ void ModelBuilder::addPlugin( std::string plugin_name, std::string plugin_filena
 {
 
 	m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
-			<< "    <fileName>"     << m_.name << "</fileName>\n"
-			<< "    <rosNamespace>" << m_.spec.ros_namespace   << "</rosNamespace>\n"
-			<< "    <updateRate>"   << m_.spec.update_rate     << "</updateRate>\n"
-			<< "    <mass>"         << m_.spec.element_mass    << "</mass>\n"
-			<< "    <spring>"       << m_.spec.element_spring  << "</spring>\n"
-			<< "    <damping>"      << m_.spec.element_damping << "</damping>\n"
+			<< "    <fileName>"       << m_.name << "</fileName>\n"
+			<< "    <rosNamespace>"   << m_.spec.ros_namespace   << "</rosNamespace>\n"
+			<< "    <updateRate>"     << m_.spec.update_rate     << "</updateRate>\n"
+			<< "    <mass>"           << m_.spec.element_mass    << "</mass>\n"
+			<< "    <spring>"         << m_.spec.element_spring  << "</spring>\n"
+			<< "    <damping>"        << m_.spec.element_damping << "</damping>\n"
+			<< "    <spreadScaling>"  << m_.spec.spread_scaling  << "</spreadScaling>\n"
+			<< "    <spreadSigma>"    << m_.spec.spread_sigma    << "</spreadSigma>\n"
 			<< "  </plugin>";
 }
 
@@ -414,49 +436,74 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 {
 	std::ostringstream modelConfig;
 
-	modelConfig << "<?xml version='1.0'?>                                           \n"
-			<< "<gazebo version='1.3'>                                          \n"
-			<< "<world name='default'>                                          \n"
-			<< "                                                                \n"
-			<< "<include>                                                       \n"
-			<< "  <uri>model://ground_plane</uri>                               \n"
-			<< "</include>                                                      \n"
-			<< "                                                                \n"
-			<< "<include>                                                       \n"
-			<< "  <uri>model://sun</uri>                                        \n"
-			<< "</include>                                                      \n"
-			<< "                                                                \n"
-			<< "<include>                                                       \n"
-			<< "  <uri>model://" << model_name << "</uri>                       \n"
-			<< "</include>                                                      \n"
-			<< "                                                                \n"
-			<< "<physics type='ode'>                                            \n"
-			<< "  <gravity>0.0 0.0 -9.8</gravity>                               \n"
-			<< "  <ode>                                                         \n"
-			<< "    <solver>                                                    \n"
-			<< "      <iters>150</iters>                                        \n"
-			<< "    </solver>                                                   \n"
-			<< "    <constraints>                                               \n"
-			<< "      <cfm>0.2</cfm>                                            \n"
-			<< "    </constraints>                                              \n"
-			<< "  </ode>                                                        \n"
-			<< "</physics>                                                      \n"
-			<< "                                                                \n"
-			//                << "                                                                \n"
-			//                << "<include>                                                       \n"
-			//                << "  <uri>model://box</uri>                                        \n"
-			//                << "  <pose>0 0 0.055 0 0 0</pose>                                  \n"
-			//                << "</include>                                                      \n"
-			<< "                                                                \n"
-			<< "<gui fullscreen='0'>                                            \n"
-			<< "  <camera name='user_camera'>                                   \n"
-			<< "    <pose>0.130675 -0.121126 0.095229 0 0.347643 2.35619</pose> \n"
-			<< "    <view_controller>orbit</view_controller>                    \n"
-			<< "  </camera>                                                     \n"
-			<< "</gui>                                                          \n"
-			<< "                                                                \n"
-			<< "</world>                                                        \n"
-			<< "</gazebo>                                                       \n";
+	// Place plunger 0.05 cm above skin
+	double plunger_length = 0.10;
+	double plunger_height = 0.10;
+	double plunger_z  =  m_.spec.element_height + m_.spec.element_diameter
+			            +(plunger_height-0.5*plunger_length) + 0.0005;
+	std::string pz = boost::lexical_cast<std::string>(plunger_z);
+
+	// Move plunger to center of tactile patches
+	double p_x = (total_sensors_x*unit_size_x - total_elements_x - m_.spec.tactile_separation_x)*m_.spec.element_diameter*0.5;
+	double p_y = (total_sensors_y*unit_size_y - total_elements_y - m_.spec.tactile_separation_y)*m_.spec.element_diameter*0.5;
+	std::string px = boost::lexical_cast<std::string>(p_x);
+	std::string py = boost::lexical_cast<std::string>(p_y);
+
+	// Physics engine
+	std::string step_size = boost::lexical_cast<std::string>(m_.spec.step_size);
+	std::string iters     = boost::lexical_cast<std::string>(m_.spec.solver_iterations);
+
+	modelConfig << "<?xml version='1.0'?>"                                                   <<"\n"
+			<< "<sdf version='1.5'>"                                                         <<"\n"
+			<< "  <world name='default'>"                                                    <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <include>"                                                               <<"\n"
+			<< "      <uri>model://ground_plane</uri>"                                       <<"\n"
+			<< "    </include>"                                                              <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <include>"                                                               <<"\n"
+			<< "      <uri>model://sun</uri>"                                                <<"\n"
+			<< "    </include>"                                                              <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <include>"                                                               <<"\n"
+			<< "      <uri>model://" << model_name << "</uri>"                               <<"\n"
+			<< "      <pose>0 0 0.0 0 0 0</pose>"                                            <<"\n"
+			<< "    </include>"                                                              <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <include>"                                                               <<"\n"
+			<< "      <uri>model://plunger</uri>"                                            <<"\n"
+			<< "      <pose>"<<px.c_str()<<" "<<py.c_str()<<" "<<pz.c_str()<<" 0 0 0</pose>" <<"\n"
+			<< "    </include>"                                                              <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <physics type='ode'>"                                                    <<"\n"
+			<< "      <gravity>0.0 0.0 -9.8</gravity>"                                       <<"\n"
+			<< "      <max_step_size>"<<step_size.c_str()<<"</max_step_size>"                <<"\n"
+//			<< "      <real_time_factor>1</real_time_factor>"                                <<"\n"
+			<< "      <real_time_update_rate>0</real_time_update_rate>"                      <<"\n" 	// Run the simulation as fast as possible
+			<< "      <ode>"                                                                 <<"\n"
+			<< "        <solver>"                                                            <<"\n"
+//			<< "          <type>quick</type>"                                                <<"\n"		// TODO define solver type
+			<< "          <iters>"<<iters.c_str()<<"</iters>"                                <<"\n"
+			<< "          <sor>1.3</sor>"                                                    <<"\n"
+			<< "        </solver>"                                                           <<"\n"
+			<< "        <constraints>"                                                       <<"\n"
+			<< "          <cfm>0.0</cfm>"                                                    <<"\n"
+			<< "          <erp>0.2</erp>"                                                    <<"\n"
+			<< "          <contact_max_correcting_vel>100</contact_max_correcting_vel>"      <<"\n"
+			<< "          <contact_surface_layer>0.001</contact_surface_layer>"              <<"\n"
+			<< "        </constraints>"                                                      <<"\n"
+			<< "      </ode>"                                                                <<"\n"
+			<< "    </physics>"                                                              <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "    <gui fullscreen='0'>"                                                    <<"\n"
+			<< "      <camera name='user_camera'>"                                           <<"\n"
+			<< "        <pose>0.0 -0.46 0.27 0.0 0.48 1.56</pose>"                           <<"\n"
+			<< "        <view_controller>orbit</view_controller>"                            <<"\n"
+			<< "      </camera>"                                                             <<"\n"
+			<< "    </gui>"                                                                  <<"\n"
+			<< "    "                                                                        <<"\n"
+			<< "  </world>"                                                                  <<"\n"
+			<< "</sdf>"                                                                      <<"\n";
 
 	std::string filename = genWorldDirectory( model_name ) + model_name + ".world";
 	saveFile( filename, modelConfig );
@@ -476,6 +523,20 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	// Store model specs
 	m_ = modelSpecs_;
 
+	// Compute additional parameters
+	total_elements_x = m_.spec.num_elements_x*m_.spec.num_patches_x;
+	total_elements_y = m_.spec.num_elements_y*m_.spec.num_patches_y;
+	unit_size_x      = m_.spec.tactile_elements_x+m_.spec.tactile_separation_x;
+	unit_size_y      = m_.spec.tactile_elements_y+m_.spec.tactile_separation_y;
+	total_sensors_x  = total_elements_x/unit_size_x;	// Note: integer devision rounds down
+	total_sensors_y  = total_elements_y/unit_size_y;
+
+	// Check if there is room for one more sensor
+	if(total_elements_x - total_sensors_x*unit_size_x >=  m_.spec.tactile_elements_x )
+		total_sensors_x++;
+	if(total_elements_y - total_sensors_y*unit_size_y >=  m_.spec.tactile_elements_y )
+		total_sensors_y++;
+
 	Eigen::Vector4d color;
 	color  << 1.0, 1.0, 1.0, 1.0 ;
 
@@ -484,10 +545,10 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	std::string joint_config_filename = modelDirectory + "joint_names.yaml";
 	std::string tactile_id_filename   = modelDirectory + "tactile_id.yaml";
 
-	YAML::Emitter out;
+	YAML::Emitter out_joint_names;
 	std::ofstream fout(joint_config_filename.c_str());
 
-	YAML::Emitter out1;
+	YAML::Emitter out_tactile_id;
 	std::ofstream fout2(tactile_id_filename.c_str());
 
 	//  sdf::SDFPtr robot(new sdf::SDF());
@@ -501,11 +562,9 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	generateModelStart( m_.name, pose );
 
 	// Parameters
-	double plane_mass   = 0.010;
-	double element_mass = 0.001;		// Mass of Gazebo model, not MSD (has to be > 0, crashes otherwise)
+	double plane_mass   = 0.01;		    // Not too small because of stability issue (but has otherwise no effect)
 
 	// TODO check if length > 0
-
 	m_.spec.patch_length_x  = m_.spec.num_elements_x*m_.spec.element_diameter;
 	m_.spec.patch_length_y  = m_.spec.num_elements_y*m_.spec.element_diameter;
 
@@ -533,9 +592,17 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 			color);
 
 	///////////////////////////////////////////////////////
+
+//	TODO create border or specify coordinate of first tactile sensor, using (0,0) right now
+//			int border_x = 1;
+//	int border_y = 1;
+//	if( (ix>border_x-1) && (ix<total_elements_x-border_x) && (iy>border_y-1) && (iy<total_elements_y-border_y) )
+
+	///////////////////////////////////////////////////////
 	// PLANE -> PATCH_X
 
-	out << YAML::BeginSeq;
+	out_joint_names << YAML::BeginSeq;
+	out_tactile_id << YAML::BeginMap;
 
 	color  << 1.0, 1.0, 1.0, 1.0 ;
 
@@ -543,16 +610,23 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	double pos_x = 0.0 + m_.spec.patch_length_x/2 - m_.spec.patch_length_x*(double)m_.spec.num_patches_x/2;
 	double pos_y = 0.0 + m_.spec.patch_length_y/2 - m_.spec.patch_length_y*(double)m_.spec.num_patches_y/2;
 
-	int index = 0;
-	for( int ix = 0; ix < m_.spec.num_patches_x; ix++ )
+	// Create patches
+	/*
+	 * Layout:   y
+	 *           ^ 2, 3
+	 *           | 0, 1
+	 *           -------> x
+	 */
+	int patch_idx = 0;
+	for( int iy = 0; iy < m_.spec.num_patches_y; iy++ )
 	{
-		for( int iy = 0; iy < m_.spec.num_patches_y; iy++ )
+		for( int ix = 0; ix < m_.spec.num_patches_x; ix++ )
 		{
 
 			double x = pos_x + ix*m_.spec.patch_length_x;
 			double y = pos_y + iy*m_.spec.patch_length_y;
 
-			std::string patch = "patch_" + boost::lexical_cast<std::string>(index);
+			std::string patch = "patch_" + boost::lexical_cast<std::string>(patch_idx);
 
 			// Create skin patch plane
 			createPlane(
@@ -570,27 +644,33 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 
 			createSkinPatchElements(
 					patch,
-					out,
+					ix,
+					iy,
+					out_joint_names,
+					out_tactile_id,
 					m_.spec.element_diameter,
-					element_mass,
+					m_.spec.element_mass,
 					m_.spec.num_elements_x,
 					m_.spec.num_elements_y,
 					x,
 					y,
 					m_.spec.element_height);
 
-			index++;
+			patch_idx++;
 		}
 	}
 
-	out << YAML::EndSeq;
+	out_joint_names << YAML::EndSeq;
+	out_tactile_id << YAML::EndMap;
 
-	// Write YAML file and close
+	// Write to YAML file and close
 	std::cout<<"Saving: "<<joint_config_filename.c_str()<<"\n";
-	fout << out.c_str();
+	fout << out_joint_names.c_str();
 	fout.close();
 
-	fout2.close();		// TODO nothing is saved to file
+	std::cout<<"Saving: "<<tactile_id_filename.c_str()<<"\n";
+	fout2 << out_tactile_id.c_str();
+	fout2.close();
 
 	//    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
 	//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );			// <- Simple plugin that works
@@ -642,10 +722,12 @@ void ModelBuilder::createPlane(
 	box_size << length_x, length_y, length_z;
 
 	std::string link_joint = link_name + "_joint";
+	std::string link_collision = link_name + "_collision";
 
+	// TODO Make a plane link
 	addLink(link_name,
 			link_mass,
-			"collision",
+			link_collision,
 			"visual",
 			box_size,
 			pose,
@@ -667,7 +749,10 @@ void ModelBuilder::createPlane(
 
 void ModelBuilder::createSkinPatchElements(
 		std::string patch_name,
-		YAML::Emitter& out,
+		int patch_ix,
+		int patch_iy,
+		YAML::Emitter& out_joint_names,
+		YAML::Emitter& out_tactile_id,
 		double element_diameter,
 		double element_mass,
 		double num_elements_x,
@@ -677,7 +762,6 @@ void ModelBuilder::createSkinPatchElements(
 		double pos_z)
 {
 
-	int num_elements = num_elements_x*num_elements_y;
 	double radius = element_diameter/2;
 	double x, y, z;
 
@@ -704,23 +788,64 @@ void ModelBuilder::createSkinPatchElements(
 	pos_y = pos_y + radius - element_diameter*(double)num_elements_y/2;
 	z = pos_z + radius;
 
-	// Add skin elements
-	int i = 0;
-	for( int ix = 0; ix < num_elements_x; ix++ )
+	// Create skin elements inside patch
+	/*
+	 * Layout:   y
+	 *           ^ 6, 7, 8
+	 *           | 3, 4, 5
+	 *           | 0, 1, 2
+	 *           ----------> x
+	 */
+	int spring_idx = 0;
+	for( int iy = 0; iy < num_elements_y; iy++ )
 	{
-		for( int iy = 0; iy < num_elements_y; iy++ )
+		for( int ix = 0; ix < num_elements_x; ix++ )
 		{
-
 			x = pos_x + ix*element_diameter;
 			y = pos_y + iy*element_diameter;
 
 			pose << x, y, z, 0, 0, 0;
 
-			std::string spring = patch_name + "_spring_" + boost::lexical_cast<std::string>(i);
+			std::string spring = patch_name + "_spring_" + boost::lexical_cast<std::string>(spring_idx);
 			std::string spring_joint = spring + "_joint" ;
-			std::string collision = patch_name + "_sphere_collision_" + boost::lexical_cast<std::string>(i);
+			std::string collision = spring + "_collision";
 
+			// Check if element is part of a tactile sensor
+			bool sensor_x = false;
+			int global_ix = (patch_ix*m_.spec.num_elements_x + ix);			// Allow sensors to span across patches
+			int unit_ix = global_ix % unit_size_x;							// Index inside a unit
 
+			if(global_ix > unit_size_x*total_sensors_x - m_.spec.tactile_separation_x-1)	// Check if enough elements are left to create a sensor
+				sensor_x = false;
+			else
+				if(unit_ix<m_.spec.tactile_elements_x)						// Check if it could be a tactile element
+					sensor_x = true;
+
+			bool sensor_y = false;
+			int global_iy = (patch_iy*m_.spec.num_elements_y + iy);			// Allow sensors to span across patches
+			int unit_iy = global_iy % unit_size_y;							// Index inside a unit
+			if(global_iy > unit_size_y*total_sensors_y - m_.spec.tactile_separation_y - 1)	// Check if enough elements are left to create a sensor
+				sensor_y = false;
+			else
+				if(unit_iy<m_.spec.tactile_elements_y)						// Check if it could be a tactile element
+					sensor_y = true;
+
+			if(sensor_x && sensor_y)
+			{
+				skin_diffuse  << 1.0, 0.0, 0.0, 1.0;						// Make tactile element red
+
+				// Compute sensor index
+				int ind_x = global_ix/unit_size_x;
+				int ind_y = global_iy/unit_size_y;
+				int sensor_ind = ind_y*total_sensors_x+ind_x;				// Count along rows, i.e. 0, 1, 2, ...
+
+				// Store tactile sensor ID
+				out_tactile_id << YAML::Key << spring_joint << YAML::Value << sensor_ind;
+			}
+			else
+				skin_diffuse  << 1.0, 1.0, 1.0, 1.0;						// Make non-sensor element White
+
+			// Add link and joint
 			addLink(spring,
 					element_mass,
 					collision,
@@ -738,17 +863,13 @@ void ModelBuilder::createSkinPatchElements(
 					spring,
 					axis );
 
-			//std::cout << pos_x << " " << pos_y << "\n";
-
 			// Store name
-			out << YAML::BeginMap;
-			out << YAML::Key << "Joint" << YAML::Value << spring_joint;
-			out << YAML::EndMap;
+			out_joint_names << YAML::Value << spring_joint;
 
-			i++;
+			spring_idx++;
 		}
-
 	}
+
 }
 
 //////////////////////////////////////////////////////////////

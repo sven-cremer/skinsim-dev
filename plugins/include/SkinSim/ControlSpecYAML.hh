@@ -66,7 +66,20 @@ struct ControllerSpec
   double targetForce  ;
 };
 
-void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
+inline void print(ControllerSpec c)
+{
+	std::cout<<"Name         : "<<c.name           <<"\n";
+	std::cout<<" explFctr_Kp : "<<c.explFctr_Kp    <<"\n";
+	std::cout<<" explFctr_Ki : "<<c.explFctr_Ki    <<"\n";
+	std::cout<<" explFctr_Kd : "<<c.explFctr_Kd    <<"\n";
+	std::cout<<" impCtr_Xnom : "<<c.impCtr_Xnom    <<"\n";
+	std::cout<<" impCtr_K    : "<<c.impCtr_K       <<"\n";
+	std::cout<<" impCtr_D    : "<<c.impCtr_D       <<"\n";
+	std::cout<<" ctrType     : "<<c.ctrType        <<"\n";
+	std::cout<<" targetForce : "<<c.targetForce    <<"\n";
+}
+
+inline void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
 {
   ctrSpec.name        = node["name"       ].as<std::string>() ;
   ctrSpec.explFctr_Kp = node["explFctr_Kp"].as<double>() ;
@@ -79,7 +92,7 @@ void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
   ctrSpec.targetForce = node["targetForce"].as<double>() ;
 }
 
-YAML::Emitter& operator << (YAML::Emitter& out, const ControllerSpec& ctrSpec)
+inline YAML::Emitter& operator << (YAML::Emitter& out, const ControllerSpec& ctrSpec)
 {
     out << YAML::BeginMap;
     out << YAML::Key << "name"       ; out << YAML::Value <<  ctrSpec.name        ;

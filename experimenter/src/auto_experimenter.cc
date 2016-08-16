@@ -40,47 +40,52 @@
 
 #include <iostream>
 #include <fstream>
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <map>
+//#include <map>
 
-#include <sdf/sdf.hh>
+// ROS
+#include <ros/ros.h>
+#include <skinsim_ros_msgs/SetController.h>
 
+//#include <sdf/sdf.hh>
+
+// Boost
 #include <boost/thread.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/chrono.hpp>
 
-#include "gazebo/transport/transport.hh"
-
-#include "gazebo/common/CommonIface.hh"
-#include "gazebo/common/SystemPaths.hh"
-#include "gazebo/common/Console.hh"
-#include "gazebo/physics/World.hh"
-#include "gazebo/physics/PhysicsTypes.hh"
+#include "gazebo/Server.hh"
 #include "gazebo/physics/PhysicsIface.hh"
-#include "gazebo/sensors/sensors.hh"
-#include "gazebo/rendering/rendering.hh"
+#include "gazebo/transport/transport.hh"
 #include "gazebo/msgs/msgs.hh"
 
-#include "gazebo/gazebo_config.h"
-#include "gazebo/Server.hh"
+//#include "gazebo/common/CommonIface.hh"
+//#include "gazebo/common/SystemPaths.hh"
+//#include "gazebo/common/Console.hh"
+//#include "gazebo/physics/World.hh"
+//#include "gazebo/physics/PhysicsTypes.hh"
+//#include "gazebo/sensors/sensors.hh"
+//#include "gazebo/rendering/rendering.hh"
+//#include "gazebo/gazebo_config.h"
 
-#include <Eigen/Core>
+//#include <Eigen/Core>
 #include <yaml-cpp/yaml.h>
 
-#include <SkinSim/ModelBuilder.hh>
 #include <SkinSim/ModelSpecYAML.hh>
 #include <SkinSim/ControlSpecYAML.hh>
 
 using namespace gazebo;
-
-using namespace SkinSim;
-using namespace std;
+//using namespace SkinSim;
+//using namespace std;
 
 class SkinSimTestingFramework
 {
 
-protected: Server *server;
+protected: Server* server;
 protected: boost::thread *serverThread;
 
 protected: common::StrStr_M m_gazeboParams;
@@ -89,19 +94,27 @@ protected: common::Time simTime, realTime, pauseTime;
 private: double percentRealTime;
 private: bool paused;
 private: bool serverRunning;
+private: int iterations;
 protected: transport::NodePtr node;
 protected: transport::SubscriberPtr statsSub;
+
+private: ros::NodeHandle* ros_node_;
+private: std::string ros_namespace_;
+private: ros::ServiceClient ros_srv_;
+private: skinsim_ros_msgs::SetController msg_srv_;
+private: int iterations_max;
+
+// Color for terminal text
+private: static const char RED[];
+private: static const char GREEN[];
+private: static const char YELLOW[];
+private: static const char RESET[];
 
 public:
 SkinSimTestingFramework()
 {
 	std::cout << "SkinSim Testing Framework Constructor" << std::endl;
 	this->server = NULL;
-
-//	this->node = transport::NodePtr(new transport::Node());
-//	this->node->Init();
-//	this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
-//	std::cout << "Initialized Transport Node" << std::endl;
 }
 
 void OnStats(ConstWorldStatisticsPtr &_msg)
@@ -110,7 +123,7 @@ void OnStats(ConstWorldStatisticsPtr &_msg)
 	this->realTime = msgs::Convert(_msg->real_time());
 	this->pauseTime = msgs::Convert(_msg->pause_time());
 	this->paused = _msg->paused();
-
+	this->iterations = _msg->iterations();
 
 	this->serverRunning = true;
 }
@@ -122,7 +135,7 @@ void SetPause(bool _pause)
 
 void Unload()
 {
-	gzdbg << "ServerFixture::Unload" << std::endl;
+	//std::cout<< "ServerFixture::Unload" << std::endl;
 	this->serverRunning = false;
 	if (this->node)
 		this->node->Fini();
@@ -144,178 +157,257 @@ void Unload()
 void RunServer(const std::string &_worldFilename, bool _paused, const std::string &_physics)
 {
 
-	std::cout << "SkinSimTestingFramework::RunServer()" << std::endl;
-	this->server = new Server();
-	this->server->PreLoad();
-	if (_physics.length())
-		this->server->LoadFile(_worldFilename,  _physics);
-	else
-		this->server->LoadFile(_worldFilename);
+	//std::cout << "SkinSimTestingFramework::RunServer() - START" << std::endl;
 
-	if (!rendering::get_scene(
-			gazebo::physics::get_world()->GetName()))
+	this->server = new Server();
+
+	std::string ros_api_plugin  = "/opt/ros/jade/lib/libgazebo_ros_api_plugin.so";
+	std::string ros_path_plugin = "/opt/ros/jade/lib/libgazebo_ros_paths_plugin.so";
+	std::string world_file = _worldFilename; //"/home/sven/skin_ws/src/skinsim-dev/model/worlds/skin_array_0.world";
+
+	// Create fake command-line parameters for Gazebo server
+	// This seems to be the best way to set parameters such as sensor plugins
+	int numArgs = 8;
+	char **v = new char * [numArgs];
+
+	v[0] = new char [strlen( "--verbose"             ) + 1];
+	v[1] = new char [strlen( "-s"                    ) + 1];
+	v[2] = new char [strlen( ros_path_plugin.c_str() ) + 1];
+	v[3] = new char [strlen( "-s"                    ) + 1];
+	v[4] = new char [strlen( ros_api_plugin.c_str()  ) + 1];
+	v[5] = new char [strlen( world_file.c_str()      ) + 1];
+	v[6] = new char [strlen( "--seed"                ) + 1];
+	v[7] = new char [strlen( "0.0"                   ) + 1];
+
+	strcpy( v[0] , "--verbose"             );
+	strcpy( v[1] , "-s"                    );
+	strcpy( v[2] , ros_path_plugin.c_str() );
+	strcpy( v[3] , "-s"                    );
+	strcpy( v[4] , ros_api_plugin.c_str()  );
+	strcpy( v[5] , world_file.c_str()      );
+	strcpy( v[6] , "--seed"                );
+	strcpy( v[7] , "0.0"                   );
+
+	// TODO --physics ode
+
+	if (!server->ParseArgs(numArgs, v))
 	{
-		rendering::create_scene(
-				gazebo::physics::get_world()->GetName(), false, true);
+		std::cerr<<"Failed parsing server arguments!\n";
 	}
 
-	this->server->SetParams( m_gazeboParams );
+	//	if(! this->server->PreLoad() )
+	//		std::cerr<<"Failed to preload the Gazebo server";
 
+	//	if (_physics.length())
+	//		this->server->LoadFile(_worldFilename, _physics);
+	//	else
+	//		this->server->LoadFile(_worldFilename);
+	//
+	//	if (!rendering::get_scene(
+	//			gazebo::physics::get_world()->GetName()))
+	//	{
+	//		rendering::create_scene(
+	//				gazebo::physics::get_world()->GetName(), false, true);
+	//	}
+
+	this->server->SetParams(m_gazeboParams);
 	this->SetPause(_paused);
 
 	this->server->Run();
 
 	this->server->Fini();
 
+	//std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
+
+	// Deallocate variables
 	delete this->server;
 	this->server = NULL;
+
+	for(int i = 0; i < numArgs; i++)
+		delete v[i];
+	delete v;
 }
 
-void saveControlSpec( std::string expName )
+void saveData( std::string exp_name )
 {
-	// Write YAML files
-	std::string pathString( getenv ("SKINSIM_PATH") );
-	std::string ctrSpecPath = pathString + "/model/config/ctr_config.yaml";
-	std::ofstream ctrOut(ctrSpecPath.c_str());
-
-	YAML::Emitter ctrYAMLEmitter;
-
-	ControllerSpec ctrSpec;
-
-	ctrSpec.name         = expName ;
-	ctrSpec.explFctr_Kp  = 2       ;
-	ctrSpec.explFctr_Ki  = 0.00005 ;
-	ctrSpec.explFctr_Kd  = 0.5     ;
-	ctrSpec.impCtr_Xnom  = 0.5     ;
-	ctrSpec.impCtr_M     = 5       ;
-	ctrSpec.impCtr_K     = 24      ;
-	ctrSpec.impCtr_D     = 10      ;
-	ctrSpec.ctrType      = 1       ;
-	ctrSpec.targetForce  = 0.01    ;
-
-	// Save controller specs
-	ctrYAMLEmitter << YAML::BeginSeq;
-	ctrYAMLEmitter << ctrSpec;
-	ctrYAMLEmitter << YAML::EndSeq;
-
-	ctrOut << ctrYAMLEmitter.c_str();;
-	ctrOut.close();
+	// TODO
 }
 
-void runTests()
+void runTests(std::string exp_name)
 {
-	std::cout << "TestingFramework::runTests()" << std::endl;
+	//std::cout << "TestingFramework::runTests()" << std::endl;
 
-	BuildModelSpec modelSpecs;
+	// Parameters
+	std::string filename_model   = "mdlSpecs.yaml";;
+	std::string filename_control = "ctrSpecs.yaml";
 
-	double xByX         = 0.0 ;
+	// Create paths
+	std::string pathSkinSim = getenv ("SKINSIM_PATH");
+	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
+	std::string mdlSpecPath = pathExp + "/" + filename_model;
+	std::string ctrSpecPath = pathExp + "/" + filename_control;
 
-	double density      = 0.0 ;
-	double size_x       = 1.5 ;
-	double size_y       = 1.5 ;
+	// Read YAML model file
+	std::ifstream fin(mdlSpecPath.c_str());
+	YAML::Node doc_model;
+	std::cout<<"Loading file: "<<mdlSpecPath<<"\n";
+	doc_model = YAML::LoadAll(fin);
 
-	double skin_height  = 1.3 ;
-	double plane_height = 0.4 ;
-	double d_pos        = 0.5 ;
+	// Read YAML control file
+	std::ifstream fin2(ctrSpecPath.c_str());
+	YAML::Node doc_control;
+	std::cout<<"Loading file: "<<ctrSpecPath<<"\n";
+	doc_control = YAML::LoadAll(fin2);
 
-	double sens_rad     = 1.0 ;
-	double space_wid    = 3.0 ;
-
-	// Read YAML files
-	std::string pathString( getenv ("SKINSIM_PATH") );
-	std::string configFilePath = pathString + "/experimenter/config/mdlSpecs.yaml";
-	std::ifstream fin(configFilePath.c_str());
-	YAML::Node doc;
-	std::cout<<"Loading file: "<<configFilePath<<"\n";
-	doc = YAML::LoadAll(fin);
-
+	// Gazebo parameters
 	std::string _worldFilename("~");
-	bool _paused = false;
+	bool _paused = true;
 	std::string _physics = "ode";
 
-	for(unsigned i=0;i<doc[0].size();i++)
+	BuildModelSpec modelSpec;
+	ControllerSpec controlSpec;
+
+	int index = 1;
+	int N = doc_model[0].size() * doc_control[0].size();
+
+	// Loop over control settings
+	for(unsigned j=0;j<doc_control[0].size();j++)
 	{
-		doc[0][i] >> modelSpecs;
+		doc_control[0][j] >> controlSpec;
+		//print(controlSpec);
 
-		// FIXME this assumes square patches
-		if( modelSpecs.spec.xByX != 0.0 )
+		// Loop over models
+		for(unsigned i=0;i<doc_model[0].size();i++)
 		{
-			modelSpecs.spec.size_x = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
-			modelSpecs.spec.size_y = modelSpecs.spec.skin_element_diameter*modelSpecs.spec.xByX ;
-		}
+			doc_model[0][i] >> modelSpec;
+			//print(modelSpec);
 
-		std::cout << std::endl << "Experiment number: " << i + 1 << " out of " << doc[0].size() << std::endl;
+			// Generate experiment name
+			int skin_size    = modelSpec.spec.num_elements_x * modelSpec.spec.num_elements_y;
+			int tactile_size = modelSpec.spec.tactile_elements_x;// * modelSpec.spec.tactile_elements_x;
+			int tactile_sep  = modelSpec.spec.tactile_separation_x;// * modelSpec.spec.tactile_separation_y;
 
-		// Create model files
-		SkinSimModelBuilder skinSimModelBuilderObject( modelSpecs.name              ,
-				modelSpecs.spec.xByX                   ,
-				modelSpecs.spec.thick_board            ,
-				modelSpecs.spec.density                ,
-				modelSpecs.spec.size_x                 ,
-				modelSpecs.spec.size_y                 ,
-				modelSpecs.spec.skin_height            ,
-				modelSpecs.spec.plane_height           ,
-				modelSpecs.spec.tactile_height	       ,
-				modelSpecs.spec.skin_element_diameter  ,
-				modelSpecs.spec.tactile_length         ,
-				modelSpecs.spec.tactile_separation     );
+			std::ostringstream ss;
+			ss << std::setw(2) << std::setfill('0') << index
+			<< "_FB_" << (int)controlSpec.ctrType << "_Kp_" << std::setprecision(1) <<std::fixed << controlSpec.explFctr_Kp
+			<< "_tSize_" << tactile_size << "_tSep_" << tactile_sep;
 
-		delete this->server;
-		this->server = NULL;
+			std::string exp_name = "exp_" + ss.str()  ;
 
-		double Ne = modelSpecs.spec.xByX * modelSpecs.spec.xByX;
+			// Print info
+			std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
+			std::cout << "# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
 
-		std::string expName = "efc_"                                                        +
-				boost::lexical_cast<std::string>( Ne )                        +
-				"_"                                                           +
-				boost::lexical_cast<std::string>( modelSpecs.spec.tactile_length  ) +
-				"_"                                                           +
-				boost::lexical_cast<std::string>( modelSpecs.spec.tactile_separation )  ;
+			// Point model world file location
+			_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
 
-		saveControlSpec( expName );
+			// Compute number of iterations
+			iterations_max = modelSpec.spec.max_sim_time/modelSpec.spec.step_size;
+			m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
+			//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
+			//	    std::cout << it->first << " => " << it->second << '\n';
 
-		// Point to newly created world file location
-		_worldFilename = pathString + "/model/worlds/" + modelSpecs.name + ".world";
+			// Create Gazebo world
+			std::cout << "Initializing World" << std::endl;
+			// Create, load, and run the server in its own thread
+			this->serverThread = new boost::thread(
+					boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
+							_paused, _physics));
 
-		m_gazeboParams["iterations"] = "5000";
-
-		std::cout << "Initializing World" << std::endl;
-		// Create, load, and run the server in its own thread
-		this->serverThread = new boost::thread(
-				boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
-						_paused, _physics));
-
-		/********/
-		this->node = transport::NodePtr(new transport::Node());
-		this->node->Init();
-		this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
-		std::cout << "Initialized Transport Node" << std::endl;
-		/*******/
-
-		std::cout << "Waiting for world completion" << std::endl;
-		// Wait for the server to come up
-		// Use a 60 second timeout.
-		int waitCount = 0, maxWaitCount = 6000;
-		while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )
+			std::cout << "Waiting for world completion" << std::endl;
+			// Wait for the server to come up (15 second timeout)
+			int waitCount = 0, maxWaitCount = 150;
+			while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )		// TODO error handling if timeout occurs
 				common::Time::MSleep(100);
 
-				std::cout << "ServerFixture load in "
-				<< static_cast<double>(waitCount)/10.0
-				<< " seconds, timeout after "
-				<< static_cast<double>(maxWaitCount)/10.0
-				<< " seconds\n" ;
+			std::cout << "Gazebo server loaded in "<<(double)waitCount*0.1<<" seconds (timeout after "<<(double)maxWaitCount*0.1<<" seconds)\n";
 
-		while( physics::worlds_running() )
-		{
-			common::Time::MSleep(100);
+			// Initialize Gazebo transport node (to get simulation time)
+			this->node = transport::NodePtr(new transport::Node());
+			this->node->Init();
+			this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
+			//std::cout << "Initialized Transport Node" << std::endl;
+			// TODO subscribe to ~/physics/contacts
 
+			// Make sure the ROS node for Gazebo has already been initialized
+			if (!ros::isInitialized())
+			{
+				std::cerr<<"Error: ROS has not been initialized! \n";
+				exit(1);
+			}
+
+			// Create ROS service client
+			ros_namespace_ = "skinsim";
+			this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
+			this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+
+			// Set plunger force message
+			msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL;
+			msg_srv_.request.fb.selected   = (int)controlSpec.ctrType; //skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
+			msg_srv_.request.f_des = controlSpec.targetForce;
+			msg_srv_.request.x_des = 0.0;
+			msg_srv_.request.v_des = -0.005;
+			msg_srv_.request.Kp    = controlSpec.explFctr_Kp;
+			msg_srv_.request.Ki    = controlSpec.explFctr_Ki;
+			msg_srv_.request.Kd    = controlSpec.explFctr_Kd;
+			std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
+
+			// Start simulation
+			std::cout<<"Starting simulation...\n";
+			this->SetPause(false);
+
+			// Save ROS topic data to file
+			std::string topic = modelSpec.spec.topic;
+			std::string cmd1 = std::string("rostopic echo -p ") + topic.c_str() + std::string(" > ") + pathExp.c_str() + std::string("/") + exp_name.c_str() + std::string(".csv &");
+			std::cout<<"$ "<<cmd1.c_str()<<"\n";
+			system( cmd1.c_str() );
+
+			// Send control message
+			bool message_sent = false;
+			while( !message_sent )
+			{
+				// Send control message to plunger
+				if(!message_sent)
+				{
+					if (ros_srv_.call(msg_srv_))
+					{
+						message_sent = true;
+						std::cout<<"Control message sent!\n";
+					}
+					//else
+					//	std::cerr<<"Failed to send control message, trying again ...\n";
+				}
+				common::Time::MSleep(10);
+			}
+
+			// Wait for simulation to end
+			waitCount = 0;
+			while( physics::worlds_running() )
+			{
+				common::Time::MSleep(100);
+				waitCount++;
+
+				// Print status
+				if(waitCount > 10)
+					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << std::flush;
+			}
+
+			// Simulation finished
+			std::cout << RESET;
+			std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";
+			std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
+
+			// Stop saving ROS topic data to file
+			std::string cmd2 = std::string("pkill -9 -f ") + topic.c_str();
+			std::cout<<"$ "<<cmd2.c_str()<<"\n";
+			system( cmd2.c_str() );
+
+			// Cleanup
+			Unload();
+			delete ros_node_;
+
+			index++;
 		}
-
-		std::cout << std::endl << "Time: " << simTime.sec << " sec " << simTime.nsec << " nsec " << std::endl;
-
-
-		Unload();
-
 	}
 
 	delete this->server;
@@ -324,17 +416,40 @@ void runTests()
 
 };
 
+// Color for terminal text
+const char SkinSimTestingFramework::RED[]    = "\033[0;31m";
+const char SkinSimTestingFramework::GREEN[]  = "\033[0;32m";
+const char SkinSimTestingFramework::YELLOW[] = "\033[0;33m";
+const char SkinSimTestingFramework::RESET[]  = "\033[0m";
 
-
+// Main
 int main(int argc, char** argv)
 {
 
+	std::string exp_name = "exp01";		// Default experiment name
+
+	// Check the number of command-line parameters
+	if (argc == 2)
+	{
+		exp_name = argv[1];				// Set experiment name
+	}
+	else
+	{
+		std::cout<<"\n\tUsage: "<<argv[0]<<" [EXPERIMENT NAME]\n\n";
+	}
+
+	// Save current time
+	boost::chrono::steady_clock::time_point start = boost::chrono::steady_clock::now();
+
+	// Run simulation
 	SkinSimTestingFramework skinSimTestingFrameworkObject;
-	skinSimTestingFrameworkObject.runTests();
+	skinSimTestingFrameworkObject.runTests(exp_name);
+
+	// Print time elapsed
+	boost::chrono::duration<double> sec = boost::chrono::steady_clock::now() - start;
+	std::cout << "\n -> Auto experimenter completed in " << sec.count() << " seconds.\n\n";
 
 	return 0;
 
 }
-
-
 

@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, UT Arlington
+ *  Copyright (c) 2016, UT Arlington
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
  *********************************************************************/
 
 /* Author: Isura Ranatunga
+ *         Sven Cremer
  *
  * ModelSpecYAML.hh
  *  Created on: Jul 27, 2014
@@ -78,9 +79,27 @@ struct ModelSpec
   double patch_length_y               ; // Length of skin patch in y-direction
   double total_length_x               ; // Length of skin array in x-direction
   double total_length_y               ; // Length of skin array in y-direction
-  // TODO: tactile layer properties
-  double tactile_length               ; // The radius of the sensors underneath the skin layer (for which skin layer is marked in red) ?
-  double tactile_separation           ; // The space between each sensor underneath the skin layer (for which there are spaces between the rows and columns of skin elements) ?
+  // Tactile sensor properties
+  int tactile_elements_x              ; // Number of skin elements per sensor in x-direction
+  int tactile_elements_y              ; // Number of skin elements per sensor in y-direction
+  int tactile_separation_x            ; // Spaceing between sensors in terms of number of elements in x-direction
+  int tactile_separation_y            ; // Spaceing between sensors in terms of number of elements in x-direction
+  // Force spread model
+  double spread_scaling               ; // Force spread scaling factor
+  double spread_sigma                 ; // Force spread standard deviation
+  // Plunger properties
+  double plunger_radius               ;
+  double plunger_length               ;
+  double plunger_mass                 ; // Mass of plunger [kg]
+  double plunger_spring               ; // Stiffness [N/m]
+  double plunger_damping              ; // Damping
+  bool   plunger_gravity              ; // Turn on gravity for plunger
+  // Physics engine
+  int    solver_iterations            ; // Solver iterations
+  double step_size                    ; // Max step size [seconds]
+  double max_sim_time                 ; // When to stop simulation [seconds]
+  // Data collection
+  std::string topic                   ; // Which ROS topic to save
 };
 
 struct BuildModelSpec
@@ -113,8 +132,22 @@ inline void print(BuildModelSpec b)
 	std::cout<<" patch_length_y         : "<<b.spec.patch_length_y         <<"\n";
 	std::cout<<" total_length_x         : "<<b.spec.total_length_x         <<"\n";
 	std::cout<<" total_length_y         : "<<b.spec.total_length_y         <<"\n";
-	std::cout<<" tactile_length         : "<<b.spec.tactile_length         <<"\n";
-	std::cout<<" tactile_separation     : "<<b.spec.tactile_separation     <<"\n";
+	std::cout<<" tactile_elements_x     : "<<b.spec.tactile_elements_x     <<"\n";
+	std::cout<<" tactile_elements_y     : "<<b.spec.tactile_elements_y     <<"\n";
+	std::cout<<" tactile_separation_x   : "<<b.spec.tactile_separation_x   <<"\n";
+	std::cout<<" tactile_separation_y   : "<<b.spec.tactile_separation_y   <<"\n";
+	std::cout<<" spread_scaling         : "<<b.spec.spread_scaling         <<"\n";
+	std::cout<<" spread_sigma           : "<<b.spec.spread_sigma           <<"\n";
+	std::cout<<" plunger_radius         : "<<b.spec.plunger_radius         <<"\n";
+	std::cout<<" plunger_length         : "<<b.spec.plunger_length         <<"\n";
+	std::cout<<" plunger_mass           : "<<b.spec.plunger_mass           <<"\n";
+	std::cout<<" plunger_spring         : "<<b.spec.plunger_spring         <<"\n";
+	std::cout<<" plunger_damping        : "<<b.spec.plunger_damping        <<"\n";
+	std::cout<<" plunger_gravity        : "<<b.spec.plunger_gravity        <<"\n";
+	std::cout<<" solver_iterations      : "<<b.spec.solver_iterations      <<"\n";
+	std::cout<<" step_size              : "<<b.spec.step_size              <<"\n";
+	std::cout<<" max_sim_time           : "<<b.spec.max_sim_time           <<"\n";
+	std::cout<<" topic                  : "<<b.spec.topic                  <<"\n";
 }
 
 // Read from YAML
@@ -134,15 +167,29 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.init_x              = node["init_x"            ].as<double>() ;
 	spec.init_y              = node["init_y"            ].as<double>() ;
 	spec.init_z              = node["init_z"            ].as<double>() ;
-	spec.parent              = node["parent"            ].as<std::string>() ;
+	spec.parent              = node["parent"            ].as<std::string>() ;	// TODO check for tabs, i.e. \t
 	spec.ros_namespace       = node["ros_namespace"     ].as<std::string>() ;
 	spec.update_rate         = node["update_rate"       ].as<double>() ;
 	spec.patch_length_x      = node["patch_length_x"    ].as<double>() ;
 	spec.patch_length_y      = node["patch_length_y"    ].as<double>() ;
 	spec.total_length_x      = node["total_length_x"    ].as<double>() ;
 	spec.total_length_y      = node["total_length_y"    ].as<double>() ;
-	spec.tactile_length      = node["tactile_length"    ].as<double>() ;
-	spec.tactile_separation  = node["tactile_separation"].as<double>() ;
+	spec.tactile_elements_x   = node["tactile_elements_x"  ].as<int>() ;
+	spec.tactile_elements_y   = node["tactile_elements_y"  ].as<int>() ;
+	spec.tactile_separation_x = node["tactile_separation_x"].as<int>() ;
+	spec.tactile_separation_y = node["tactile_separation_y"].as<int>() ;
+	spec.spread_scaling      = node["spread_scaling"    ].as<double>() ;
+	spec.spread_sigma        = node["spread_sigma"      ].as<double>() ;
+	spec.plunger_radius      = node["plunger_radius"    ].as<double>() ;
+	spec.plunger_length      = node["plunger_length"    ].as<double>() ;
+	spec.plunger_mass        = node["plunger_mass"      ].as<double>() ;
+	spec.plunger_spring      = node["plunger_spring"    ].as<double>() ;
+	spec.plunger_damping     = node["plunger_damping"   ].as<double>() ;
+	spec.plunger_gravity     = node["plunger_gravity"   ].as<bool>() ;
+	spec.solver_iterations   = node["solver_iterations" ].as<int>() ;
+	spec.step_size           = node["step_size"         ].as<double>() ;
+	spec.max_sim_time        = node["max_sim_time"      ].as<double>() ;
+	spec.topic               = node["topic"             ].as<std::string>() ;
 }
 
 inline void operator >> (const YAML::Node& node, BuildModelSpec& buildModelSpec)
@@ -166,29 +213,43 @@ inline void operator >> (const YAML::Node& node, BuildModelSpec& buildModelSpec)
 inline YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
 {
     out << YAML::BeginMap;
-    out << YAML::Key << "num_elements_x"      ; out << YAML::Value <<  spec.num_elements_x     ;
-    out << YAML::Key << "num_elements_y"      ; out << YAML::Value <<  spec.num_elements_y     ;
-    out << YAML::Key << "num_patches_x"       ; out << YAML::Value <<  spec.num_patches_x      ;
-    out << YAML::Key << "num_patches_y"       ; out << YAML::Value <<  spec.num_patches_y      ;
-    out << YAML::Key << "element_diameter"    ; out << YAML::Value <<  spec.element_diameter   ;
-    out << YAML::Key << "element_height"      ; out << YAML::Value <<  spec.element_height     ;
-    out << YAML::Key << "element_mass"        ; out << YAML::Value <<  spec.element_mass       ;
-    out << YAML::Key << "element_spring"      ; out << YAML::Value <<  spec.element_spring     ;
-    out << YAML::Key << "element_damping"     ; out << YAML::Value <<  spec.element_damping    ;
-    out << YAML::Key << "plane_thickness"     ; out << YAML::Value <<  spec.plane_thickness    ;
-    out << YAML::Key << "plane_height"        ; out << YAML::Value <<  spec.plane_height       ;
-    out << YAML::Key << "init_x"              ; out << YAML::Value <<  spec.init_x             ;
-    out << YAML::Key << "init_y"              ; out << YAML::Value <<  spec.init_y             ;
-    out << YAML::Key << "init_z"              ; out << YAML::Value <<  spec.init_z             ;
-    out << YAML::Key << "parent"              ; out << YAML::Value <<  spec.parent             ;
-    out << YAML::Key << "ros_namespace"       ; out << YAML::Value <<  spec.ros_namespace      ;
-    out << YAML::Key << "update_rate"         ; out << YAML::Value <<  spec.update_rate        ;
-    out << YAML::Key << "patch_length_x"      ; out << YAML::Value <<  spec.patch_length_x     ;
-    out << YAML::Key << "patch_length_y"      ; out << YAML::Value <<  spec.patch_length_y     ;
-    out << YAML::Key << "total_length_x"      ; out << YAML::Value <<  spec.total_length_x     ;
-    out << YAML::Key << "total_length_y"      ; out << YAML::Value <<  spec.total_length_y     ;
-    out << YAML::Key << "tactile_length"      ; out << YAML::Value <<  spec.tactile_length     ;
-    out << YAML::Key << "tactile_separation"  ; out << YAML::Value <<  spec.tactile_separation ;
+    out << YAML::Key << "num_elements_x"       << YAML::Value <<  spec.num_elements_x     ;
+    out << YAML::Key << "num_elements_y"       << YAML::Value <<  spec.num_elements_y     ;
+    out << YAML::Key << "num_patches_x"        << YAML::Value <<  spec.num_patches_x      ;
+    out << YAML::Key << "num_patches_y"        << YAML::Value <<  spec.num_patches_y      ;
+    out << YAML::Key << "element_diameter"     << YAML::Value <<  spec.element_diameter   ;
+    out << YAML::Key << "element_height"       << YAML::Value <<  spec.element_height     ;
+    out << YAML::Key << "element_mass"         << YAML::Value <<  spec.element_mass       ;
+    out << YAML::Key << "element_spring"       << YAML::Value <<  spec.element_spring     ;
+    out << YAML::Key << "element_damping"      << YAML::Value <<  spec.element_damping    ;
+    out << YAML::Key << "plane_thickness"      << YAML::Value <<  spec.plane_thickness    ;
+    out << YAML::Key << "plane_height"         << YAML::Value <<  spec.plane_height       ;
+    out << YAML::Key << "init_x"               << YAML::Value <<  spec.init_x             ;
+    out << YAML::Key << "init_y"               << YAML::Value <<  spec.init_y             ;
+    out << YAML::Key << "init_z"               << YAML::Value <<  spec.init_z             ;
+    out << YAML::Key << "parent"               << YAML::Value <<  spec.parent             ;
+    out << YAML::Key << "ros_namespace"        << YAML::Value <<  spec.ros_namespace      ;
+    out << YAML::Key << "update_rate"          << YAML::Value <<  spec.update_rate        ;
+    out << YAML::Key << "patch_length_x"       << YAML::Value <<  spec.patch_length_x     ;
+    out << YAML::Key << "patch_length_y"       << YAML::Value <<  spec.patch_length_y     ;
+    out << YAML::Key << "total_length_x"       << YAML::Value <<  spec.total_length_x     ;
+    out << YAML::Key << "total_length_y"       << YAML::Value <<  spec.total_length_y     ;
+    out << YAML::Key << "tactile_elements_x"   << YAML::Value <<  spec.tactile_elements_x  ;
+    out << YAML::Key << "tactile_elements_y"   << YAML::Value <<  spec.tactile_elements_y  ;
+    out << YAML::Key << "tactile_separation_x" << YAML::Value <<  spec.tactile_separation_x;
+    out << YAML::Key << "tactile_separation_y" << YAML::Value <<  spec.tactile_separation_y;
+    out << YAML::Key << "spread_scaling"       << YAML::Value <<  spec.spread_scaling     ;
+    out << YAML::Key << "spread_sigma"         << YAML::Value <<  spec.spread_sigma       ;
+    out << YAML::Key << "plunger_radius"       << YAML::Value <<  spec.plunger_radius     ;
+    out << YAML::Key << "plunger_length"       << YAML::Value <<  spec.plunger_length     ;
+    out << YAML::Key << "plunger_mass"         << YAML::Value <<  spec.plunger_mass       ;
+    out << YAML::Key << "plunger_spring"       << YAML::Value <<  spec.plunger_spring     ;
+    out << YAML::Key << "plunger_damping"      << YAML::Value <<  spec.plunger_damping    ;
+    out << YAML::Key << "plunger_gravity"      << YAML::Value <<  spec.plunger_gravity    ;
+    out << YAML::Key << "solver_iterations"    << YAML::Value <<  spec.solver_iterations  ;
+    out << YAML::Key << "step_size"            << YAML::Value <<  spec.step_size          ;
+    out << YAML::Key << "max_sim_time"         << YAML::Value <<  spec.max_sim_time       ;
+    out << YAML::Key << "topic"                << YAML::Value <<  spec.topic              ;
     out << YAML::EndMap;
     return out;
 }

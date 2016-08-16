@@ -14,10 +14,17 @@ add_message_files(FILES
   Joint1D.msg
   Joint1DArray.msg
   PointArray.msg
+  ControllerType.msg
+  FeedbackType.msg
+  TactileData.msg
+  ForceFeedback.msg
+  PlungerData.msg
 )
 
 add_service_files(DIRECTORY srv FILES
   Empty.srv
+  SetController.srv
+  GetLayout.srv
 )
 
 generate_messages(

@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, UT Arlington
+ *  Copyright (c) 2016, UT Arlington
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,22 +33,18 @@
  *********************************************************************/
 
 /* Author: Isura Ranatunga
-           Ahsan Habib
+ *         Ahsan Habib
+ *         Sven Cremer
  *
- * skinmodel_sdf_generator.cpp
+ *  skin_model_generator.cc
  *  Created on: Jan 16, 2014
  */
 
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <vector>
-
-#include <Eigen/Core>
 #include <yaml-cpp/yaml.h>
 
 #include <SkinSim/model_builder.h>
-//#include <SkinSim/ModelBuilder.hh>
 #include <SkinSim/ModelSpecYAML.hh>
 
 using namespace SkinSim;
@@ -56,27 +52,24 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-  BuildModelSpec modelSpecs;
 
-  double xByX         			= 0.0 ;
+  std::string filename_model = "model_params.yaml";
 
-  double thick_board 	        = 0.2 ;
-  double density      	        = 0.0 ;
-  double size_x                 = 1.5 ;
-  double size_y                 = 1.5 ;
-
-  double skin_height            = 1.3 ;
-  double plane_height           = 0.4 ;
-  double skin_element_diameter                  = 0.5 ;
-
-  double tactile_length         = 1.0 ;
-  double tactile_separation    	= 3.0 ;
-
-  double tactile_height         = 0.05;		//Added Tac_Height
+  // Check the number of command-line parameters
+  if (argc == 2)
+  {
+	  // Set model file name
+	  filename_model = argv[1];
+  }
+  else
+  {
+	  // Use default file name
+	  std::cout<<"\n\tUsage: "<<argv[0]<<" [MODEL FILENAME]\n\n";
+  }
 
   // Read YAML files
   std::string pathString( getenv ("SKINSIM_PATH") );
-  std::string configFilePath = pathString + "/generator/config/model_params.yaml";
+  std::string configFilePath = pathString + "/generator/config/" + filename_model;
   std::ifstream fin(configFilePath.c_str());
 
   std::cout<<"Loading: "<<configFilePath<<"\n";
@@ -85,15 +78,19 @@ int main(int argc, char** argv)
   //std::cout<<"File Loaded"<<"\n";
   for(std::size_t i=0;i<doc[0].size();i++)
   {
-	  //std::cout<<"Spec Loaded: \n"<< doc[0][i] <<"\n";
-	  doc[0][i] >> modelSpecs;						// FIXME overwrites previous data
+	  // Load model specifications
+	  BuildModelSpec modelSpecs;
 
-	  std::cout<<"Spec Stored: \n";
+	  //std::cout<<"YAML data: \n"<< doc[0][i] <<"\n---\n";
+	  doc[0][i] >> modelSpecs;
+
+	  // Print result
+	  std::cout<<"### Specs Loaded ###\n";
 	  print(modelSpecs);
-  }
 
-  // Create model files
-  ModelBuilder skinSimModelBuilderObject( modelSpecs );
+	  // Create model file
+	  ModelBuilder skinSimModelBuilderObject( modelSpecs );
+  }
 
   fin.close();
 

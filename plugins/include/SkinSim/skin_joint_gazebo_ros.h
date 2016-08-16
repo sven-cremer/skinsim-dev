@@ -55,14 +55,40 @@
 
 // ROS messages
 #include <skinsim_ros_msgs/Joint1DArray.h>
-#include <skinsim_ros_msgs/Empty.h>
+#include <skinsim_ros_msgs/GetLayout.h>
 #include <skinsim_ros_msgs/PointArray.h>
+#include <skinsim_ros_msgs/TactileData.h>
+#include <skinsim_ros_msgs/ForceFeedback.h>
+#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
 
 // Utilities
 #include <yaml-cpp/yaml.h>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/bind.hpp>
 #include <SkinSim/ModelPath.hh>
+#include <Eigen/Core>
+
+struct Distances
+{
+	std::vector<int> index;
+	std::vector<double> distance;
+};
+struct Tactile
+{
+	int index;
+	math::Vector3 position;					// Center of sensor in skin_array frame
+	std::vector<std::string> joint_names;
+	std::vector<int> joint_index;
+	double force_sensed;
+	double force_applied;
+};
+
+bool indexSort(int a, int b, std::vector<double> data)
+{
+    return data[a]<data[b];
+}
 
 namespace gazebo
 {
@@ -101,8 +127,28 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief Stores the Gazebo model name
   private: std::string model_name_;
 
+  /// \brief A pointer to the contact manager of the physics engine
+  private: physics::ContactManager* contact_mgr_;
+
+  /// \brief Vector containing the collision names
+  private: std::vector<std::string> collision_names_;
+
+  /// \brief Number of contacts in one iteration step
+  private: int num_contacts_;
+
+  /// \brief Vector storing which elements are in contact in one iteration step
+  private: std::vector<bool> collision_index_;
+
+  private: Eigen::VectorXd f_app_;
+  private: Eigen::VectorXd f_sen_;
+  private: Eigen::VectorXd f_app_prev_;
+  private: Eigen::VectorXd f_sen_prev_;
+
   /// \brief A pointer to the ROS node handle
   private: ros::NodeHandle* ros_node_;
+
+  /// \brief A toggle for publishing to ROS
+  private: bool pub_to_ros_;
 
   /// \brief A ROS service server
   private: ros::ServiceServer ros_srv_;
@@ -110,40 +156,63 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief Service callback function that triggers the layout publisher
   /// The layout data could have been returned in the service response,
   /// however it is more convenient to save a rostopic into a CSV file.
-  private: bool serviceCB(skinsim_ros_msgs::Empty::Request& req, skinsim_ros_msgs::Empty::Response& res);
+  private: bool serviceCB(skinsim_ros_msgs::GetLayout::Request& req, skinsim_ros_msgs::GetLayout::Response& res);
 
   /// \brief A ROS publisher for the joint data
   private: ros::Publisher ros_pub_joint_;
 
+  /// \brief A ROS publisher for the tactile data
+  private: ros::Publisher ros_pub_tactile_;
+
+  /// \brief A ROS publisher for force feedback
+  private: ros::Publisher ros_pub_fb_;
+
   /// \brief A ROS publisher for the layout data
   private: ros::Publisher ros_pub_layout_;
 
-  /// \brief A toggle for publishing to ROS
-  private: bool pub_to_ros_;
+  /// \brief A ROS publisher for RVIZ
+  private: ros::Publisher ros_pub_rviz_;
 
   /// \brief A custom ROS message for the joint data
-  private: skinsim_ros_msgs::Joint1DArray joint_msg_;
+  private: skinsim_ros_msgs::Joint1DArray msg_joint_;
+
+  /// \brief A custom ROS message for the tactile data
+  private: skinsim_ros_msgs::TactileData msg_tactile_;
+
+  /// \brief A custom ROS message for the tactile data
+  private: skinsim_ros_msgs::ForceFeedback msg_fb_;
 
   /// \brief A custom ROS message for the layout data
-  private: skinsim_ros_msgs::PointArray layout_msg_;
+  private: skinsim_ros_msgs::PointArray msg_layout_;
 
-  /// \brief Stores the ROS topic name
+  /// \brief A custom ROS message for the layout data
+  private: visualization_msgs::MarkerArray msg_rviz_;
+
+  /// \brief Stores the ROS topic name for joint data
   private: std::string topic_name_;
 
   /// \brief Stores the ROS namespace
   private: std::string ros_namespace_;
 
-  /// \brief Count connections to ROS publisher
-  private: int ros_connections_;
-
   /// \brief: Empty callback function
   private: void emptyCB();
 
   /// \brief: Callback function when subscriber connects
-  private: void RosConnect();
-
+  private: void RosConnectJoint();
+  private: void RosConnectRviz();
+  private: void RosConnectTactile();
+  private: void RosConnectFb();
   /// \brief Callback function when subscriber disconnects
-  private: void RosDisconnect();
+  private: void RosDisconnectJoint();
+  private: void RosDisconnectRviz();
+  private: void RosDisconnectTactile();
+  private: void RosDisconnectFb();
+
+  /// \brief Count connections to ROS publisher
+  private: int ros_connections_joint_;
+  private: int ros_connections_rviz_;
+  private: int ros_connections_tactile_;
+  private: int ros_connections_fb_;
 
   /// \brief Callback queue thread that processes messages
   private: ros::CallbackQueue ros_queue_;
@@ -166,10 +235,25 @@ class SkinJointGazeboRos : public ModelPlugin
   private: double mass_;
   private: double sping_;
   private: double damper_;
+  private: double rest_angle_;
+
+  // Force spread model
+  private: double spread_scaling;
+  private: double spread_sigma;
+  private: double spread_variance;
 
   /// \brief For loading YAML parameters
   YAML::Node    doc_;
   std::ifstream input_file_;
+
+  /// \brief Distances between each element
+  private: std::vector<Distances> layout;
+
+  /// \brief Tactile sensor data
+  private: std::vector<Tactile> sensors_;
+
+  /// \brief Number of sensors inside the model
+  private: int num_sensors_;
 
 };
 
