@@ -102,6 +102,8 @@ public:
 
 	void addGeometry( Eigen::Vector3d & box_size );
 
+	void addGeometry( double radius, double length );
+
 	void addSurface();
 
 	void addMaterial( Eigen::Vector4d & ambient ,
@@ -112,6 +114,8 @@ public:
 	void addCollision( std::string collision_name,  double radius );
 
 	void addCollision( std::string collision_name, Eigen::Vector3d & box_size );
+
+	void addCollision( std::string collision_name,  double radius, double length );
 
 	void addVisual( std::string visual_name,
 			double radius,
@@ -126,6 +130,10 @@ public:
 			Eigen::Vector4d & diffuse ,
 			Eigen::Vector4d & specular,
 			Eigen::Vector4d & emissive  );
+
+	void addVisual( std::string visual_name,
+				double radius,
+				double length);
 
 	void addInertia( double mass );
 
@@ -151,6 +159,14 @@ public:
 			Eigen::Vector4d & specular,
 			Eigen::Vector4d & emissive  );
 
+	void addLink( std::string link_name,
+			double mass,
+			std::string collision_name,
+			std::string visual_name,
+			double radius,
+			double length,
+			Eigen::VectorXd & pose);
+
 	void addJoint( std::string joint_name,
 			std::string joint_type,
 			std::string parent,
@@ -164,6 +180,20 @@ public:
 			Eigen::Vector3d & axis,
 			double upper_limit,
 			double lower_limit );
+
+	void addSensor(std::string sensor_name,
+			std::string sensor_type,
+			std::string collision_name);
+
+	void addPlugin( std::string plugin_name,
+			std::string plugin_filename,
+			std::string plugin_file_name,
+			double kp,
+			double kd,
+			double kv,
+			double jointPGain,
+			double jointIGain,
+			double jointDGain);
 
 	void addPlugin( std::string plugin_name, std::string plugin_filename);
 
@@ -182,6 +212,7 @@ public:
 	void saveFile( std::string & filename, std::ostringstream & model );
 
 	void createModelFiles( BuildModelSpec modelSpecs_  );
+	void createPlungerModelFiles( BuildModelSpec modelSpecs_  );
 
 	void createSkinPatchElements(
 			std::string patch_name,
@@ -208,6 +239,16 @@ public:
 			double pos_y,
 			double pos_z,
 			Eigen::Vector4d color);
+
+	void createPlunger(
+				std::string link_name,
+				std::string parent_name,
+				double link_mass,
+				double radius,
+				double length,
+				double pos_x,
+				double pos_y,
+				double pos_z);
 
 };
 

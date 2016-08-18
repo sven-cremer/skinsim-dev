@@ -109,6 +109,17 @@ void ModelBuilder::addGeometry( Eigen::Vector3d & box_size )
 			<< "      </geometry>\n";
 }
 
+void ModelBuilder::addGeometry( double radius, double length )
+{
+	double scaled_radius = radius*1.0;
+	m_sdfStream << "      <geometry>\n"
+			<< "        <cylinder>\n"
+			<< "          <radius>" << scaled_radius << "</radius>\n"
+			<< "          <length>" << length << "</length>\n"
+			<< "        </cylinder>\n"
+			<< "      </geometry>\n";
+}
+
 void ModelBuilder::addSurface()
 {
 	m_sdfStream << "        <surface>\n"
@@ -153,7 +164,7 @@ void ModelBuilder::addCollision( std::string collision_name,  double radius )
 	m_sdfStream << "    <collision name='" + collision_name + "'>\n";
 	m_sdfStream << "		<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>\n";
 	addGeometry( radius );
-	addSurface();
+	//addSurface();
 	m_sdfStream << "    </collision>\n";
 }
 
@@ -163,6 +174,15 @@ void ModelBuilder::addCollision( std::string collision_name, Eigen::Vector3d & b
 	m_sdfStream << "		<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>\n";
 	addGeometry( box_size );
 	addSurface();
+	m_sdfStream << "    </collision>\n";
+}
+
+void ModelBuilder::addCollision( std::string collision_name, double radius, double length )
+{
+	m_sdfStream << "    <collision name='" + collision_name + "'>\n";
+	m_sdfStream << "		<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>\n";
+	addGeometry( radius, length );
+	//addSurface();
 	m_sdfStream << "    </collision>\n";
 }
 
@@ -198,6 +218,16 @@ void ModelBuilder::addVisual( std::string visual_name,
 	m_sdfStream << "    </visual>\n";
 }
 
+
+void ModelBuilder::addVisual( std::string visual_name,
+		double radius,
+		double length)
+{
+	m_sdfStream << "    <visual name='" + visual_name + "'>\n";
+	addGeometry( radius,length );
+	m_sdfStream << "    </visual>\n";
+}
+
 void ModelBuilder::addInertia( double mass )
 {
 	double Ixx = 0.4*mass*pow((0.5*m_.spec.element_diameter),2);
@@ -214,6 +244,19 @@ void ModelBuilder::addInertia( double mass )
 //                << "        </inertia>                     \n"
                 << "    </inertial>\n";
 }
+
+
+void ModelBuilder::addSensor(std::string sensor_name,
+		std::string sensor_type,
+		std::string collision_name)
+{
+	m_sdfStream << "    <sensor name='" + sensor_name + "' type='"+ sensor_type +"'>\n"
+	                << "        <" + sensor_type + ">\n"
+	                << "            <collision>"<<collision_name<<"</collision> \n"
+	                << "        </" + sensor_type + ">\n"
+	                << "    </sensor>\n";
+}
+
 
 void ModelBuilder::addLink( std::string link_name,
 		double mass,
@@ -266,6 +309,37 @@ void ModelBuilder::addLink( std::string link_name,
 			diffuse ,
 			specular,
 			emissive );
+	m_sdfStream << "   </link>\n";
+}
+
+void ModelBuilder::addLink( std::string link_name,
+		double mass,
+		std::string collision_name,
+		std::string visual_name,
+		double radius,
+		double length,
+		Eigen::VectorXd & pose)
+{
+	m_sdfStream << "  <link name='" + link_name + "'>\n"
+			<< "	<self_collide>0</self_collide>\n"
+			<< "    <gravity>0</gravity>\n"
+			<< "    <pose>"<< pose.transpose() << "</pose>\n";
+
+	addInertia( mass );
+
+	addCollision( collision_name, radius, length );			// FIXME uncomment
+
+	addVisual( visual_name,
+			radius,
+			length);
+
+	addSensor("plunger_sensor", "contact",collision_name);
+
+	m_sdfStream << "	<self_collide>0</self_collide>\n"
+	          	<< "	<kinematic>0</kinematic>\n"
+	            << "	<gravity>0</gravity>\n";
+
+
 	m_sdfStream << "   </link>\n";
 }
 
@@ -341,6 +415,30 @@ void ModelBuilder::addPlugin( std::string plugin_name, std::string plugin_filena
 			<< "    <spreadScaling>"  << m_.spec.spread_scaling  << "</spreadScaling>\n"
 			<< "    <spreadSigma>"    << m_.spec.spread_sigma    << "</spreadSigma>\n"
 			<< "  </plugin>";
+}
+
+
+void ModelBuilder::addPlugin( std::string plugin_name,
+			std::string plugin_filename,
+			std::string plugin_file_name,
+			double kp,
+			double kd,
+			double kv,
+			double jointPGain,
+			double jointIGain,
+			double jointDGain)
+{
+	m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
+				<< "    <fileName>"       << plugin_file_name << "</fileName>\n"
+				<< "    <rosNamespace>"   << m_.spec.ros_namespace   << "</rosNamespace>\n"
+				<< "    <updateRate>"     << m_.spec.update_rate     << "</updateRate>\n"
+				<< "    <Kp>"           << kp    << "</Kp>\n"
+				<< "    <Kd>"         << kd  << "</Kd>\n"
+				<< "    <Kv>"        << kv << "</Kv>\n"
+				<< "    <JointPgain>"  << jointPGain  << "</JointPgain>\n"
+				<< "    <JointIgain>"    << jointIGain    << "</JointIgain>\n"
+				<< "    <JointDgain>"    << jointDGain    << "</JointDgain>\n"
+				<< "  </plugin>";
 }
 
 std::string ModelBuilder::getDirPath( std::string & model_name )
@@ -518,6 +616,84 @@ void ModelBuilder::saveFile( std::string & filename, std::ostringstream & model 
 	saveToFile.close();
 }
 
+
+void ModelBuilder::createPlungerModelFiles( BuildModelSpec modelSpecs_ )
+{
+	// Store model specs
+
+	initSkinSimModelBuilder();
+	m_ = modelSpecs_;
+	std::string model_name = "plunger";
+
+	std::string modelDirectory = genModelDirectory( model_name );
+
+//	std::string joint_config_filename = modelDirectory + "joint_names.yaml";
+//	std::string tactile_id_filename   = modelDirectory + "tactile_id.yaml";
+//
+//	YAML::Emitter out_joint_names;
+//	std::ofstream fout(joint_config_filename.c_str());
+//
+//	YAML::Emitter out_tactile_id;
+//	std::ofstream fout2(tactile_id_filename.c_str());
+
+	//  sdf::SDFPtr robot(new sdf::SDF());
+	//  sdf::init(robot);
+
+	Eigen::VectorXd pose;
+	pose.resize(6,1);
+
+	// Initial position of skin array model
+	pose << m_.spec.init_x, m_.spec.init_y, 0.105, 0.0, 0.0, 0.0;		//TODO: Add Z Coordinate to plunger
+	generateModelStart( model_name, pose );
+
+
+	//////////////////////////////////////////////////////
+
+	createPlunger(
+					"plunger_link",
+					m_.spec.parent,
+					m_.spec.plunger_mass,
+					m_.spec.plunger_radius,
+					m_.spec.plunger_length,
+					0.0,
+					0.0,
+					0.105);
+
+	///////////////////////////////////////////////////////
+
+
+	//out_joint_names << YAML::BeginSeq;
+	//out_tactile_id << YAML::BeginMap;
+
+
+
+	//out_joint_names << YAML::EndSeq;
+	//out_tactile_id << YAML::EndMap;
+
+	// Write to YAML file and close
+	//std::cout<<"Saving: "<<joint_config_filename.c_str()<<"\n";
+	//fout << out_joint_names.c_str();
+	//fout.close();
+
+	//std::cout<<"Saving: "<<tactile_id_filename.c_str()<<"\n";
+	//fout2 << out_tactile_id.c_str();
+	//fout2.close();
+
+	//    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
+	//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );			// <- Simple plugin that works
+	//    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
+	//    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
+	//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin_V2.so", model_name );
+	//	  addPlugin( "SkinJointGazeboRos", "libSkinJointGazeboRos.so");
+
+	// Save files
+	saveSDFFile(   model_name);
+	saveConfigFile(model_name);
+	//saveWorldFile( model_name );
+
+}
+
+
 void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 {
 	// Store model specs
@@ -683,6 +859,12 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	saveSDFFile(   m_.name );
 	saveConfigFile(m_.name );
 	saveWorldFile( m_.name );
+
+	//Create Plunger Model
+	m_sdfStream.str("");
+	m_sdfStream.clear();
+	m_sdfStream.flush();
+	createPlungerModelFiles(m_);
 
 }
 
@@ -869,6 +1051,51 @@ void ModelBuilder::createSkinPatchElements(
 			spring_idx++;
 		}
 	}
+
+}
+
+void ModelBuilder::createPlunger(
+				std::string link_name,
+				std::string parent_name,
+				double link_mass,
+				double radius,
+				double length,
+				double pos_x,
+				double pos_y,
+				double pos_z)
+{
+
+	Eigen::VectorXd pose;
+	pose.resize(6,1);
+	pose << pos_x, pos_y, pos_z, 0, 0, 0;
+
+	addLink(	link_name,
+				link_mass,
+				"plunger_collision",
+				"plunger_visual",
+				radius,
+				length,
+				pose);
+
+
+	Eigen::Vector3d axis;
+	axis << 0, 0, 1;
+
+	addJoint("plunger_joint",
+						"prismatic",
+						m_.spec.parent,
+						link_name,
+						axis );
+
+	addPlugin( "Plunger",
+				"libPlunger.so",
+				"plunger",
+				m_.spec.plunger_mass,
+				m_.spec.plunger_spring,
+				m_.spec.plunger_damping,
+				0.5,
+				0.1,
+				0.0);
 
 }
 
