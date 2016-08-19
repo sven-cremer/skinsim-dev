@@ -51,59 +51,84 @@
 // Specs of the controller
 struct ControllerSpec
 {
-  std::string name    ;
+  std::string name    		;
 
-  double explFctr_Kp  ;
-  double explFctr_Ki  ;
-  double explFctr_Kd  ;
+  double explFctr_Kp  		;
+  double explFctr_Ki  		;
+  double explFctr_Kd  		;
 
-  double impCtr_Xnom  ;
-  double impCtr_M     ;
-  double impCtr_K     ;
-  double impCtr_D     ;
+  double impCtr_Xnom  		;
+  double impCtr_M     		;
+  double impCtr_K     		;
+  double impCtr_D     		;
 
-  double ctrType      ;
-  double targetForce  ;
+  double ctrType      		;
+  double targetForce  		;
+
+  double controller_type	;
+  double feedback_type		;
+  double plunger_Kp			;
+  double plunger_Ki			;
+  double plunger_Kd			;
+  double plunger_Kv			;
 };
 
 inline void print(ControllerSpec c)
 {
-	std::cout<<"Name         : "<<c.name           <<"\n";
-	std::cout<<" explFctr_Kp : "<<c.explFctr_Kp    <<"\n";
-	std::cout<<" explFctr_Ki : "<<c.explFctr_Ki    <<"\n";
-	std::cout<<" explFctr_Kd : "<<c.explFctr_Kd    <<"\n";
-	std::cout<<" impCtr_Xnom : "<<c.impCtr_Xnom    <<"\n";
-	std::cout<<" impCtr_K    : "<<c.impCtr_K       <<"\n";
-	std::cout<<" impCtr_D    : "<<c.impCtr_D       <<"\n";
-	std::cout<<" ctrType     : "<<c.ctrType        <<"\n";
-	std::cout<<" targetForce : "<<c.targetForce    <<"\n";
+	std::cout<<" Name            : "<<c.name               <<"\n";
+	std::cout<<" explFctr_Kp     : "<<c.explFctr_Kp        <<"\n";
+	std::cout<<" explFctr_Ki     : "<<c.explFctr_Ki        <<"\n";
+	std::cout<<" explFctr_Kd     : "<<c.explFctr_Kd        <<"\n";
+	std::cout<<" impCtr_Xnom     : "<<c.impCtr_Xnom        <<"\n";
+	std::cout<<" impCtr_K        : "<<c.impCtr_K           <<"\n";
+	std::cout<<" impCtr_D        : "<<c.impCtr_D           <<"\n";
+	std::cout<<" ctrType         : "<<c.ctrType            <<"\n";
+	std::cout<<" targetForce     : "<<c.targetForce        <<"\n";
+	std::cout<<" controller_type : "<<c.controller_type    <<"\n";
+	std::cout<<" feedback_type	 : "<<c.feedback_type	   <<"\n";
+	std::cout<<" plunger_Kp		 : "<<c.plunger_Kp		   <<"\n";
+	std::cout<<" plunger_Ki		 : "<<c.plunger_Ki		   <<"\n";
+	std::cout<<" plunger_Kd		 : "<<c.plunger_Kd		   <<"\n";
+	std::cout<<" plunger_Kv		 : "<<c.plunger_Kv		   <<"\n";
 }
 
 inline void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
 {
-  ctrSpec.name        = node["name"       ].as<std::string>() ;
-  ctrSpec.explFctr_Kp = node["explFctr_Kp"].as<double>() ;
-  ctrSpec.explFctr_Ki = node["explFctr_Ki"].as<double>() ;
-  ctrSpec.explFctr_Kd = node["explFctr_Kd"].as<double>() ;
-  ctrSpec.impCtr_Xnom = node["impCtr_Xnom"].as<double>() ;
-  ctrSpec.impCtr_K    = node["impCtr_K"   ].as<double>() ;
-  ctrSpec.impCtr_D    = node["impCtr_D"   ].as<double>() ;
-  ctrSpec.ctrType     = node["ctrType"    ].as<double>() ;
-  ctrSpec.targetForce = node["targetForce"].as<double>() ;
+  ctrSpec.name                = node["name"       		].as<std::string>() ;
+  ctrSpec.explFctr_Kp         = node["explFctr_Kp"		].as<double>() ;
+  ctrSpec.explFctr_Ki         = node["explFctr_Ki"		].as<double>() ;
+  ctrSpec.explFctr_Kd         = node["explFctr_Kd"		].as<double>() ;
+  ctrSpec.impCtr_Xnom         = node["impCtr_Xnom"		].as<double>() ;
+  ctrSpec.impCtr_K            = node["impCtr_K"   		].as<double>() ;
+  ctrSpec.impCtr_D            = node["impCtr_D"   		].as<double>() ;
+  ctrSpec.ctrType             = node["ctrType"    		].as<double>() ;
+  ctrSpec.targetForce         = node["targetForce"		].as<double>() ;
+  ctrSpec.controller_type 	  = node["controller_type"	].as<double>() ;
+  ctrSpec.feedback_type	      = node["feedback_type	"	].as<double>() ;
+  ctrSpec.plunger_Kp		  = node["plunger_Kp"		].as<double>() ;
+  ctrSpec.plunger_Ki		  = node["plunger_Ki"		].as<double>() ;
+  ctrSpec.plunger_Kd		  = node["plunger_Kd"		].as<double>() ;
+  ctrSpec.plunger_Kv		  = node["plunger_Kv"		].as<double>() ;
 }
 
 inline YAML::Emitter& operator << (YAML::Emitter& out, const ControllerSpec& ctrSpec)
 {
     out << YAML::BeginMap;
-    out << YAML::Key << "name"       ; out << YAML::Value <<  ctrSpec.name        ;
-    out << YAML::Key << "explFctr_Kp"; out << YAML::Value <<  ctrSpec.explFctr_Kp ;
-    out << YAML::Key << "explFctr_Ki"; out << YAML::Value <<  ctrSpec.explFctr_Ki ;
-    out << YAML::Key << "explFctr_Kd"; out << YAML::Value <<  ctrSpec.explFctr_Kd ;
-    out << YAML::Key << "impCtr_Xnom"; out << YAML::Value <<  ctrSpec.impCtr_Xnom ;
-    out << YAML::Key << "impCtr_K"   ; out << YAML::Value <<  ctrSpec.impCtr_K    ;
-    out << YAML::Key << "impCtr_D"   ; out << YAML::Value <<  ctrSpec.impCtr_D    ;
-    out << YAML::Key << "ctrType"    ; out << YAML::Value <<  ctrSpec.ctrType     ;
-    out << YAML::Key << "targetForce"; out << YAML::Value <<  ctrSpec.targetForce ;
+    out << YAML::Key << "name"       		; out << YAML::Value <<  ctrSpec.name        		;
+    out << YAML::Key << "explFctr_Kp"		; out << YAML::Value <<  ctrSpec.explFctr_Kp 		;
+    out << YAML::Key << "explFctr_Ki"		; out << YAML::Value <<  ctrSpec.explFctr_Ki 		;
+    out << YAML::Key << "explFctr_Kd"		; out << YAML::Value <<  ctrSpec.explFctr_Kd 		;
+    out << YAML::Key << "impCtr_Xnom"		; out << YAML::Value <<  ctrSpec.impCtr_Xnom 		;
+    out << YAML::Key << "impCtr_K"   		; out << YAML::Value <<  ctrSpec.impCtr_K    		;
+    out << YAML::Key << "impCtr_D"   		; out << YAML::Value <<  ctrSpec.impCtr_D    		;
+    out << YAML::Key << "ctrType"    		; out << YAML::Value <<  ctrSpec.ctrType     		;
+    out << YAML::Key << "targetForce"		; out << YAML::Value <<  ctrSpec.targetForce 		;
+    out << YAML::Key << "controller_type"	; out << YAML::Value <<  ctrSpec.controller_type 	;
+    out << YAML::Key << "feedback_type"		; out << YAML::Value <<  ctrSpec.feedback_type	 	;
+    out << YAML::Key << "plunger_Kp"		; out << YAML::Value <<  ctrSpec.plunger_Kp		 	;
+    out << YAML::Key << "plunger_Ki"		; out << YAML::Value <<  ctrSpec.plunger_Ki		 	;
+    out << YAML::Key << "plunger_Kd"		; out << YAML::Value <<  ctrSpec.plunger_Kd		 	;
+    out << YAML::Key << "plunger_Kv"		; out << YAML::Value <<  ctrSpec.plunger_Kv		 	;
     out << YAML::EndMap;
     return out;
 }
