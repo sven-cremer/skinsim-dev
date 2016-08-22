@@ -147,7 +147,8 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		this->ros_sub_fb_ = this->ros_node_->subscribe("/skinsim/force_feedback", 1, &Plunger::ForceFeedbackCB, this);
 
 		// ROS services
-		this->ros_srv_ = this->ros_node_->advertiseService("set_controller", &Plunger::serviceCB, this);
+		this->ros_srv_ 			= 	this->ros_node_->advertiseService("set_controller", &Plunger::serviceCB, this);
+		this->ros_srv_gains_ 	= 	this->ros_node_->advertiseService("set_PIDGains", &Plunger::serviceSetPIDCB, this);
 
 		// Custom Callback Queue
 		this->callback_ros_queue_thread_ = boost::thread( boost::bind( &Plunger::RosQueueThread,this ) );
@@ -350,6 +351,34 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		this->force_desired_    = req.f_des;
 		this->position_desired_ = req.x_des;
 		this->velocity_desired_	= req.v_des;
+		this->Kp_               = req.Kp;
+		this->Ki_               = req.Ki;
+		this->Kd_               = req.Kd;
+
+		res.success = true;
+		break;
+	default:
+		std::cout<<"Controller not implemented.\n";
+		res.success = false;
+		break;
+	}
+	this->lock_.unlock();
+	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Callback function when subscriber connects
+bool Plunger::serviceSetPIDCB(skinsim_ros_msgs::SetPIDGains::Request& req, skinsim_ros_msgs::SetPIDGains::Response& res)
+{
+	// Store data
+	this->lock_.lock();
+
+
+	switch(this->controller_type_.selected)
+	{
+	case skinsim_ros_msgs::ControllerType::DIRECT:
+	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
+	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
 		this->Kp_               = req.Kp;
 		this->Ki_               = req.Ki;
 		this->Kd_               = req.Kd;
