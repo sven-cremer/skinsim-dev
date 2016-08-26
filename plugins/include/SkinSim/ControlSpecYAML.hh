@@ -100,12 +100,22 @@ inline void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
   ctrSpec.impCtr_K            = node["impCtr_K"   		].as<double>() ;
   ctrSpec.impCtr_D            = node["impCtr_D"   		].as<double>() ;
   ctrSpec.targetForce         = node["targetForce"		].as<double>() ;
-  ctrSpec.controller_type 	  = node["controller_type"	].as<int>() ;
-  ctrSpec.feedback_type	      = node["feedback_type	"	].as<int>() ;
   ctrSpec.plunger_Kp		  = node["plunger_Kp"		].as<double>() ;
   ctrSpec.plunger_Ki		  = node["plunger_Ki"		].as<double>() ;
   ctrSpec.plunger_Kd		  = node["plunger_Kd"		].as<double>() ;
   ctrSpec.plunger_Kv		  = node["plunger_Kv"		].as<double>() ;
+
+  // TODO: improve this temporary fix
+  try{
+	  ctrSpec.controller_type 	  = node["controller_type"	].as<int>() ;
+  } catch (const YAML::BadConversion& e) {
+	  ctrSpec.controller_type 	  = (int)node["controller_type"	].as<double>() ;
+  }
+  try{
+	  ctrSpec.feedback_type	      = node["feedback_type"	].as<int>() ;
+  } catch (const YAML::BadConversion& e) {
+	  ctrSpec.feedback_type 	  = (int)node["feedback_type"	].as<double>() ;
+  }
 }
 
 inline YAML::Emitter& operator << (YAML::Emitter& out, const ControllerSpec& ctrSpec)
