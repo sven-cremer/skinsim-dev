@@ -53,8 +53,12 @@ ModelBuilder::ModelBuilder( )
 
 ModelBuilder::ModelBuilder( BuildModelSpec modelSpecs )
 {
+	// Create skin array models
 	initSkinSimModelBuilder();
 	createModelFiles( modelSpecs );
+
+	//Create Plunger Model
+	createPlungerModelFiles("plunger_test");	// FIXME: only generate plunger once
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -532,6 +536,7 @@ void ModelBuilder::saveSDFFile( std::string & model_name )
 	std::cout<<"Saving: "<<filename.c_str()<<"\n";
 
 	sdf::SDF m_sdfParsed;
+	m_sdfParsed.version = "1.5";
 	m_sdfParsed.SetFromString( m_sdfStream.str() );
 	m_sdfParsed.Write( filename );
 }
@@ -893,10 +898,6 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	saveSDFFile(   m_.name );
 	saveConfigFile(m_.name );
 	saveWorldFile( m_.name );
-
-	//Create Plunger Model
-	createPlungerModelFiles("plunger_test");
-
 }
 
 void ModelBuilder::createPlane(
