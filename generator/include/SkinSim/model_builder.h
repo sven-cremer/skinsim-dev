@@ -63,7 +63,6 @@ class ModelBuilder
 {
 private:
 	std::ostringstream m_sdfStream;
-	sdf::SDF m_sdfParsed;
 	std::string pathString;
 	BuildModelSpec m_;
 
@@ -159,7 +158,7 @@ public:
 			Eigen::Vector4d & specular,
 			Eigen::Vector4d & emissive  );
 
-	void addLink( std::string link_name,
+	void addPlungerLink( std::string link_name,
 			double mass,
 			std::string collision_name,
 			std::string visual_name,
@@ -168,6 +167,12 @@ public:
 			Eigen::VectorXd & pose);
 
 	void addJoint( std::string joint_name,
+			std::string joint_type,
+			std::string parent,
+			std::string child,
+			Eigen::Vector3d & axis );
+
+	void addPlungerJoint( std::string joint_name,
 			std::string joint_type,
 			std::string parent,
 			std::string child,
@@ -185,7 +190,7 @@ public:
 			std::string sensor_type,
 			std::string collision_name);
 
-	void addPlugin( std::string plugin_name,
+	void addPlungerPlugin( std::string plugin_name,
 			std::string plugin_filename,
 			std::string plugin_file_name,
 			double kp,
@@ -204,6 +209,7 @@ public:
 	std::string genWorldDirectory( std::string & model_name );
 
 	void saveSDFFile( std::string & model_name );
+	void saveSDFFile( std::string & model_name,  std::string & version);
 
 	void saveConfigFile( std::string & model_name );
 
@@ -212,7 +218,7 @@ public:
 	void saveFile( std::string & filename, std::ostringstream & model );
 
 	void createModelFiles( BuildModelSpec modelSpecs_  );
-	void createPlungerModelFiles( BuildModelSpec modelSpecs_  );
+	void createPlungerModelFiles(std::string model_name);
 
 	void createSkinPatchElements(
 			std::string patch_name,
@@ -239,16 +245,6 @@ public:
 			double pos_y,
 			double pos_z,
 			Eigen::Vector4d color);
-
-	void createPlunger(
-				std::string link_name,
-				std::string parent_name,
-				double link_mass,
-				double radius,
-				double length,
-				double pos_x,
-				double pos_y,
-				double pos_z);
 
 };
 
