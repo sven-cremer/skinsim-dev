@@ -25,6 +25,7 @@ add_service_files(DIRECTORY srv FILES
   Empty.srv
   SetController.srv
   GetLayout.srv
+  SetPIDGains.srv
 )
 
 generate_messages(

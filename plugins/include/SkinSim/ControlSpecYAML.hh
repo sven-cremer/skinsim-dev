@@ -65,8 +65,8 @@ struct ControllerSpec
   double ctrType      		;
   double targetForce  		;
 
-  double controller_type	;
-  double feedback_type		;
+  int	 controller_type	;
+  int 	 feedback_type		;
   double plunger_Kp			;
   double plunger_Ki			;
   double plunger_Kd			;
@@ -103,8 +103,8 @@ inline void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
   ctrSpec.impCtr_D            = node["impCtr_D"   		].as<double>() ;
   ctrSpec.ctrType             = node["ctrType"    		].as<double>() ;
   ctrSpec.targetForce         = node["targetForce"		].as<double>() ;
-  ctrSpec.controller_type 	  = node["controller_type"	].as<double>() ;
-  ctrSpec.feedback_type	      = node["feedback_type	"	].as<double>() ;
+  ctrSpec.controller_type 	  = node["controller_type"	].as<int>() ;
+  ctrSpec.feedback_type	      = node["feedback_type	"	].as<int>() ;
   ctrSpec.plunger_Kp		  = node["plunger_Kp"		].as<double>() ;
   ctrSpec.plunger_Ki		  = node["plunger_Ki"		].as<double>() ;
   ctrSpec.plunger_Kd		  = node["plunger_Kd"		].as<double>() ;
