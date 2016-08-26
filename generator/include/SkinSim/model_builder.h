@@ -65,6 +65,7 @@ private:
 	std::ostringstream m_sdfStream;
 	std::string pathString;
 	BuildModelSpec m_;
+	std::string plunger_name;
 
 	int total_elements_x;		// elements/patch * patches
 	int total_elements_y;
@@ -205,6 +206,7 @@ public:
 	std::string getDirPath( std::string & model_name );
 
 	std::string genModelDirectory( std::string & model_name );
+	bool checkModelDirectory( std::string & model_name );
 
 	std::string genWorldDirectory( std::string & model_name );
 

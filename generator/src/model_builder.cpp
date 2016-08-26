@@ -53,12 +53,18 @@ ModelBuilder::ModelBuilder( )
 
 ModelBuilder::ModelBuilder( BuildModelSpec modelSpecs )
 {
+	plunger_name = "plunger_generated";
+
 	// Create skin array models
 	initSkinSimModelBuilder();
 	createModelFiles( modelSpecs );
 
 	//Create Plunger Model
-	createPlungerModelFiles("plunger_test");	// FIXME: only generate plunger once
+	if(!checkModelDirectory(plunger_name))	// Only generate plunger once
+	{
+		std::cout<<"Generating plunger ...\n";
+		createPlungerModelFiles(plunger_name);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -522,6 +528,13 @@ std::string ModelBuilder::genModelDirectory( std::string & model_name )
 	return filepath;
 }
 
+bool ModelBuilder::checkModelDirectory( std::string & model_name )
+{
+	std::string filepath = getDirPath( model_name ) + "/models/" + model_name + "/";
+	boost::filesystem::path dir(filepath);
+	return boost::filesystem::exists(dir);
+}
+
 std::string ModelBuilder::genWorldDirectory( std::string & model_name )
 {
 	std::string filepath = getDirPath( model_name ) + "/worlds/";
@@ -618,7 +631,7 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 			<< "    </include>"                                                              <<"\n"
 			<< "    "                                                                        <<"\n"
 			<< "    <include>"                                                               <<"\n"
-			<< "      <uri>model://plunger_test</uri>"                                       <<"\n"
+			<< "      <uri>model://"<<plunger_name.c_str() <<"</uri>"                        <<"\n"
 			<< "      <pose>"<<px.c_str()<<" "<<py.c_str()<<" "<<pz.c_str()<<" 0 0 0</pose>" <<"\n"
 			<< "    </include>"                                                              <<"\n"
 			<< "    "                                                                        <<"\n"
@@ -668,10 +681,6 @@ void ModelBuilder::saveFile( std::string & filename, std::ostringstream & model 
 
 void ModelBuilder::createPlungerModelFiles(std::string model_name )
 {
-
-	//initSkinSimModelBuilder();
-	model_name = "plunger_test";
-
 	m_sdfStream.str("");
 	m_sdfStream.clear();
 	m_sdfStream << "<?xml version='1.0' ?>\n";
