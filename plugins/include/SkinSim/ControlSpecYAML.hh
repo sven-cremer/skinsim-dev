@@ -62,7 +62,6 @@ struct ControllerSpec
   double impCtr_K     		;
   double impCtr_D     		;
 
-  double ctrType      		;
   double targetForce  		;
 
   int	 controller_type	;
@@ -76,16 +75,15 @@ struct ControllerSpec
 inline void print(ControllerSpec c)
 {
 	std::cout<<" Name            : "<<c.name               <<"\n";
+	std::cout<<" controller_type : "<<c.controller_type    <<"\n";
+	std::cout<<" feedback_type	 : "<<c.feedback_type	   <<"\n";
 	std::cout<<" explFctr_Kp     : "<<c.explFctr_Kp        <<"\n";
 	std::cout<<" explFctr_Ki     : "<<c.explFctr_Ki        <<"\n";
 	std::cout<<" explFctr_Kd     : "<<c.explFctr_Kd        <<"\n";
 	std::cout<<" impCtr_Xnom     : "<<c.impCtr_Xnom        <<"\n";
 	std::cout<<" impCtr_K        : "<<c.impCtr_K           <<"\n";
 	std::cout<<" impCtr_D        : "<<c.impCtr_D           <<"\n";
-	std::cout<<" ctrType         : "<<c.ctrType            <<"\n";
 	std::cout<<" targetForce     : "<<c.targetForce        <<"\n";
-	std::cout<<" controller_type : "<<c.controller_type    <<"\n";
-	std::cout<<" feedback_type	 : "<<c.feedback_type	   <<"\n";
 	std::cout<<" plunger_Kp		 : "<<c.plunger_Kp		   <<"\n";
 	std::cout<<" plunger_Ki		 : "<<c.plunger_Ki		   <<"\n";
 	std::cout<<" plunger_Kd		 : "<<c.plunger_Kd		   <<"\n";
@@ -101,7 +99,6 @@ inline void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
   ctrSpec.impCtr_Xnom         = node["impCtr_Xnom"		].as<double>() ;
   ctrSpec.impCtr_K            = node["impCtr_K"   		].as<double>() ;
   ctrSpec.impCtr_D            = node["impCtr_D"   		].as<double>() ;
-  ctrSpec.ctrType             = node["ctrType"    		].as<double>() ;
   ctrSpec.targetForce         = node["targetForce"		].as<double>() ;
   ctrSpec.controller_type 	  = node["controller_type"	].as<int>() ;
   ctrSpec.feedback_type	      = node["feedback_type	"	].as<int>() ;
@@ -121,7 +118,6 @@ inline YAML::Emitter& operator << (YAML::Emitter& out, const ControllerSpec& ctr
     out << YAML::Key << "impCtr_Xnom"		; out << YAML::Value <<  ctrSpec.impCtr_Xnom 		;
     out << YAML::Key << "impCtr_K"   		; out << YAML::Value <<  ctrSpec.impCtr_K    		;
     out << YAML::Key << "impCtr_D"   		; out << YAML::Value <<  ctrSpec.impCtr_D    		;
-    out << YAML::Key << "ctrType"    		; out << YAML::Value <<  ctrSpec.ctrType     		;
     out << YAML::Key << "targetForce"		; out << YAML::Value <<  ctrSpec.targetForce 		;
     out << YAML::Key << "controller_type"	; out << YAML::Value <<  ctrSpec.controller_type 	;
     out << YAML::Key << "feedback_type"		; out << YAML::Value <<  ctrSpec.feedback_type	 	;
