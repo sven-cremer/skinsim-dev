@@ -1,6 +1,6 @@
 # Default Configuration file for model generator
 # Used by skin model generator and auto generator
-- name: skin_array
+- name: skin_array_test
   spec:
       #############################
       # MODEL BUILDER             #

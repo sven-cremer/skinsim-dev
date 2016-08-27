@@ -151,7 +151,8 @@ int main(int argc, char** argv)
 	tempSpec.impCtr_M     = 5       ;
 	tempSpec.impCtr_K     = 24      ;
 	tempSpec.impCtr_D     = 10      ;
-	tempSpec.ctrType      = 1       ;
+	tempSpec.controller_type = 1    ;
+	tempSpec.feedback_type   = 1    ;
 	tempSpec.targetForce  = 0.01    ;
 
 	ctrSpecs.push_back( tempSpec );

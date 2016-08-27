@@ -6,5 +6,6 @@ float64 v_des                           # Desired velocity
 float64 Kp                              # Proportional gain
 float64 Ki                              # Integral gain
 float64 Kd                              # Derivative gain
+float64 Kv                              # Velocity gain
 ---
 bool success
