@@ -103,6 +103,26 @@ sudo apt-get remove gazebo2
 ```
 and then try installing *libgazebo5-dev* again.
 
+### Eclipse IDE
+Download https://eclipse.org/cdt/ and extract it into your home folder. Open Eclipse from terminal, e.g.
+```
+~/eclipse/eclipse
+```
+Do this once to the generate the Eclipse project files:
+```
+cd ~/skin_ws
+catkin_make --force-cmake \
+  -G"Eclipse CDT4 - Unix Makefiles" \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_ECLIPSE_MAKE_ARGUMENTS=-j4
+```
+Go to [Import]->[General]->[Existing Projects Into Workspace] and select the *~/skin_ws* folder as your root directory. Make sure there is a checkmark next to the project and press [Finish].  
+*Note*: If Eclipse has trouble recognizing syntax, try going to 
+```
+[Project]->[Properties]->[C/C++ General]->[Preprocessor Include Paths...]->[Providers]
+```
+and then select ```[CDT GCC Build Output Parser]``` and ```[CDT GCC Built-in Compiler Settings[shared]]```. Finally, rebuild the index, i.e. right click on the *Project-Debug@build* folder and go to [Index]->[Rebuild].
+
 ### Executables
 For detailed usage, see the demo descriptions below.
 
