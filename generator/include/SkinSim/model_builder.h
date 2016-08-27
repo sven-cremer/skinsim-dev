@@ -63,9 +63,9 @@ class ModelBuilder
 {
 private:
 	std::ostringstream m_sdfStream;
-	sdf::SDF m_sdfParsed;
 	std::string pathString;
 	BuildModelSpec m_;
+	std::string plunger_name;
 
 	int total_elements_x;		// elements/patch * patches
 	int total_elements_y;
@@ -102,6 +102,8 @@ public:
 
 	void addGeometry( Eigen::Vector3d & box_size );
 
+	void addGeometry( double radius, double length );
+
 	void addSurface();
 
 	void addMaterial( Eigen::Vector4d & ambient ,
@@ -112,6 +114,8 @@ public:
 	void addCollision( std::string collision_name,  double radius );
 
 	void addCollision( std::string collision_name, Eigen::Vector3d & box_size );
+
+	void addCollision( std::string collision_name,  double radius, double length );
 
 	void addVisual( std::string visual_name,
 			double radius,
@@ -126,6 +130,10 @@ public:
 			Eigen::Vector4d & diffuse ,
 			Eigen::Vector4d & specular,
 			Eigen::Vector4d & emissive  );
+
+	void addVisual( std::string visual_name,
+				double radius,
+				double length);
 
 	void addInertia( double mass );
 
@@ -151,7 +159,21 @@ public:
 			Eigen::Vector4d & specular,
 			Eigen::Vector4d & emissive  );
 
+	void addPlungerLink( std::string link_name,
+			double mass,
+			std::string collision_name,
+			std::string visual_name,
+			double radius,
+			double length,
+			Eigen::VectorXd & pose);
+
 	void addJoint( std::string joint_name,
+			std::string joint_type,
+			std::string parent,
+			std::string child,
+			Eigen::Vector3d & axis );
+
+	void addPlungerJoint( std::string joint_name,
 			std::string joint_type,
 			std::string parent,
 			std::string child,
@@ -165,15 +187,31 @@ public:
 			double upper_limit,
 			double lower_limit );
 
+	void addSensor(std::string sensor_name,
+			std::string sensor_type,
+			std::string collision_name);
+
+	void addPlungerPlugin( std::string plugin_name,
+			std::string plugin_filename,
+			std::string plugin_file_name,
+			double kp,
+			double kd,
+			double kv,
+			double jointPGain,
+			double jointIGain,
+			double jointDGain);
+
 	void addPlugin( std::string plugin_name, std::string plugin_filename);
 
 	std::string getDirPath( std::string & model_name );
 
 	std::string genModelDirectory( std::string & model_name );
+	bool checkModelDirectory( std::string & model_name );
 
 	std::string genWorldDirectory( std::string & model_name );
 
 	void saveSDFFile( std::string & model_name );
+	void saveSDFFile( std::string & model_name,  std::string & version);
 
 	void saveConfigFile( std::string & model_name );
 
@@ -182,6 +220,7 @@ public:
 	void saveFile( std::string & filename, std::ostringstream & model );
 
 	void createModelFiles( BuildModelSpec modelSpecs_  );
+	void createPlungerModelFiles(std::string model_name);
 
 	void createSkinPatchElements(
 			std::string patch_name,
