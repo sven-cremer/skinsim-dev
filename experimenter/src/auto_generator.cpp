@@ -205,7 +205,6 @@ int main(int argc, char** argv)
 	defaultControlSpec.impCtr_M     	= 0       ;
 	defaultControlSpec.impCtr_K     	= 0       ;
 	defaultControlSpec.impCtr_D     	= 0       ;
-	defaultControlSpec.ctrType      	= 1       ;		// TACTILE_APPLIED=1, TACTILE_SENSED=2
 	defaultControlSpec.targetForce  	= -2      ;
 	defaultControlSpec.controller_type	= 1		  ;		//DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3
 	defaultControlSpec.feedback_type	= 0 	  ; 	//PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
@@ -224,7 +223,7 @@ int main(int argc, char** argv)
 			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( num );
 			tempControlSpec.explFctr_Kp = 0.5*i;
 			tempControlSpec.explFctr_Kd = 0.0;
-			tempControlSpec.ctrType = j;
+			tempControlSpec.controller_type = j;
 			ctrSpecs.push_back( tempControlSpec ) ;
 			num++;
 		}

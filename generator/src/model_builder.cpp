@@ -53,8 +53,18 @@ ModelBuilder::ModelBuilder( )
 
 ModelBuilder::ModelBuilder( BuildModelSpec modelSpecs )
 {
+	plunger_name = "plunger_generated";
+
+	// Create skin array models
 	initSkinSimModelBuilder();
 	createModelFiles( modelSpecs );
+
+	//Create Plunger Model
+	if(!checkModelDirectory(plunger_name))	// Only generate plunger once
+	{
+		std::cout<<"Generating plunger ...\n";
+		createPlungerModelFiles(plunger_name);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -86,7 +96,7 @@ void ModelBuilder::generateModelEnd()
 void ModelBuilder::generateModelStart( std::string name, Eigen::VectorXd & pose )
 {
 	m_sdfStream << "  <model name='" + name + "'>\n"
-			<< "    <pose>"<< pose.transpose() << "</pose>\n";
+                << "    <pose>"<< pose.transpose() << "</pose>\n";
 }
 
 void ModelBuilder::addGeometry( double radius )
@@ -112,12 +122,12 @@ void ModelBuilder::addGeometry( Eigen::Vector3d & box_size )
 void ModelBuilder::addGeometry( double radius, double length )
 {
 	double scaled_radius = radius*1.0;
-	m_sdfStream << "      <geometry>\n"
-			<< "        <cylinder>\n"
-			<< "          <radius>" << scaled_radius << "</radius>\n"
-			<< "          <length>" << length << "</length>\n"
-			<< "        </cylinder>\n"
-			<< "      </geometry>\n";
+	m_sdfStream << "              <geometry>\n"
+                << "                  <cylinder>\n"
+                << "                       <radius>" << scaled_radius << "</radius>\n"
+                << "                       <length>" << length << "</length>\n"
+                << "                  </cylinder>\n"
+                << "              </geometry>\n";
 }
 
 void ModelBuilder::addSurface()
@@ -179,11 +189,12 @@ void ModelBuilder::addCollision( std::string collision_name, Eigen::Vector3d & b
 
 void ModelBuilder::addCollision( std::string collision_name, double radius, double length )
 {
-	m_sdfStream << "    <collision name='" + collision_name + "'>\n";
-	m_sdfStream << "		<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>\n";
+	m_sdfStream << "          <collision name='" + collision_name + "'>\n";
+//	m_sdfStream << "		<pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>\n";
 	addGeometry( radius, length );
 	//addSurface();
-	m_sdfStream << "    </collision>\n";
+	m_sdfStream << "              <max_contacts>500</max_contacts>\n";
+	m_sdfStream << "          </collision>\n\n";
 }
 
 void ModelBuilder::addVisual( std::string visual_name,
@@ -220,12 +231,18 @@ void ModelBuilder::addVisual( std::string visual_name,
 
 
 void ModelBuilder::addVisual( std::string visual_name,
-		double radius,
-		double length)
+                              double radius,
+                              double length)
 {
-	m_sdfStream << "    <visual name='" + visual_name + "'>\n";
-	addGeometry( radius,length );
-	m_sdfStream << "    </visual>\n";
+	m_sdfStream << "          <visual name='" + visual_name + "'>\n";
+	addGeometry( radius, length );
+	m_sdfStream << "              <material>\n"
+			    << "                <script>\n"
+			    << "                  <uri>file://media/materials/scripts/gazebo.material</uri>\n"
+			    << "                  <name>Gazebo/Blue</name>\n"
+			    << "                </script>\n"
+			    << "              </material>\n";
+	m_sdfStream << "          </visual>\n\n";
 }
 
 void ModelBuilder::addInertia( double mass )
@@ -247,14 +264,15 @@ void ModelBuilder::addInertia( double mass )
 
 
 void ModelBuilder::addSensor(std::string sensor_name,
-		std::string sensor_type,
-		std::string collision_name)
+                             std::string sensor_type,
+                             std::string collision_name)
 {
-	m_sdfStream << "    <sensor name='" + sensor_name + "' type='"+ sensor_type +"'>\n"
-	                << "        <" + sensor_type + ">\n"
-	                << "            <collision>"<<collision_name<<"</collision> \n"
-	                << "        </" + sensor_type + ">\n"
-	                << "    </sensor>\n";
+	m_sdfStream << "          <sensor name='" + sensor_name + "' type='"+ sensor_type +"'>\n"
+                << "              <" + sensor_type + ">\n"
+                << "                  <collision>"<<collision_name<<"</collision> \n"
+                << "              </" + sensor_type + ">\n"
+				<< "              <!--update_rate> 200 </update_rate-->\n"
+                << "          </sensor>\n\n";
 }
 
 
@@ -312,7 +330,7 @@ void ModelBuilder::addLink( std::string link_name,
 	m_sdfStream << "   </link>\n";
 }
 
-void ModelBuilder::addLink( std::string link_name,
+void ModelBuilder::addPlungerLink( std::string link_name,
 		double mass,
 		std::string collision_name,
 		std::string visual_name,
@@ -320,27 +338,23 @@ void ModelBuilder::addLink( std::string link_name,
 		double length,
 		Eigen::VectorXd & pose)
 {
-	m_sdfStream << "  <link name='" + link_name + "'>\n"
-			<< "	<self_collide>0</self_collide>\n"
-			<< "    <gravity>0</gravity>\n"
-			<< "    <pose>"<< pose.transpose() << "</pose>\n";
+	m_sdfStream << "\n"
+                << "        <link name='" + link_name + "'>\n\n";
 
 	addInertia( mass );
 
-	addCollision( collision_name, radius, length );			// FIXME uncomment
+	addCollision( collision_name, radius, length );
 
-	addVisual( visual_name,
-			radius,
-			length);
+	addVisual( visual_name, radius, length);
 
 	addSensor("plunger_sensor", "contact",collision_name);
 
-	m_sdfStream << "	<self_collide>0</self_collide>\n"
-	          	<< "	<kinematic>0</kinematic>\n"
-	            << "	<gravity>0</gravity>\n";
+	m_sdfStream << "\n"
+                << "          <self_collide>0</self_collide>\n"
+                << "          <kinematic>0</kinematic>\n"
+                << "          <gravity>0</gravity>\n\n";
 
-
-	m_sdfStream << "   </link>\n";
+	m_sdfStream << "        </link>\n\n";
 }
 
 void ModelBuilder::addJoint( std::string joint_name,
@@ -381,6 +395,32 @@ void ModelBuilder::addJoint( std::string joint_name,
 			<< "  </joint>\n";
 }
 
+void ModelBuilder::addPlungerJoint( std::string joint_name,
+		std::string joint_type,
+		std::string parent,
+		std::string child,
+		Eigen::Vector3d & axis )
+{
+	m_sdfStream << "        <joint name = '" + joint_name + "' type='" + joint_type + "'>\n"
+                << "            <parent>" + parent + "</parent>\n"
+                << "            <child>" + child + "</child>\n"
+                << "            <axis>\n"
+                << "               <xyz>" << axis.transpose() << "</xyz>\n"
+                << "               <limit>\n"
+                << "                  <lower>" << -0.5 << "</lower>\n"
+                << "                  <upper>" <<  1.5 << "</upper>\n"
+                << "               </limit>\n"
+//                << "               <use_parent_model_frame>0</use_parent_model_frame>\n"
+                << "            </axis>\n"
+                << "            <physics>\n"
+                << "                <provide_feedback>1</provide_feedback>\n"
+                << "                <ode>\n"
+                << "                   <implicit_spring_damper>0</implicit_spring_damper>\n"
+                << "                </ode>\n"
+                << "            </physics>\n"
+                << "        </joint>\n\n";
+}
+
 void ModelBuilder::addPlaneJoint( std::string joint_name,
 		std::string joint_type,
 		std::string parent,
@@ -418,7 +458,7 @@ void ModelBuilder::addPlugin( std::string plugin_name, std::string plugin_filena
 }
 
 
-void ModelBuilder::addPlugin( std::string plugin_name,
+void ModelBuilder::addPlungerPlugin( std::string plugin_name,
 			std::string plugin_filename,
 			std::string plugin_file_name,
 			double kp,
@@ -428,7 +468,7 @@ void ModelBuilder::addPlugin( std::string plugin_name,
 			double jointIGain,
 			double jointDGain)
 {
-	m_sdfStream << "\n  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
+	m_sdfStream << "  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
 				<< "    <fileName>"       << plugin_file_name << "</fileName>\n"
 				<< "    <rosNamespace>"   << m_.spec.ros_namespace   << "</rosNamespace>\n"
 				<< "    <updateRate>"     << m_.spec.update_rate     << "</updateRate>\n"
@@ -438,7 +478,7 @@ void ModelBuilder::addPlugin( std::string plugin_name,
 				<< "    <JointPgain>"  << jointPGain  << "</JointPgain>\n"
 				<< "    <JointIgain>"    << jointIGain    << "</JointIgain>\n"
 				<< "    <JointDgain>"    << jointDGain    << "</JointDgain>\n"
-				<< "  </plugin>";
+				<< "  </plugin>\n";
 }
 
 std::string ModelBuilder::getDirPath( std::string & model_name )
@@ -488,6 +528,13 @@ std::string ModelBuilder::genModelDirectory( std::string & model_name )
 	return filepath;
 }
 
+bool ModelBuilder::checkModelDirectory( std::string & model_name )
+{
+	std::string filepath = getDirPath( model_name ) + "/models/" + model_name + "/";
+	boost::filesystem::path dir(filepath);
+	return boost::filesystem::exists(dir);
+}
+
 std::string ModelBuilder::genWorldDirectory( std::string & model_name )
 {
 	std::string filepath = getDirPath( model_name ) + "/worlds/";
@@ -501,6 +548,21 @@ void ModelBuilder::saveSDFFile( std::string & model_name )
 	std::string filename = genModelDirectory( model_name ) + model_name + ".sdf";
 	std::cout<<"Saving: "<<filename.c_str()<<"\n";
 
+	sdf::SDF m_sdfParsed;
+	m_sdfParsed.version = "1.5";
+	m_sdfParsed.SetFromString( m_sdfStream.str() );
+	m_sdfParsed.Write( filename );
+}
+
+void ModelBuilder::saveSDFFile( std::string & model_name, std::string & version )
+{
+	generateModelEnd();
+
+	std::string filename = genModelDirectory( model_name ) + model_name + ".sdf";
+	std::cout<<"Saving: "<<filename.c_str()<<"\n";
+
+	sdf::SDF m_sdfParsed;
+	m_sdfParsed.version = version;
 	m_sdfParsed.SetFromString( m_sdfStream.str() );
 	m_sdfParsed.Write( filename );
 }
@@ -569,7 +631,7 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 			<< "    </include>"                                                              <<"\n"
 			<< "    "                                                                        <<"\n"
 			<< "    <include>"                                                               <<"\n"
-			<< "      <uri>model://plunger</uri>"                                            <<"\n"
+			<< "      <uri>model://"<<plunger_name.c_str() <<"</uri>"                        <<"\n"
 			<< "      <pose>"<<px.c_str()<<" "<<py.c_str()<<" "<<pz.c_str()<<" 0 0 0</pose>" <<"\n"
 			<< "    </include>"                                                              <<"\n"
 			<< "    "                                                                        <<"\n"
@@ -617,27 +679,14 @@ void ModelBuilder::saveFile( std::string & filename, std::ostringstream & model 
 }
 
 
-void ModelBuilder::createPlungerModelFiles( BuildModelSpec modelSpecs_ )
+void ModelBuilder::createPlungerModelFiles(std::string model_name )
 {
-	// Store model specs
-
-	initSkinSimModelBuilder();
-	m_ = modelSpecs_;
-	std::string model_name = "plunger";
+	m_sdfStream.str("");
+	m_sdfStream.clear();
+	m_sdfStream << "<?xml version='1.0' ?>\n";
+	m_sdfStream << "<sdf version='1.4'>\n";
 
 	std::string modelDirectory = genModelDirectory( model_name );
-
-//	std::string joint_config_filename = modelDirectory + "joint_names.yaml";
-//	std::string tactile_id_filename   = modelDirectory + "tactile_id.yaml";
-//
-//	YAML::Emitter out_joint_names;
-//	std::ofstream fout(joint_config_filename.c_str());
-//
-//	YAML::Emitter out_tactile_id;
-//	std::ofstream fout2(tactile_id_filename.c_str());
-
-	//  sdf::SDFPtr robot(new sdf::SDF());
-	//  sdf::init(robot);
 
 	Eigen::VectorXd pose;
 	pose.resize(6,1);
@@ -646,50 +695,49 @@ void ModelBuilder::createPlungerModelFiles( BuildModelSpec modelSpecs_ )
 	pose << m_.spec.init_x, m_.spec.init_y, 0.105, 0.0, 0.0, 0.0;		//TODO: Add Z Coordinate to plunger
 	generateModelStart( model_name, pose );
 
+	m_sdfStream << "        <static>false</static>\n";
 
 	//////////////////////////////////////////////////////
 
-	createPlunger(
-					"plunger_link",
-					m_.spec.parent,
-					m_.spec.plunger_mass,
+	Eigen::VectorXd pose2;
+	pose2.resize(6,1);
+	pose2 << 0, 0, 0, 0, 0, 0;
+
+	addPlungerLink(	"plunger_link",
+			        m_.spec.plunger_mass,
+				    "plunger_collision",
+				    "plunger_visual",
 					m_.spec.plunger_radius,
 					m_.spec.plunger_length,
-					0.0,
-					0.0,
-					0.105);
+				    pose2);
+
+
+	Eigen::Vector3d axis;
+	axis << 0, 0, 1;
+
+	addPlungerJoint( "plunger_joint",
+                     "prismatic",
+                     m_.spec.parent,
+                     "plunger_link",
+                     axis );
+
+	addPlungerPlugin( "Plunger",
+				      "libPlunger.so",
+				      "plunger",
+				      m_.spec.plunger_mass,
+				      m_.spec.plunger_spring,
+				      m_.spec.plunger_damping,
+				      0.5,
+				      0.1,
+				      0.0);
 
 	///////////////////////////////////////////////////////
 
-
-	//out_joint_names << YAML::BeginSeq;
-	//out_tactile_id << YAML::BeginMap;
-
-
-
-	//out_joint_names << YAML::EndSeq;
-	//out_tactile_id << YAML::EndMap;
-
-	// Write to YAML file and close
-	//std::cout<<"Saving: "<<joint_config_filename.c_str()<<"\n";
-	//fout << out_joint_names.c_str();
-	//fout.close();
-
-	//std::cout<<"Saving: "<<tactile_id_filename.c_str()<<"\n";
-	//fout2 << out_tactile_id.c_str();
-	//fout2.close();
-
-	//    addPlugin( "skinsimTactileSensor", "libTactileSensorPlugin.so", model_name );
-	//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin.so", model_name );			// <- Simple plugin that works
-	//    addPlugin( "skinsimPlaneJoint", "libPlaneJoint.so", model_name );
-	//    addPlugin( "skinsimSkinJoint", "libSkinJointForceDistributionPlugin.so", model_name );
-	//    addPlugin( "skinsimSkinJoint", "libSkinJointPlugin_V2.so", model_name );
-	//	  addPlugin( "SkinJointGazeboRos", "libSkinJointGazeboRos.so");
+	std::string version = "1.4";
 
 	// Save files
-	saveSDFFile(   model_name);
+	saveSDFFile(   model_name, version);
 	saveConfigFile(model_name);
-	//saveWorldFile( model_name );
 
 }
 
@@ -859,13 +907,6 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	saveSDFFile(   m_.name );
 	saveConfigFile(m_.name );
 	saveWorldFile( m_.name );
-
-	//Create Plunger Model
-	m_sdfStream.str("");
-	m_sdfStream.clear();
-	m_sdfStream.flush();
-	createPlungerModelFiles(m_);
-
 }
 
 void ModelBuilder::createPlane(
@@ -1053,51 +1094,5 @@ void ModelBuilder::createSkinPatchElements(
 	}
 
 }
-
-void ModelBuilder::createPlunger(
-				std::string link_name,
-				std::string parent_name,
-				double link_mass,
-				double radius,
-				double length,
-				double pos_x,
-				double pos_y,
-				double pos_z)
-{
-
-	Eigen::VectorXd pose;
-	pose.resize(6,1);
-	pose << pos_x, pos_y, pos_z, 0, 0, 0;
-
-	addLink(	link_name,
-				link_mass,
-				"plunger_collision",
-				"plunger_visual",
-				radius,
-				length,
-				pose);
-
-
-	Eigen::Vector3d axis;
-	axis << 0, 0, 1;
-
-	addJoint("plunger_joint",
-						"prismatic",
-						m_.spec.parent,
-						link_name,
-						axis );
-
-	addPlugin( "Plunger",
-				"libPlunger.so",
-				"plunger",
-				m_.spec.plunger_mass,
-				m_.spec.plunger_spring,
-				m_.spec.plunger_damping,
-				0.5,
-				0.1,
-				0.0);
-
-}
-
 //////////////////////////////////////////////////////////////
 }
