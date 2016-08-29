@@ -85,8 +85,8 @@ struct ModelSpec
   int tactile_separation_x            ; // Spaceing between sensors in terms of number of elements in x-direction
   int tactile_separation_y            ; // Spaceing between sensors in terms of number of elements in x-direction
   // Tactile sensor noise
-  double noiseSigma 				  ;	// Gaussian Noise Sigma
-  double noiseMu 					  ;	// Gaussiam Noise Mu
+  double noiseSigma                   ; // Gaussian Noise Sigma
+  double noiseMu                      ; // Gaussiam Noise Mu
   // Time Delay
   double delay                        ; // Time Delay
   // Force spread model
@@ -143,8 +143,9 @@ inline void print(BuildModelSpec b)
 	std::cout<<" tactile_separation_y   : "<<b.spec.tactile_separation_y   <<"\n";
 	std::cout<<" spread_scaling         : "<<b.spec.spread_scaling         <<"\n";
 	std::cout<<" spread_sigma           : "<<b.spec.spread_sigma           <<"\n";
-	std::cout<<" noiseSigma             : "<<b.spec.noiseSigma             <<"\n";
-	std::cout<<" noiseMu                : "<<b.spec.noiseMu                <<"\n";
+	std::cout<<" noise_sigma            : "<<b.spec.noiseSigma             <<"\n";
+	std::cout<<" noise_mu               : "<<b.spec.noiseMu                <<"\n";
+	std::cout<<" delay                  : "<<b.spec.delay                  <<"\n";
 	std::cout<<" plunger_radius         : "<<b.spec.plunger_radius         <<"\n";
 	std::cout<<" plunger_length         : "<<b.spec.plunger_length         <<"\n";
 	std::cout<<" plunger_mass           : "<<b.spec.plunger_mass           <<"\n";
@@ -154,11 +155,10 @@ inline void print(BuildModelSpec b)
 	std::cout<<" solver_iterations      : "<<b.spec.solver_iterations      <<"\n";
 	std::cout<<" step_size              : "<<b.spec.step_size              <<"\n";
 	std::cout<<" max_sim_time           : "<<b.spec.max_sim_time           <<"\n";
-	std::cout<<" delay                  : "<<b.spec.delay                  <<"\n";
 	std::cout<<" topic                  : "<<b.spec.topic                  <<"\n";
 }
 
-// Read from YAML
+// Read from YAML, TODO check for tabs (i.e. \t) in the config file since this breaks the code
 inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 {
 	spec.num_elements_x      = node["num_elements_x"    ].as<int>() ;
@@ -175,7 +175,7 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.init_x              = node["init_x"            ].as<double>() ;
 	spec.init_y              = node["init_y"            ].as<double>() ;
 	spec.init_z              = node["init_z"            ].as<double>() ;
-	spec.parent              = node["parent"            ].as<std::string>() ;	// TODO check for tabs, i.e. \t
+	spec.parent              = node["parent"            ].as<std::string>() ;
 	spec.ros_namespace       = node["ros_namespace"     ].as<std::string>() ;
 	spec.update_rate         = node["update_rate"       ].as<double>() ;
 	spec.patch_length_x      = node["patch_length_x"    ].as<double>() ;
@@ -190,6 +190,7 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.spread_sigma        = node["spread_sigma"      ].as<double>() ;
 	spec.noiseSigma          = node["noiseSigma"        ].as<double>() ;
 	spec.noiseMu             = node["noiseMu"           ].as<double>() ;
+	spec.delay               = node["delay"             ].as<double>() ;
 	spec.plunger_radius      = node["plunger_radius"    ].as<double>() ;
 	spec.plunger_length      = node["plunger_length"    ].as<double>() ;
 	spec.plunger_mass        = node["plunger_mass"      ].as<double>() ;
@@ -199,7 +200,6 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.solver_iterations   = node["solver_iterations" ].as<int>() ;
 	spec.step_size           = node["step_size"         ].as<double>() ;
 	spec.max_sim_time        = node["max_sim_time"      ].as<double>() ;
-	spec.delay               = node["delay"             ].as<double>() ;
 	spec.topic               = node["topic"             ].as<std::string>() ;
 }
 
