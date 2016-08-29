@@ -60,12 +60,11 @@ ModelBuilder::ModelBuilder( BuildModelSpec modelSpecs )
 	createModelFiles( modelSpecs );
 
 	//Create Plunger Model
-	createPlungerModelFiles(plunger_name);		// Always create plunger to update parameters from config file
-	/*if(!checkModelDirectory(plunger_name))	// Only generate plunger once
+	if(!checkModelDirectory(plunger_name))	// Only generate plunger once
 	{
 		std::cout<<"Generating plunger ...\n";
 		createPlungerModelFiles(plunger_name);
-	}*/
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
