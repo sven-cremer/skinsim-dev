@@ -206,6 +206,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	// Make sure the sensor is active
 	this->contact_sensor_ptr_->SetActive(false);
 
+	this->effort_ = 0.0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -219,6 +220,14 @@ void Plunger::UpdateJoints()
 	// Rate control
 	//	if (this->update_rate_ > 0 && (cur_time-this->last_time_).Double() < (1.0/this->update_rate_))
 	//		return;
+	if(controller_type_.selected == skinsim_ros_msgs::ControllerType::DIGITAL_PID)	// Check Ts
+	{
+		if( (cur_time - this->last_time_).Double() < Ts )
+		{
+			this->joint_->SetForce(0, -this->effort_);	// Send old value
+			return;
+		}
+	}
 
 	this->position_current_ = this->joint_->GetAngle(0).Radian();
 	this->velocity_current_ = this->joint_->GetVelocity(0);
@@ -239,13 +248,13 @@ void Plunger::UpdateJoints()
 	// Tactile applied
 	case skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED:
 	{
-		 this->force_current_ = -msg_fb_.force_applied;
+		 this->force_current_ = msg_fb_.force_applied;		// Force applied > 0
 		 break;
 	}
 	// Tactile sensed
 	case skinsim_ros_msgs::FeedbackType::TACTILE_SENSED:
 	{
-		 this->force_current_ = msg_fb_.force_sensed;
+		 this->force_current_ = -msg_fb_.force_sensed;		// Force sensed < 0
 		 break;
 	}
 	// Default
@@ -283,7 +292,7 @@ void Plunger::UpdateJoints()
 		{
 			this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_current_;
 			//this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
-			this->joint_->SetForce(0, this->effort_);
+			this->joint_->SetForce(0, -this->effort_);
 		}
 		else
 		{
@@ -297,7 +306,41 @@ void Plunger::UpdateJoints()
 		position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
 		double postion_error = position_current_ - position_desired_;
 		this->effort_ = this->pid_.Update(postion_error, step_time);
-		this->joint_->SetForce(0, this->effort_);
+		this->joint_->SetForce(0, -this->effort_);
+		break;
+	}
+	// Digital PID control
+	case skinsim_ros_msgs::ControllerType::DIGITAL_PID:
+	{
+		if(num_contacts_>0)
+		{
+			// Update variables
+			e_(2)=e_(1);
+			e_(1)=e_(0);
+			u_(2)=u_(1);
+			u_(1)=u_(0);
+
+			// Compute new error
+			e_(0) = force_desired_ - force_current_;	// Reference minus measured force
+
+			// Compute new control
+			u_(0) = -ku_(1)*u_(1) - ku_(2)*u_(2) + ke_(0)*e_(0) + ke_(1)*e_(1) + ke_(2)*e_(2);
+
+			// Apply limits
+			double umax =  15;	// TODO
+			double umin = -15;	// TODO
+			if (u_(0) > umax)
+				u_(0) = umax;
+			if (u_(0) < umin)
+				u_(0) = umin;
+
+			effort_ = u_(0);
+			this->joint_->SetForce(0, -this->effort_);
+		}
+		else
+		{
+			this->joint_->SetVelocity (0, velocity_desired_);
+		}
 		break;
 	}
 	// Impedance control
@@ -347,6 +390,7 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 	{
 	case skinsim_ros_msgs::ControllerType::DIRECT:
 	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
+	{
 		this->force_desired_    = req.f_des;
 		this->position_desired_ = req.x_des;
 		this->velocity_desired_	= req.v_des;
@@ -355,10 +399,11 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		this->Kd_               = req.Kd;
 		this->Kv_               = req.Kv;
 		std::cout<<"Force Based Force Controller Initiated"<<std::endl;
-
 		res.success = true;
 		break;
+	}
 	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
+	{
 		this->force_desired_    = req.f_des;
 		this->position_desired_ = req.x_des;
 		this->velocity_desired_	= req.v_des;
@@ -367,11 +412,37 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		this->Kd_               = req.Kd;
 		this->Kv_               = req.Kv;
 		std::cout<<"Position Based Force Controller Initiated"<<std::endl;
+		res.success = true;
+		break;
+	}
+	case skinsim_ros_msgs::ControllerType::DIGITAL_PID:
+	{
+		this->force_desired_    = req.f_des;
+		this->position_desired_ = req.x_des;
+		this->velocity_desired_	= req.v_des;
+		this->Kp_               = req.Kp;
+		this->Ki_               = req.Ki;
+		this->Kd_               = req.Kd;
+		N =100;			// TODO pass these values
+		Ts = 0.001;
+
+		a_(0) = (1+N*Ts);
+		a_(1) = -(2 + N*Ts);
+		a_(2) = 1;
+		b_(0) = Kp_*(1+N*Ts) + Ki_*Ts*(1+N*Ts) + Kd_*N;
+		b_(1) = -(Kp_*(2+N*Ts) + Ki_*Ts + 2*Kd_*N);
+		b_(2) = Kp_ + Kd_*N;
+		ku_(1) = a_(1)/a_(0);
+		ku_(2) = a_(2)/a_(0);
+		ke_(0) = b_(0)/a_(0);
+		ke_(1) = b_(1)/a_(0);
+		ke_(2) = b_(2)/a_(0);
 
 		res.success = true;
 		break;
+	}
 	default:
-		std::cout<<"Controller not implemented.\n";
+		std::cout<<"Plunger controller not implemented!\n";
 		res.success = false;
 		break;
 	}
@@ -386,23 +457,30 @@ bool Plunger::serviceSetPIDCB(skinsim_ros_msgs::SetPIDGains::Request& req, skins
 	// Store data
 	this->lock_.lock();
 
+	this->Kp_ = req.Kp;
+	this->Ki_ = req.Ki;
+	this->Kd_ = req.Kd;
 
-	switch(this->controller_type_.selected)
+	if(controller_type_.selected == skinsim_ros_msgs::ControllerType::DIGITAL_PID)
 	{
-	case skinsim_ros_msgs::ControllerType::DIRECT:
-	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
-	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
-		this->Kp_               = req.Kp;
-		this->Ki_               = req.Ki;
-		this->Kd_               = req.Kd;
+		N =100;			// TODO pass these values
+		Ts = 0.001;
 
-		res.success = true;
-		break;
-	default:
-		std::cout<<"Controller not implemented.\n";
-		res.success = false;
-		break;
+		a_(0) = (1+N*Ts);
+		a_(1) = -(2 + N*Ts);
+		a_(2) = 1;
+		b_(0) = Kp_*(1+N*Ts) + Ki_*Ts*(1+N*Ts) + Kd_*N;
+		b_(1) = -(Kp_*(2+N*Ts) + Ki_*Ts + 2*Kd_*N);
+		b_(2) = Kp_ + Kd_*N;
+		ku_(1) = a_(1)/a_(0);
+		ku_(2) = a_(2)/a_(0);
+		ke_(0) = b_(0)/a_(0);
+		ke_(1) = b_(1)/a_(0);
+		ke_(2) = b_(2)/a_(0);
 	}
+
+	res.success = true;
+
 	this->lock_.unlock();
 	return true;
 }
