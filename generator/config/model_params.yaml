@@ -8,8 +8,8 @@
       # Skin element and patch count
     - num_elements_x               : 8                  # Number of skin elements per patch in x-direction
       num_elements_y               : 8                  # Number of skin elements per patch in y-direction  (note: total number of elements per patch < 100)
-      num_patches_x                : 3                  # Number of skin patches in x-direction
-      num_patches_y                : 3                  # Number of skin patches in y-direction
+      num_patches_x                : 1                  # Number of skin patches in x-direction
+      num_patches_y                : 1                  # Number of skin patches in y-direction
       # Skin element properties
       element_diameter             : 0.010              # Diameter of each skin element [meters]
       element_height               : 0.010              # The height of the skin element from the ground [meters]
@@ -35,7 +35,7 @@
       tactile_separation_x         : 1                  # Spaceing between sensors in terms of number of elements in x-direction
       tactile_separation_y         : 1                  # Spaceing between sensors in terms of number of elements in x-direction
       # Plunger properties <-- TODO
-      plunger_radius               : 0.08
+      plunger_radius               : 0.01
       plunger_length               : 0.10
       plunger_mass                 : 1.0                # Mass of plunger [kg]
       plunger_spring               : 0.0                # Stiffness [N/m] (note: also used by plugin)
@@ -51,9 +51,18 @@
       ros_namespace                : skinsim            # Namespace for ROS topic
       update_rate                  : 0.0                # Update rate of plugin (0 means as fast as possible)
       #############################
+      # Noise                     #
+      #############################
+      noiseSigma                   : 0.1                # Gaussian Noise Sigma
+      noiseMu 			   : 0.0                # Gaussian Noise Mu
+      #############################
+      # Time Delay                #
+      #############################
+      delay                        : 0.1                # time delay
+      #############################
       # AUTO GENERATOR            #
       #############################
       solver_iterations            : 200                # Physics engine solver iterations
       step_size                    : 0.0001             # Max step size of simulation [seconds]
       max_sim_time                 : 1.0                # When to stop simulation [seconds]
-      topic : /skinsim/plunger_data                     # Which ROS topic to save during simulation
+      topic : skinsim/plunger_data  # Which ROS topic to save during simulation

@@ -84,6 +84,11 @@ struct ModelSpec
   int tactile_elements_y              ; // Number of skin elements per sensor in y-direction
   int tactile_separation_x            ; // Spaceing between sensors in terms of number of elements in x-direction
   int tactile_separation_y            ; // Spaceing between sensors in terms of number of elements in x-direction
+  // Tactile sensor noise
+  double noiseSigma 				  ;	// Gaussian Noise Sigma
+  double noiseMu 					  ;	// Gaussiam Noise Mu
+  // Time Delay
+  double delay                        ; // Time Delay
   // Force spread model
   double spread_scaling               ; // Force spread scaling factor
   double spread_sigma                 ; // Force spread standard deviation
@@ -138,6 +143,8 @@ inline void print(BuildModelSpec b)
 	std::cout<<" tactile_separation_y   : "<<b.spec.tactile_separation_y   <<"\n";
 	std::cout<<" spread_scaling         : "<<b.spec.spread_scaling         <<"\n";
 	std::cout<<" spread_sigma           : "<<b.spec.spread_sigma           <<"\n";
+	std::cout<<" noiseSigma             : "<<b.spec.noiseSigma             <<"\n";
+	std::cout<<" noiseMu                : "<<b.spec.noiseMu                <<"\n";
 	std::cout<<" plunger_radius         : "<<b.spec.plunger_radius         <<"\n";
 	std::cout<<" plunger_length         : "<<b.spec.plunger_length         <<"\n";
 	std::cout<<" plunger_mass           : "<<b.spec.plunger_mass           <<"\n";
@@ -147,6 +154,7 @@ inline void print(BuildModelSpec b)
 	std::cout<<" solver_iterations      : "<<b.spec.solver_iterations      <<"\n";
 	std::cout<<" step_size              : "<<b.spec.step_size              <<"\n";
 	std::cout<<" max_sim_time           : "<<b.spec.max_sim_time           <<"\n";
+	std::cout<<" delay                  : "<<b.spec.delay                  <<"\n";
 	std::cout<<" topic                  : "<<b.spec.topic                  <<"\n";
 }
 
@@ -180,6 +188,8 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.tactile_separation_y = node["tactile_separation_y"].as<int>() ;
 	spec.spread_scaling      = node["spread_scaling"    ].as<double>() ;
 	spec.spread_sigma        = node["spread_sigma"      ].as<double>() ;
+	spec.noiseSigma          = node["noiseSigma"        ].as<double>() ;
+	spec.noiseMu             = node["noiseMu"           ].as<double>() ;
 	spec.plunger_radius      = node["plunger_radius"    ].as<double>() ;
 	spec.plunger_length      = node["plunger_length"    ].as<double>() ;
 	spec.plunger_mass        = node["plunger_mass"      ].as<double>() ;
@@ -189,6 +199,7 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.solver_iterations   = node["solver_iterations" ].as<int>() ;
 	spec.step_size           = node["step_size"         ].as<double>() ;
 	spec.max_sim_time        = node["max_sim_time"      ].as<double>() ;
+	spec.delay               = node["delay"             ].as<double>() ;
 	spec.topic               = node["topic"             ].as<std::string>() ;
 }
 
@@ -240,6 +251,8 @@ inline YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
     out << YAML::Key << "tactile_separation_y" << YAML::Value <<  spec.tactile_separation_y;
     out << YAML::Key << "spread_scaling"       << YAML::Value <<  spec.spread_scaling     ;
     out << YAML::Key << "spread_sigma"         << YAML::Value <<  spec.spread_sigma       ;
+    out << YAML::Key << "noiseSigma"           << YAML::Value <<  spec.noiseSigma         ;
+    out << YAML::Key << "noiseMu"              << YAML::Value <<  spec.noiseMu            ;
     out << YAML::Key << "plunger_radius"       << YAML::Value <<  spec.plunger_radius     ;
     out << YAML::Key << "plunger_length"       << YAML::Value <<  spec.plunger_length     ;
     out << YAML::Key << "plunger_mass"         << YAML::Value <<  spec.plunger_mass       ;
@@ -249,6 +262,7 @@ inline YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
     out << YAML::Key << "solver_iterations"    << YAML::Value <<  spec.solver_iterations  ;
     out << YAML::Key << "step_size"            << YAML::Value <<  spec.step_size          ;
     out << YAML::Key << "max_sim_time"         << YAML::Value <<  spec.max_sim_time       ;
+    out << YAML::Key << "delay"                << YAML::Value <<  spec.delay              ;
     out << YAML::Key << "topic"                << YAML::Value <<  spec.topic              ;
     out << YAML::EndMap;
     return out;
