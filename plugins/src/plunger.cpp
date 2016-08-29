@@ -347,6 +347,17 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 	{
 	case skinsim_ros_msgs::ControllerType::DIRECT:
 	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
+		this->force_desired_    = req.f_des;
+		this->position_desired_ = req.x_des;
+		this->velocity_desired_	= req.v_des;
+		this->Kp_               = req.Kp;
+		this->Ki_               = req.Ki;
+		this->Kd_               = req.Kd;
+		this->Kv_               = req.Kv;
+		std::cout<<"Force Based Force Controller Initiated"<<std::endl;
+
+		res.success = true;
+		break;
 	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
 		this->force_desired_    = req.f_des;
 		this->position_desired_ = req.x_des;
@@ -354,6 +365,8 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		this->Kp_               = req.Kp;
 		this->Ki_               = req.Ki;
 		this->Kd_               = req.Kd;
+		this->Kv_               = req.Kv;
+		std::cout<<"Position Based Force Controller Initiated"<<std::endl;
 
 		res.success = true;
 		break;
