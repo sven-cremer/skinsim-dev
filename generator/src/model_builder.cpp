@@ -454,6 +454,9 @@ void ModelBuilder::addPlugin( std::string plugin_name, std::string plugin_filena
 			<< "    <damping>"        << m_.spec.element_damping << "</damping>\n"
 			<< "    <spreadScaling>"  << m_.spec.spread_scaling  << "</spreadScaling>\n"
 			<< "    <spreadSigma>"    << m_.spec.spread_sigma    << "</spreadSigma>\n"
+			<< "    <noiseSigma>"     << m_.spec.noiseSigma      << "</noiseSigma>\n"
+			<< "    <noiseMu>"        << m_.spec.noiseMu         << "</noiseMu>\n"
+			<< "    <delay>"          << m_.spec.delay           << "</delay>\n"
 			<< "  </plugin>";
 }
 

@@ -1,5 +1,6 @@
 # Default Configuration file for model generator
 # Used by skin model generator and auto generator
+# note: use spaces instead of tabs!
 - name: skin_array_test
   spec:
       #############################
@@ -8,8 +9,8 @@
       # Skin element and patch count
     - num_elements_x               : 8                  # Number of skin elements per patch in x-direction
       num_elements_y               : 8                  # Number of skin elements per patch in y-direction  (note: total number of elements per patch < 100)
-      num_patches_x                : 3                  # Number of skin patches in x-direction
-      num_patches_y                : 3                  # Number of skin patches in y-direction
+      num_patches_x                : 2                  # Number of skin patches in x-direction
+      num_patches_y                : 2                  # Number of skin patches in y-direction
       # Skin element properties
       element_diameter             : 0.010              # Diameter of each skin element [meters]
       element_height               : 0.010              # The height of the skin element from the ground [meters]
@@ -50,6 +51,15 @@
       # Data collection with ROS
       ros_namespace                : skinsim            # Namespace for ROS topic
       update_rate                  : 0.0                # Update rate of plugin (0 means as fast as possible)
+      #############################
+      # Noise                     #
+      #############################
+      noiseSigma                   : 0.1                # Gaussian Noise Sigma
+      noiseMu                      : 0.0                # Gaussian Noise Mu
+      #############################
+      # Time Delay                #
+      #############################
+      delay                        : 0.1                # time delay
       #############################
       # AUTO GENERATOR            #
       #############################

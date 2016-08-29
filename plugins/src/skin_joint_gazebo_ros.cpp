@@ -89,6 +89,9 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
     this->damper_        = 1.83;
     this->spread_scaling = 1.0;
     this->spread_sigma   = 0.01;
+    this->sigma_         = 0.0;
+    this->mu_            = 0.0;
+    this->delay_         = 0.0;
 
 	// Load parameters from model SDF file
 	if (_sdf->HasElement("rosNamespace"))
@@ -111,6 +114,15 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 	if (_sdf->HasElement("spreadSigma"))
 		this->spread_sigma = _sdf->GetElement("spreadSigma")->Get<double>();
+
+	if (_sdf->HasElement("noiseSigma"))
+			this->sigma_ = _sdf->GetElement("noiseSigma")->Get<double>();
+
+	if (_sdf->HasElement("noiseMu"))
+			this->mu_ = _sdf->GetElement("noiseMu")->Get<double>();
+
+	if (_sdf->HasElement("delay"))
+			this->delay_ = _sdf->GetElement("delay")->Get<double>();
 
 	// Compute force spread parameters
 	this->spread_variance = spread_sigma*spread_sigma;
@@ -467,7 +479,7 @@ void SkinJointGazeboRos::UpdateJoints()
 	}
 	*/
 
-	// Compute Sensed Force
+	// Sensed Force: compute force distribution
 	double force_dist = 0;
 	f_sen_.setZero();
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
@@ -490,6 +502,21 @@ void SkinJointGazeboRos::UpdateJoints()
 
 			}
 		}
+	}
+
+	// Sensed Force: add noise
+	if(false)	// TODO add variable
+	{
+		for (unsigned int i = 0; i < this->num_joints_; ++i)
+		{
+			f_sen_(i) += CalulateNoise(this->mu_,this->sigma_);		// Added SNR
+		}
+	}
+
+	// Sensed Force: add time delay
+	if(this->delay_ > 0)
+	{
+		// TODO use buffer
 	}
 
 	// Compute tactile data
@@ -561,6 +588,7 @@ void SkinJointGazeboRos::UpdateJoints()
 		this->lock_.unlock();
 	}
 
+
 	// Publish Tactile data
 	if(this->ros_connections_tactile_ > 0 )
 	{
@@ -569,7 +597,7 @@ void SkinJointGazeboRos::UpdateJoints()
 		for(int i=0;i<this->num_sensors_;i++)
 		{
 			//msg_tactile_.data[i] = sensors_[i].force_sensed;
-			msg_tactile_.data[i] = sensors_[i].force_applied;		// For easier debugging FIXME
+			msg_tactile_.data[i] = sensors_[i].force_applied;
 		}
 		this->ros_pub_tactile_.publish(this->msg_tactile_);
 		this->lock_.unlock();
@@ -581,7 +609,7 @@ void SkinJointGazeboRos::UpdateJoints()
 		this->lock_.lock();
 		// Copy data into ROS message
 		msg_fb_.force_applied = f_app_.sum();
-		msg_fb_.force_sensed  = f_sen_.sum();
+		msg_fb_.force_sensed  = f_sen_.sum();	// FIXME this should be sum of tactile data
 		msg_fb_.contacts      = num_contacts_;
 
 		this->ros_pub_fb_.publish(this->msg_fb_);
@@ -591,6 +619,31 @@ void SkinJointGazeboRos::UpdateJoints()
 	// Save last time stamp
 	this->last_time_ = cur_time;
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Calculate Noise
+double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
+{
+	// using Box-Muller transform to generate two independent standard
+	// normally disbributed normal variables see wikipedia
+	unsigned int seed = 255;
+	// normalized uniform random variable
+	double U = static_cast<double>(rand_r(&seed)) /
+			 static_cast<double>(RAND_MAX);
+
+	// normalized uniform random variable
+	double V = static_cast<double>(rand_r(&	seed)) /
+			 static_cast<double>(RAND_MAX);
+
+	double X = sqrt(-2.0 * ::log(U)) * cos(2.0*M_PI * V);
+	// double Y = sqrt(-2.0 * ::log(U)) * sin(2.0*M_PI * V);
+
+	// there are 2 indep. vars, we'll just use X
+	// scale to our mu and sigma
+	X = sigma * X + mu;
+	return X;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // Callback function when subscriber connects

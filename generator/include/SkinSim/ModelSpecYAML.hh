@@ -84,6 +84,11 @@ struct ModelSpec
   int tactile_elements_y              ; // Number of skin elements per sensor in y-direction
   int tactile_separation_x            ; // Spaceing between sensors in terms of number of elements in x-direction
   int tactile_separation_y            ; // Spaceing between sensors in terms of number of elements in x-direction
+  // Tactile sensor noise
+  double noiseSigma                   ; // Gaussian Noise Sigma
+  double noiseMu                      ; // Gaussiam Noise Mu
+  // Time Delay
+  double delay                        ; // Time Delay
   // Force spread model
   double spread_scaling               ; // Force spread scaling factor
   double spread_sigma                 ; // Force spread standard deviation
@@ -138,6 +143,9 @@ inline void print(BuildModelSpec b)
 	std::cout<<" tactile_separation_y   : "<<b.spec.tactile_separation_y   <<"\n";
 	std::cout<<" spread_scaling         : "<<b.spec.spread_scaling         <<"\n";
 	std::cout<<" spread_sigma           : "<<b.spec.spread_sigma           <<"\n";
+	std::cout<<" noise_sigma            : "<<b.spec.noiseSigma             <<"\n";
+	std::cout<<" noise_mu               : "<<b.spec.noiseMu                <<"\n";
+	std::cout<<" delay                  : "<<b.spec.delay                  <<"\n";
 	std::cout<<" plunger_radius         : "<<b.spec.plunger_radius         <<"\n";
 	std::cout<<" plunger_length         : "<<b.spec.plunger_length         <<"\n";
 	std::cout<<" plunger_mass           : "<<b.spec.plunger_mass           <<"\n";
@@ -150,7 +158,7 @@ inline void print(BuildModelSpec b)
 	std::cout<<" topic                  : "<<b.spec.topic                  <<"\n";
 }
 
-// Read from YAML
+// Read from YAML, TODO check for tabs (i.e. \t) in the config file since this breaks the code
 inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 {
 	spec.num_elements_x      = node["num_elements_x"    ].as<int>() ;
@@ -167,7 +175,7 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.init_x              = node["init_x"            ].as<double>() ;
 	spec.init_y              = node["init_y"            ].as<double>() ;
 	spec.init_z              = node["init_z"            ].as<double>() ;
-	spec.parent              = node["parent"            ].as<std::string>() ;	// TODO check for tabs, i.e. \t
+	spec.parent              = node["parent"            ].as<std::string>() ;
 	spec.ros_namespace       = node["ros_namespace"     ].as<std::string>() ;
 	spec.update_rate         = node["update_rate"       ].as<double>() ;
 	spec.patch_length_x      = node["patch_length_x"    ].as<double>() ;
@@ -180,6 +188,9 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.tactile_separation_y = node["tactile_separation_y"].as<int>() ;
 	spec.spread_scaling      = node["spread_scaling"    ].as<double>() ;
 	spec.spread_sigma        = node["spread_sigma"      ].as<double>() ;
+	spec.noiseSigma          = node["noiseSigma"        ].as<double>() ;
+	spec.noiseMu             = node["noiseMu"           ].as<double>() ;
+	spec.delay               = node["delay"             ].as<double>() ;
 	spec.plunger_radius      = node["plunger_radius"    ].as<double>() ;
 	spec.plunger_length      = node["plunger_length"    ].as<double>() ;
 	spec.plunger_mass        = node["plunger_mass"      ].as<double>() ;
@@ -240,6 +251,8 @@ inline YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
     out << YAML::Key << "tactile_separation_y" << YAML::Value <<  spec.tactile_separation_y;
     out << YAML::Key << "spread_scaling"       << YAML::Value <<  spec.spread_scaling     ;
     out << YAML::Key << "spread_sigma"         << YAML::Value <<  spec.spread_sigma       ;
+    out << YAML::Key << "noiseSigma"           << YAML::Value <<  spec.noiseSigma         ;
+    out << YAML::Key << "noiseMu"              << YAML::Value <<  spec.noiseMu            ;
     out << YAML::Key << "plunger_radius"       << YAML::Value <<  spec.plunger_radius     ;
     out << YAML::Key << "plunger_length"       << YAML::Value <<  spec.plunger_length     ;
     out << YAML::Key << "plunger_mass"         << YAML::Value <<  spec.plunger_mass       ;
@@ -249,6 +262,7 @@ inline YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
     out << YAML::Key << "solver_iterations"    << YAML::Value <<  spec.solver_iterations  ;
     out << YAML::Key << "step_size"            << YAML::Value <<  spec.step_size          ;
     out << YAML::Key << "max_sim_time"         << YAML::Value <<  spec.max_sim_time       ;
+    out << YAML::Key << "delay"                << YAML::Value <<  spec.delay              ;
     out << YAML::Key << "topic"                << YAML::Value <<  spec.topic              ;
     out << YAML::EndMap;
     return out;
