@@ -225,6 +225,9 @@ class SkinJointGazeboRos : public ModelPlugin
   private: double mu_;
   private: double sigma_;
 
+  /// \brief Signal delay
+  private: double delay_;
+
   /// \brief A mutex to lock access to fields that are used in message callbacks
   private: boost::mutex lock_;
 
