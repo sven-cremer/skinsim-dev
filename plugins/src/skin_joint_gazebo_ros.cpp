@@ -112,6 +112,13 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	if (_sdf->HasElement("spreadSigma"))
 		this->spread_sigma = _sdf->GetElement("spreadSigma")->Get<double>();
 
+	if (_sdf->HasElement("noiseSigma"))
+			this->sigma_ = _sdf->GetElement("noiseSigma")->Get<double>();
+
+	if (_sdf->HasElement("noiseMu"))
+			this->mu_ = _sdf->GetElement("noiseMu")->Get<double>();
+
+
 	// Compute force spread parameters
 	this->spread_variance = spread_sigma*spread_sigma;
     //this->K_spread = spread_scaling / sqrt( 2*spread_variance*M_PI );
@@ -561,6 +568,8 @@ void SkinJointGazeboRos::UpdateJoints()
 		this->lock_.unlock();
 	}
 
+
+
 	// Publish Tactile data
 	if(this->ros_connections_tactile_ > 0 )
 	{
@@ -569,7 +578,7 @@ void SkinJointGazeboRos::UpdateJoints()
 		for(int i=0;i<this->num_sensors_;i++)
 		{
 			//msg_tactile_.data[i] = sensors_[i].force_sensed;
-			msg_tactile_.data[i] = sensors_[i].force_applied;		// For easier debugging FIXME
+			msg_tactile_.data[i] = sensors_[i].force_applied + CalulateNoise(this->mu_,this->sigma_);		// Added SNR , For easier debugging FIXME
 		}
 		this->ros_pub_tactile_.publish(this->msg_tactile_);
 		this->lock_.unlock();
@@ -591,6 +600,31 @@ void SkinJointGazeboRos::UpdateJoints()
 	// Save last time stamp
 	this->last_time_ = cur_time;
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Calculate Noise
+double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
+{
+	// using Box-Muller transform to generate two independent standard
+	// normally disbributed normal variables see wikipedia
+	unsigned int seed = 255;
+	// normalized uniform random variable
+	double U = static_cast<double>(rand_r(&seed)) /
+			 static_cast<double>(RAND_MAX);
+
+	// normalized uniform random variable
+	double V = static_cast<double>(rand_r(&	seed)) /
+			 static_cast<double>(RAND_MAX);
+
+	double X = sqrt(-2.0 * ::log(U)) * cos(2.0*M_PI * V);
+	// double Y = sqrt(-2.0 * ::log(U)) * sin(2.0*M_PI * V);
+
+	// there are 2 indep. vars, we'll just use X
+	// scale to our mu and sigma
+	X = sigma * X + mu;
+	return X;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // Callback function when subscriber connects

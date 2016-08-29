@@ -69,6 +69,7 @@
 #include <boost/bind.hpp>
 #include <SkinSim/ModelPath.hh>
 #include <Eigen/Core>
+#include <stdlib.h>
 
 struct Distances
 {
@@ -218,6 +219,11 @@ class SkinJointGazeboRos : public ModelPlugin
   private: ros::CallbackQueue ros_queue_;
   private: void RosQueueThread();
   private: boost::thread callback_ros_queue_thread_;
+
+  /// \brief Calculate Noise
+  private: double CalulateNoise(double mu, double sigma);
+  private: double mu_;
+  private: double sigma_;
 
   /// \brief A mutex to lock access to fields that are used in message callbacks
   private: boost::mutex lock_;
