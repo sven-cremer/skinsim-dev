@@ -216,21 +216,26 @@ int main(int argc, char** argv)
 	defaultControlSpec.Nf = 100;
 
 
+	ctrSpecs.push_back( defaultControlSpec ) ;
+	defaultControlSpec.feedback_type	= 2;
+	ctrSpecs.push_back( defaultControlSpec ) ;
+
+/*
 	int num = 0;
-//	for(unsigned j  = 1; j < 3; j++ ) // Feedback type
-//	{
-		for(unsigned i  = 0; i < 3; i++ ) // Kp
+	for(unsigned j  = 1; j < 3; j++ ) // Feedback type
+	{
+		for(unsigned i  = 0; i < 1; i++ ) // Kp
 		{
 			ControllerSpec tempControlSpec = defaultControlSpec;
 
 			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( num );
-			tempControlSpec.Ts = 0.001 * pow(10, i);
+			//tempControlSpec.Ts = 0.0001 * pow(10, i);
 			//tempControlSpec.controller_type = j;
 			ctrSpecs.push_back( tempControlSpec ) ;
 			num++;
 		}
-//	}
-
+	}
+*/
 //	for(unsigned i  = 0; i < 10 ; i++ )
 //	{
 //		ControllerSpec tempControlSpec = defaultControlSpec;
