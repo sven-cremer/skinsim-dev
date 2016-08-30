@@ -142,9 +142,9 @@ int main(int argc, char** argv)
 
 
 	// Tactile layout
-	for(unsigned i  = 3; i < 4 ; i++ )		// Tactile size
+	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
 	{
-		for(unsigned j  = 3; j < 4 ; j++ )	// Tactile separation
+		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
 		{
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
@@ -204,7 +204,7 @@ int main(int argc, char** argv)
 	defaultControlSpec.impCtr_K     	= 0;
 
 	defaultControlSpec.controller_type	= 4;	//DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
-	defaultControlSpec.feedback_type	= 1;	//PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
+	defaultControlSpec.feedback_type	= 2;	//PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
 	defaultControlSpec.Fd = 2     ;
 
 	defaultControlSpec.Kp = 2.0   ;
@@ -215,27 +215,24 @@ int main(int argc, char** argv)
 	defaultControlSpec.Ts = 0.001;
 	defaultControlSpec.Nf = 100;
 
-
-	ctrSpecs.push_back( defaultControlSpec ) ;
-	defaultControlSpec.feedback_type	= 2;
 	ctrSpecs.push_back( defaultControlSpec ) ;
 
-/*
-	int num = 0;
-	for(unsigned j  = 1; j < 3; j++ ) // Feedback type
-	{
-		for(unsigned i  = 0; i < 1; i++ ) // Kp
-		{
-			ControllerSpec tempControlSpec = defaultControlSpec;
+//	int num = 0;
+//	for(unsigned j  = 1; j < 3; j++ ) // Feedback type
+//	{
+//		for(unsigned i  = 0; i < 4; i++ ) // Kp
+//		{
+//			ControllerSpec tempControlSpec = defaultControlSpec;
+//
+//			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( num );
+//			//tempControlSpec.Ts = 0.0001 * pow(10, i);
+//			//tempControlSpec.controller_type = j;
+//			tempControlSpec.Kd = 0.0001 * pow(10, i);
+//			ctrSpecs.push_back( tempControlSpec ) ;
+//			num++;
+//		}
+//	}
 
-			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( num );
-			//tempControlSpec.Ts = 0.0001 * pow(10, i);
-			//tempControlSpec.controller_type = j;
-			ctrSpecs.push_back( tempControlSpec ) ;
-			num++;
-		}
-	}
-*/
 //	for(unsigned i  = 0; i < 10 ; i++ )
 //	{
 //		ControllerSpec tempControlSpec = defaultControlSpec;
