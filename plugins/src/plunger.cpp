@@ -207,6 +207,16 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	this->contact_sensor_ptr_->SetActive(false);
 
 	this->effort_ = 0.0;
+
+	  // Digital PID controller
+	  u_.setZero();
+	  e_.setZero();
+	  a_.setZero();
+	  b_.setZero();
+	  ku_.setZero();
+	  ke_.setZero();
+	  N = 1;			// Filtering coefficient for derivative term
+	  Ts = 0.001;		// Sampling time of PID
 }
 
 //////////////////////////////////////////////////////////////////////////
