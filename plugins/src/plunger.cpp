@@ -370,11 +370,12 @@ void Plunger::UpdateJoints()
 	{
 		this->lock_.lock();
 		// Copy data into ROS message
-		this->msg_data_.effort    = this->effort_;
-		this->msg_data_.force     = this->force_current_;
-		this->msg_data_.force_dot = this->force_dot_;
-		this->msg_data_.position  = this->position_current_;
-		this->msg_data_.velocity  = this->velocity_current_;
+		this->msg_data_.f_control  = this->effort_;
+		this->msg_data_.f_meas     = this->force_current_;
+		this->msg_data_.f_actual   = msg_fb_.force_applied;
+		this->msg_data_.f_meas_dot = this->force_dot_;
+		this->msg_data_.position   = this->position_current_;
+		this->msg_data_.velocity   = this->velocity_current_;
 		// Publish data
 		this->ros_pub_.publish(this->msg_data_);
 		this->lock_.unlock();
