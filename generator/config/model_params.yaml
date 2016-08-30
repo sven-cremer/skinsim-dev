@@ -35,7 +35,7 @@
       tactile_elements_y           : 2                  # Number of skin elements per sensor in y-direction
       tactile_separation_x         : 1                  # Spaceing between sensors in terms of number of elements in x-direction
       tactile_separation_y         : 1                  # Spaceing between sensors in terms of number of elements in x-direction
-      # Plunger properties <-- TODO
+      # Plunger properties
       plunger_radius               : 0.08
       plunger_length               : 0.10
       plunger_mass                 : 1.0                # Mass of plunger [kg]
@@ -59,7 +59,7 @@
       #############################
       # Time Delay                #
       #############################
-      delay                        : 0.1                # time delay
+      delay                        : 0.0                # time delay
       #############################
       # AUTO GENERATOR            #
       #############################

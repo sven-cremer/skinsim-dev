@@ -67,6 +67,7 @@
 // Utilities
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#include <Eigen/Core>
 
 namespace gazebo
 {
@@ -201,6 +202,16 @@ class Plunger : public ModelPlugin
   /// \brief Joint PID controller
   private: physics::JointControllerPtr joint_pid_;
   private: common::PID pid_;
+
+  /// \brief Digital PID controller
+  private: Eigen::Vector3d u_;
+  private: Eigen::Vector3d e_;
+  private: Eigen::Vector3d a_;
+  private: Eigen::Vector3d b_;
+  private: Eigen::Vector3d ku_;	// Size 2
+  private: Eigen::Vector3d ke_;
+  private: double N;			// Filtering coefficient for derivative term
+  private: double Ts;			// Sampling time of PID
 
   /// \brief Connection that maintains a link between the contact sensor's
   /// updated signal and the OnContactUpdate callback.
