@@ -164,7 +164,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	this->force_desired_    = 0.0;
 	this->force_prev_       = 0.0;
 	this->feedback_type_.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
-	this->controller_type_.selected = skinsim_ros_msgs::ControllerType::DIRECT;
+	this->controller_type_.selected = -1; //skinsim_ros_msgs::ControllerType::DIRECT;
 
 	// P-controller
 	this->pid_ = common::PID(JointPgain_, JointIgain_, JointDgain_, 15, -15);
@@ -433,8 +433,8 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		this->Kp_               = req.Kp;
 		this->Ki_               = req.Ki;
 		this->Kd_               = req.Kd;
-		N =100;			// TODO pass these values
-		Ts = 0.001;
+		this->N                 = req.Nf;
+		this->Ts                = req.Ts;
 
 		a_(0) = (1+N*Ts);
 		a_(1) = -(2 + N*Ts);
