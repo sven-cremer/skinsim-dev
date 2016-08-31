@@ -7,10 +7,10 @@
       # MODEL BUILDER             #
       #############################
       # Skin element and patch count
-    - num_elements_x               : 5                  # Number of skin elements per patch in x-direction
-      num_elements_y               : 5                  # Number of skin elements per patch in y-direction  (note: total number of elements per patch < 100)
-      num_patches_x                : 5                  # Number of skin patches in x-direction
-      num_patches_y                : 5                  # Number of skin patches in y-direction
+    - num_elements_x               : 8                  # Number of skin elements per patch in x-direction
+      num_elements_y               : 8                  # Number of skin elements per patch in y-direction  (note: total number of elements per patch < 100)
+      num_patches_x                : 3                  # Number of skin patches in x-direction
+      num_patches_y                : 3                  # Number of skin patches in y-direction
       # Skin element properties
       element_diameter             : 0.010              # Diameter of each skin element [meters]
       element_height               : 0.010              # The height of the skin element from the ground [meters]
