@@ -50,7 +50,8 @@
 // ROS
 #include <ros/ros.h>
 #include <skinsim_ros_msgs/SetController.h>
-#include <skinsim_ros_msgs/PlungerData.h>
+//#include <skinsim_ros_msgs/PlungerData.h>
+#include <skinsim_ros_msgs/ForceFeedback.h>
 
 // Boost
 #include <boost/thread.hpp>
@@ -126,17 +127,17 @@ SkinSimTestingFramework()
 }
 
 // ROS subscriber CB
-void subscriberCB(const skinsim_ros_msgs::PlungerDataConstPtr& msg)
+void subscriberCB(const skinsim_ros_msgs::ForceFeedbackConstPtr& msg)
 {
-	if(msg->f_meas == 0)
+	if(msg->force_sensed == 0)
 		return;
 
-	double K = msg->f_actual / msg->f_meas;							// FIXME need to return f_sensed
+	double K = msg->force_applied / msg->force_sensed;
 	K_sma = K_sma + ( K - buffer[buffer_idx] )/(double)buffer_size;
 	buffer[buffer_idx] = K;
 	buffer_idx = (buffer_idx + 1)%buffer_size;
 
-	if(fabs(f_target - msg->f_actual ) < 0.001 )
+	if(fabs(f_target - K_sma*msg->force_sensed ) < 0.001 )
 		calibration_done = true;
 }
 
@@ -518,7 +519,7 @@ void runCalibration(std::string exp_name)
 		this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
 
 		// Create ROS topic subscriber
-		std::string topic = modelSpec.spec.topic;
+		std::string topic = "/skinsim/force_feedback";
 		ros::Subscriber ros_sub_ = this->ros_node_->subscribe(topic.c_str(), 1, &SkinSimTestingFramework::subscriberCB, this);
 
 		// Set plunger force message
@@ -581,6 +582,7 @@ void runCalibration(std::string exp_name)
 			}
 			else
 			{
+				//common::Time::MSleep(1);
 				fastCount++;
 
 				// Get calibration data
