@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, UT Arlington
+ *  Copyright (c) 2016, UT Arlington
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,9 @@
  *********************************************************************/
 
 /* Author: Isura Ranatunga
+ *         Sven Cremer
  *
- * automatedTest.cc
+ * auto_experimenter.cc
  *  Created on: Jul 21, 2014
  */
 
@@ -50,30 +51,22 @@
 #include <ros/ros.h>
 #include <skinsim_ros_msgs/SetController.h>
 
-//#include <sdf/sdf.hh>
-
 // Boost
 #include <boost/thread.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/chrono.hpp>
 
+// Gazebo
 #include "gazebo/Server.hh"
 #include "gazebo/physics/PhysicsIface.hh"
 #include "gazebo/transport/transport.hh"
 #include "gazebo/msgs/msgs.hh"
 
-//#include "gazebo/common/CommonIface.hh"
-//#include "gazebo/common/SystemPaths.hh"
-//#include "gazebo/common/Console.hh"
-//#include "gazebo/physics/World.hh"
-//#include "gazebo/physics/PhysicsTypes.hh"
-//#include "gazebo/sensors/sensors.hh"
-//#include "gazebo/rendering/rendering.hh"
-//#include "gazebo/gazebo_config.h"
-
-//#include <Eigen/Core>
+// Utilities
 #include <yaml-cpp/yaml.h>
+//#include <Eigen/Core>
+//#include <sdf/sdf.hh>
 
 #include <SkinSim/ModelSpecYAML.hh>
 #include <SkinSim/ControlSpecYAML.hh>
@@ -194,21 +187,6 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 	{
 		std::cerr<<"Failed parsing server arguments!\n";
 	}
-
-	//	if(! this->server->PreLoad() )
-	//		std::cerr<<"Failed to preload the Gazebo server";
-
-	//	if (_physics.length())
-	//		this->server->LoadFile(_worldFilename, _physics);
-	//	else
-	//		this->server->LoadFile(_worldFilename);
-	//
-	//	if (!rendering::get_scene(
-	//			gazebo::physics::get_world()->GetName()))
-	//	{
-	//		rendering::create_scene(
-	//				gazebo::physics::get_world()->GetName(), false, true);
-	//	}
 
 	this->server->SetParams(m_gazeboParams);
 	this->SetPause(_paused);
