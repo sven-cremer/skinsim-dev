@@ -216,7 +216,7 @@ void runTests(std::string exp_name)
 	//std::cout << "TestingFramework::runTests()" << std::endl;
 
 	// Parameters
-	std::string filename_model   = "mdlSpecs.yaml";;
+	std::string filename_model   = "mdlSpecs.yaml";
 	std::string filename_control = "ctrSpecs.yaml";
 
 	// Create paths
@@ -394,6 +394,159 @@ void runTests(std::string exp_name)
 	delete this->server;
 
 }
+
+
+void runCalibration(std::string exp_name)
+{
+	// Parameters
+	std::string filename_model   = "mdlSpecs.yaml";
+
+	// Create paths
+	std::string pathSkinSim = getenv ("SKINSIM_PATH");
+	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
+	std::string mdlSpecPath = pathExp + "/" + filename_model;
+	std::string calibration_file = pathExp + "/tactile_calibration.yaml";
+
+	// Read YAML model file
+	std::ifstream fin(mdlSpecPath.c_str());
+	YAML::Node doc_model;
+	std::cout<<"Loading file: "<<mdlSpecPath<<"\n";
+	doc_model = YAML::LoadAll(fin);
+
+	// For saving calibration constants
+	std::ofstream fout(calibration_file.c_str());
+	YAML::Emitter out;
+	out << YAML::BeginMap;
+
+	// Gazebo parameters
+	std::string _worldFilename("~");
+	bool _paused = true;
+	std::string _physics = "ode";
+
+	BuildModelSpec modelSpec;
+
+	int index = 1;
+	int N = doc_model[0].size();
+
+	// Loop over models
+	for(unsigned i=0;i<doc_model[0].size();i++)
+	{
+		doc_model[0][i] >> modelSpec;
+		//print(modelSpec);
+
+		// Print info
+		std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
+		std::cout << "# Model: "<< modelSpec.name << " ("<< index << " out of " << N << ")\n";
+
+		// Point model world file location
+		_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
+
+		// Compute number of iterations
+		iterations_max = modelSpec.spec.max_sim_time/modelSpec.spec.step_size;
+		m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
+
+		// Create Gazebo world
+		std::cout << "Initializing World" << std::endl;
+		// Create, load, and run the server in its own thread
+		this->serverThread = new boost::thread(
+				boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
+						_paused, _physics));
+
+		std::cout << "Waiting for world completion" << std::endl;
+		// Wait for the server to come up (15 second timeout)
+		int waitCount = 0, maxWaitCount = 150;
+		while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )		// TODO error handling if timeout occurs
+			common::Time::MSleep(100);
+
+		std::cout << "Gazebo server loaded in "<<(double)waitCount*0.1<<" seconds (timeout after "<<(double)maxWaitCount*0.1<<" seconds)\n";
+
+		// Initialize Gazebo transport node (to get simulation time)
+		this->node = transport::NodePtr(new transport::Node());
+		this->node->Init();
+		this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
+
+		// Make sure the ROS node for Gazebo has already been initialized
+		if (!ros::isInitialized())
+		{
+			std::cerr<<"Error: ROS has not been initialized! \n";
+			exit(1);
+		}
+
+		// Create ROS service client
+		ros_namespace_ = "skinsim";
+		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
+		this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+
+		// Set plunger force message
+		msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::DIRECT;
+		msg_srv_.request.fb.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
+		msg_srv_.request.f_des = 1.0;
+		msg_srv_.request.x_des = 0.0;
+		msg_srv_.request.v_des = -0.005;
+		std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
+
+		// Start simulation
+		std::cout<<"Starting simulation...\n";
+		this->SetPause(false);
+
+		// Send control message
+		bool message_sent = false;
+		while( !message_sent )
+		{
+			// Send control message to plunger
+			if(!message_sent)
+			{
+				if (ros_srv_.call(msg_srv_))
+				{
+					message_sent = true;
+					std::cout<<"Control message sent!\n";
+				}
+				//else
+				//	std::cerr<<"Failed to send control message, trying again ...\n";
+			}
+			common::Time::MSleep(10);
+		}
+
+		// Wait for simulation to end
+		waitCount = 0;
+		while( physics::worlds_running() )
+		{
+			common::Time::MSleep(100);
+			waitCount++;
+
+			// TODO Get calibration data
+
+			// Print status
+			if(waitCount > 10)
+				std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << std::flush;
+		}
+
+		// Compute calibration constant
+		double K = 1.0;	// TODO f_applied / f_sensed;
+		out << YAML::Key << modelSpec.name << YAML::Value << K;
+
+		// Simulation finished
+		std::cout << RESET;
+		std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";
+		std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
+
+		// Cleanup
+		Unload();
+		delete ros_node_;
+
+		index++;
+	}
+
+	delete this->server;
+
+	// Write to YAML file and close
+	std::cout<<"Saving: "<<calibration_file<<"\n";
+	out << YAML::EndMap;
+	fout << out.c_str();
+	fout.close();
+
+}
+
 
 };
 
