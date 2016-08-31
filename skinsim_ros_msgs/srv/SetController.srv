@@ -7,5 +7,7 @@ float64 Kp                              # Proportional gain
 float64 Ki                              # Integral gain
 float64 Kd                              # Derivative gain
 float64 Kv                              # Velocity gain
+float64 Ts                              # Sampling rate of controller
+float64 Nf                              # Filtering coefficient
 ---
 bool success

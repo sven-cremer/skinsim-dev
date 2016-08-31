@@ -289,7 +289,7 @@ void runTests(std::string exp_name)
 
 			std::ostringstream ss;
 			ss << std::setw(2) << std::setfill('0') << index
-			<< "_FB_" << controlSpec.feedback_type << "_Kp_" << std::setprecision(1) <<std::fixed << controlSpec.plunger_Kp
+			<< "_FB_" << controlSpec.feedback_type << "_Kp_" << std::setprecision(1) <<std::fixed << controlSpec.Kp
 			<< "_tSize_" << tactile_size << "_tSep_" << tactile_sep;
 
 			std::string exp_name = "exp_" + ss.str()  ;
@@ -343,14 +343,16 @@ void runTests(std::string exp_name)
 
 			// Set plunger force message
 			msg_srv_.request.type.selected = controlSpec.controller_type;
-			msg_srv_.request.fb.selected   = controlSpec.feedback_type; //skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
-			msg_srv_.request.f_des = controlSpec.targetForce;
+			msg_srv_.request.fb.selected   = controlSpec.feedback_type;
+			msg_srv_.request.f_des = controlSpec.Fd;
 			msg_srv_.request.x_des = 0.0;
 			msg_srv_.request.v_des = -0.005;
-			msg_srv_.request.Kp    = controlSpec.plunger_Kp;
-			msg_srv_.request.Ki    = controlSpec.plunger_Ki;
-			msg_srv_.request.Kd    = controlSpec.plunger_Kd;
-			msg_srv_.request.Kv    = controlSpec.plunger_Kv;
+			msg_srv_.request.Kp    = controlSpec.Kp;
+			msg_srv_.request.Ki    = controlSpec.Ki;
+			msg_srv_.request.Kd    = controlSpec.Kd;
+			msg_srv_.request.Kv    = controlSpec.Kv;
+			msg_srv_.request.Ts    = controlSpec.Ts;
+			msg_srv_.request.Nf    = controlSpec.Nf;
 			std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
 
 			// Start simulation

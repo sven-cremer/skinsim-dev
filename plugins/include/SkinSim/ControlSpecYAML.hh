@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, UT Arlington
+ *  Copyright (c) 2016, UT Arlington
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
  *********************************************************************/
 
 /* Author: Isura Ranatunga
+ *         Sven Cremer
  *
  * ControlSpecYAML.hh
  *  Created on: Jul 27, 2014
@@ -51,90 +52,88 @@
 // Specs of the controller
 struct ControllerSpec
 {
-  std::string name    		;
+  std::string name;     // Name of controller setup
 
-  double explFctr_Kp  		;
-  double explFctr_Ki  		;
-  double explFctr_Kd  		;
+  int controller_type;  // Specified in /skinsim_ros_msgs/msgs/ControllerType.msg
+  int feedback_type;    // Specified in /skinsim_ros_msgs/msgs/FeedbackType.msg
+  double Fd;            // Desired force
+  double Kp;            // Proportional gain
+  double Ki;            // Integral gain
+  double Kd;            // Derivative gain
+  double Kv;            // Velocity damping term
+  double Ts;            // Sampling rate of controller
+  double Nf;            // Filtering coefficient
 
-  double impCtr_Xnom  		;
-  double impCtr_M     		;
-  double impCtr_K     		;
-  double impCtr_D     		;
-
-  double targetForce  		;
-
-  int	 controller_type	;
-  int 	 feedback_type		;
-  double plunger_Kp			;
-  double plunger_Ki			;
-  double plunger_Kd			;
-  double plunger_Kv			;
+  // TODO: not used
+  double impCtr_Xnom;
+  double impCtr_M;
+  double impCtr_K;
+  double impCtr_D;
 };
 
 inline void print(ControllerSpec c)
 {
-	std::cout<<" Name            : "<<c.name               <<"\n";
+	std::cout<<"Name             : "<<c.name               <<"\n";
 	std::cout<<" controller_type : "<<c.controller_type    <<"\n";
-	std::cout<<" feedback_type	 : "<<c.feedback_type	   <<"\n";
-	std::cout<<" explFctr_Kp     : "<<c.explFctr_Kp        <<"\n";
-	std::cout<<" explFctr_Ki     : "<<c.explFctr_Ki        <<"\n";
-	std::cout<<" explFctr_Kd     : "<<c.explFctr_Kd        <<"\n";
-	std::cout<<" impCtr_Xnom     : "<<c.impCtr_Xnom        <<"\n";
-	std::cout<<" impCtr_K        : "<<c.impCtr_K           <<"\n";
-	std::cout<<" impCtr_D        : "<<c.impCtr_D           <<"\n";
-	std::cout<<" targetForce     : "<<c.targetForce        <<"\n";
-	std::cout<<" plunger_Kp		 : "<<c.plunger_Kp		   <<"\n";
-	std::cout<<" plunger_Ki		 : "<<c.plunger_Ki		   <<"\n";
-	std::cout<<" plunger_Kd		 : "<<c.plunger_Kd		   <<"\n";
-	std::cout<<" plunger_Kv		 : "<<c.plunger_Kv		   <<"\n";
+	std::cout<<" feedback_type	 : "<<c.feedback_type      <<"\n";
+	std::cout<<" Fd: "              <<c.Fd                 <<"\n";
+	std::cout<<" Kp: "              <<c.Kp                 <<"\n";
+	std::cout<<" Ki: "              <<c.Ki                 <<"\n";
+	std::cout<<" Kd: "              <<c.Kd                 <<"\n";
+	std::cout<<" Kv: "              <<c.Kv                 <<"\n";
+	std::cout<<" Ts: "              <<c.Ts                 <<"\n";
+	std::cout<<" Nf: "              <<c.Nf                 <<"\n";
+	std::cout<<" impCtr_Xnom : "    <<c.impCtr_Xnom        <<"\n";
+	std::cout<<" impCtr_M    : "    <<c.impCtr_M           <<"\n";
+	std::cout<<" impCtr_D    : "    <<c.impCtr_D           <<"\n";
+	std::cout<<" impCtr_K    : "    <<c.impCtr_K           <<"\n";
 }
 
 inline void operator >> (const YAML::Node& node, ControllerSpec& ctrSpec)
 {
-  ctrSpec.name                = node["name"       		].as<std::string>() ;
-  ctrSpec.explFctr_Kp         = node["explFctr_Kp"		].as<double>() ;
-  ctrSpec.explFctr_Ki         = node["explFctr_Ki"		].as<double>() ;
-  ctrSpec.explFctr_Kd         = node["explFctr_Kd"		].as<double>() ;
-  ctrSpec.impCtr_Xnom         = node["impCtr_Xnom"		].as<double>() ;
-  ctrSpec.impCtr_K            = node["impCtr_K"   		].as<double>() ;
-  ctrSpec.impCtr_D            = node["impCtr_D"   		].as<double>() ;
-  ctrSpec.targetForce         = node["targetForce"		].as<double>() ;
-  ctrSpec.plunger_Kp		  = node["plunger_Kp"		].as<double>() ;
-  ctrSpec.plunger_Ki		  = node["plunger_Ki"		].as<double>() ;
-  ctrSpec.plunger_Kd		  = node["plunger_Kd"		].as<double>() ;
-  ctrSpec.plunger_Kv		  = node["plunger_Kv"		].as<double>() ;
+  ctrSpec.name        = node["name"        ].as<std::string>() ;
+  ctrSpec.Fd          = node["Fd"          ].as<double>() ;
+  ctrSpec.Kp          = node["Kp"          ].as<double>() ;
+  ctrSpec.Ki          = node["Ki"          ].as<double>() ;
+  ctrSpec.Kd          = node["Kd"          ].as<double>() ;
+  ctrSpec.Kv          = node["Kv"          ].as<double>() ;
+  ctrSpec.Ts          = node["Ts"          ].as<double>() ;
+  ctrSpec.Nf          = node["Nf"          ].as<double>() ;
+  ctrSpec.impCtr_Xnom = node["impCtr_Xnom" ].as<double>() ;
+  ctrSpec.impCtr_M    = node["impCtr_M"    ].as<double>() ;
+  ctrSpec.impCtr_D    = node["impCtr_D"    ].as<double>() ;
+  ctrSpec.impCtr_K    = node["impCtr_K"    ].as<double>() ;
 
-  // TODO: improve this temporary fix
+  // Try to read types as integers
   try{
-	  ctrSpec.controller_type 	  = node["controller_type"	].as<int>() ;
+	  ctrSpec.controller_type =      node["controller_type"].as<int>();
   } catch (const YAML::BadConversion& e) {
-	  ctrSpec.controller_type 	  = (int)node["controller_type"	].as<double>() ;
+	  ctrSpec.controller_type = (int)node["controller_type"].as<double>();
   }
   try{
-	  ctrSpec.feedback_type	      = node["feedback_type"	].as<int>() ;
+	  ctrSpec.feedback_type =      node["feedback_type"].as<int>();
   } catch (const YAML::BadConversion& e) {
-	  ctrSpec.feedback_type 	  = (int)node["feedback_type"	].as<double>() ;
+	  ctrSpec.feedback_type = (int)node["feedback_type"].as<double>();
   }
 }
 
 inline YAML::Emitter& operator << (YAML::Emitter& out, const ControllerSpec& ctrSpec)
 {
     out << YAML::BeginMap;
-    out << YAML::Key << "name"       		; out << YAML::Value <<  ctrSpec.name        		;
-    out << YAML::Key << "explFctr_Kp"		; out << YAML::Value <<  ctrSpec.explFctr_Kp 		;
-    out << YAML::Key << "explFctr_Ki"		; out << YAML::Value <<  ctrSpec.explFctr_Ki 		;
-    out << YAML::Key << "explFctr_Kd"		; out << YAML::Value <<  ctrSpec.explFctr_Kd 		;
-    out << YAML::Key << "impCtr_Xnom"		; out << YAML::Value <<  ctrSpec.impCtr_Xnom 		;
-    out << YAML::Key << "impCtr_K"   		; out << YAML::Value <<  ctrSpec.impCtr_K    		;
-    out << YAML::Key << "impCtr_D"   		; out << YAML::Value <<  ctrSpec.impCtr_D    		;
-    out << YAML::Key << "targetForce"		; out << YAML::Value <<  ctrSpec.targetForce 		;
-    out << YAML::Key << "controller_type"	; out << YAML::Value <<  ctrSpec.controller_type 	;
-    out << YAML::Key << "feedback_type"		; out << YAML::Value <<  ctrSpec.feedback_type	 	;
-    out << YAML::Key << "plunger_Kp"		; out << YAML::Value <<  ctrSpec.plunger_Kp		 	;
-    out << YAML::Key << "plunger_Ki"		; out << YAML::Value <<  ctrSpec.plunger_Ki		 	;
-    out << YAML::Key << "plunger_Kd"		; out << YAML::Value <<  ctrSpec.plunger_Kd		 	;
-    out << YAML::Key << "plunger_Kv"		; out << YAML::Value <<  ctrSpec.plunger_Kv		 	;
+    out << YAML::Key << "name"            << YAML::Value <<  ctrSpec.name;
+    out << YAML::Key << "controller_type" << YAML::Value <<  ctrSpec.controller_type;
+    out << YAML::Key << "feedback_type"   << YAML::Value <<  ctrSpec.feedback_type;
+    out << YAML::Key << "Fd"              << YAML::Value <<  ctrSpec.Fd;
+    out << YAML::Key << "Kp"              << YAML::Value <<  ctrSpec.Kp;
+    out << YAML::Key << "Ki"              << YAML::Value <<  ctrSpec.Ki;
+    out << YAML::Key << "Kd"              << YAML::Value <<  ctrSpec.Kd;
+    out << YAML::Key << "Kv"              << YAML::Value <<  ctrSpec.Kv;
+    out << YAML::Key << "Ts"              << YAML::Value <<  ctrSpec.Ts;
+    out << YAML::Key << "Nf"              << YAML::Value <<  ctrSpec.Nf;
+    out << YAML::Key << "impCtr_Xnom"     << YAML::Value <<  ctrSpec.impCtr_Xnom;
+    out << YAML::Key << "impCtr_M"        << YAML::Value <<  ctrSpec.impCtr_M;
+    out << YAML::Key << "impCtr_D"        << YAML::Value <<  ctrSpec.impCtr_D;
+    out << YAML::Key << "impCtr_K"        << YAML::Value <<  ctrSpec.impCtr_K;
     out << YAML::EndMap;
     return out;
 }

@@ -144,16 +144,22 @@ int main(int argc, char** argv)
 	ControllerSpec tempSpec;
 
 	tempSpec.name         = "efc_00_00_00" ;
-	tempSpec.explFctr_Kp  = 2       ;
-	tempSpec.explFctr_Ki  = 0.00005 ;
-	tempSpec.explFctr_Kd  = 0.5     ;
 	tempSpec.impCtr_Xnom  = 0.5     ;
 	tempSpec.impCtr_M     = 5       ;
 	tempSpec.impCtr_K     = 24      ;
 	tempSpec.impCtr_D     = 10      ;
+
 	tempSpec.controller_type = 1    ;
 	tempSpec.feedback_type   = 1    ;
-	tempSpec.targetForce  = 0.01    ;
+	tempSpec.Fd  = 2.0;
+
+	tempSpec.Kp = 2.0   ;
+	tempSpec.Ki = 20.0  ;
+	tempSpec.Kd = 0.0   ;
+	tempSpec.Kv = 0.0   ;
+
+	tempSpec.Ts = 0.001;
+	tempSpec.Nf = 100;
 
 	ctrSpecs.push_back( tempSpec );
 
