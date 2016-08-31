@@ -607,9 +607,17 @@ void SkinJointGazeboRos::UpdateJoints()
 	if(this->ros_connections_fb_ > 0 )
 	{
 		this->lock_.lock();
+
 		// Copy data into ROS message
-		msg_fb_.force_applied = f_app_.sum();
-		msg_fb_.force_sensed  = f_sen_.sum();	// FIXME this should be sum of tactile data
+		msg_fb_.force_applied = f_app_.sum();	// Real force applied by plunger
+		msg_fb_.force_sensed  = 0.0; 			//f_sen_.sum();
+		for(int i=0;i<this->num_sensors_;i++)	// Sum of tactile data
+		{
+			msg_fb_.force_sensed += sensors_[i].force_sensed;
+		}
+
+		//msg_fb_.force_sensed *= 3.799893;	// FIXME temporary scaling factor
+
 		msg_fb_.contacts      = num_contacts_;
 
 		this->ros_pub_fb_.publish(this->msg_fb_);
