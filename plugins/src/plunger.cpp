@@ -164,7 +164,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	this->force_desired_    = 0.0;
 	this->force_prev_       = 0.0;
 	this->feedback_type_.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
-	this->controller_type_.selected = -1; //skinsim_ros_msgs::ControllerType::DIRECT;
+	this->controller_type_.selected = skinsim_ros_msgs::ControllerType::DIRECT;
 
 	// P-controller
 	this->pid_ = common::PID(JointPgain_, JointIgain_, JointDgain_, 15, -15);
@@ -264,7 +264,7 @@ void Plunger::UpdateJoints()
 	// Tactile sensed
 	case skinsim_ros_msgs::FeedbackType::TACTILE_SENSED:
 	{
-		 this->force_current_ = -msg_fb_.force_sensed;		// Force sensed < 0
+		 this->force_current_ = msg_fb_.force_sensed;		// Force sensed > 0
 		 break;
 	}
 	// Default

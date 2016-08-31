@@ -616,7 +616,7 @@ void SkinJointGazeboRos::UpdateJoints()
 			msg_fb_.force_sensed += sensors_[i].force_sensed;
 		}
 
-		//msg_fb_.force_sensed *= 3.799893;	// FIXME temporary scaling factor
+		msg_fb_.force_sensed *= -1;	// FIXME temporary scaling factor
 
 		msg_fb_.contacts      = num_contacts_;
 
