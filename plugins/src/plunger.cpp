@@ -292,7 +292,7 @@ void Plunger::UpdateJoints()
 	case skinsim_ros_msgs::ControllerType::DIRECT:
 	{
 		this->effort_ = this->force_desired_;
-		this->joint_->SetForce(0, this->effort_);
+		this->joint_->SetForce(0, -this->effort_);
 		break;
 	}
 	// Force-Based Explicit Force control
@@ -344,7 +344,7 @@ void Plunger::UpdateJoints()
 			if (u_(0) < umin)
 				u_(0) = umin;
 
-			effort_ = u_(0);
+			effort_ = u_(0); // 3.799893;		// FIXME Temporary scaling factor
 			this->joint_->SetForce(0, -this->effort_);
 		}
 		else

@@ -50,6 +50,7 @@
 // ROS
 #include <ros/ros.h>
 #include <skinsim_ros_msgs/SetController.h>
+#include <skinsim_ros_msgs/PlungerData.h>
 
 // Boost
 #include <boost/thread.hpp>
@@ -97,6 +98,15 @@ private: ros::ServiceClient ros_srv_;
 private: skinsim_ros_msgs::SetController msg_srv_;
 private: int iterations_max;
 
+// Calibration
+private: double* buffer;
+private: int buffer_idx;
+private: int buffer_size;
+private: double K_sma;
+private: double f_target;
+private: bool calibration_done;
+private: int calibration_counter;
+
 // Color for terminal text
 private: static const char RED[];
 private: static const char GREEN[];
@@ -108,6 +118,26 @@ SkinSimTestingFramework()
 {
 	std::cout << "SkinSim Testing Framework Constructor" << std::endl;
 	this->server = NULL;
+}
+
+~SkinSimTestingFramework()
+{
+
+}
+
+// ROS subscriber CB
+void subscriberCB(const skinsim_ros_msgs::PlungerDataConstPtr& msg)
+{
+	if(msg->f_meas == 0)
+		return;
+
+	double K = msg->f_actual / msg->f_meas;							// FIXME need to return f_sensed
+	K_sma = K_sma + ( K - buffer[buffer_idx] )/(double)buffer_size;
+	buffer[buffer_idx] = K;
+	buffer_idx = (buffer_idx + 1)%buffer_size;
+
+	if(fabs(f_target - msg->f_actual ) < 0.001 )
+		calibration_done = true;
 }
 
 void OnStats(ConstWorldStatisticsPtr &_msg)
@@ -195,7 +225,7 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 
 	this->server->Fini();
 
-	//std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
+	std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
 
 	// Deallocate variables
 	delete this->server;
@@ -465,6 +495,16 @@ void runCalibration(std::string exp_name)
 		this->node->Init();
 		this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
 
+		// Calibration
+		buffer_size = 20;
+		buffer = new double[buffer_size];
+		for(int i=0;i<buffer_size;i++)
+			buffer[i]=0.0;
+		buffer_idx = 0;
+		K_sma = 0;
+		f_target = 2.0;
+		calibration_done = false;
+
 		// Make sure the ROS node for Gazebo has already been initialized
 		if (!ros::isInitialized())
 		{
@@ -477,12 +517,22 @@ void runCalibration(std::string exp_name)
 		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
 		this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
 
+		// Create ROS topic subscriber
+		std::string topic = modelSpec.spec.topic;
+		ros::Subscriber ros_sub_ = this->ros_node_->subscribe(topic.c_str(), 1, &SkinSimTestingFramework::subscriberCB, this);
+
 		// Set plunger force message
-		msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::DIRECT;
+		msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::DIGITAL_PID;
 		msg_srv_.request.fb.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
-		msg_srv_.request.f_des = 1.0;
+		msg_srv_.request.f_des = f_target;
 		msg_srv_.request.x_des = 0.0;
 		msg_srv_.request.v_des = -0.005;
+		msg_srv_.request.Kp = 2.0   ;
+		msg_srv_.request.Ki = 20.0  ;
+		msg_srv_.request.Kd = 0.0	  ;
+		msg_srv_.request.Kv = 0.0   ;
+		msg_srv_.request.Ts = 0.001;
+		msg_srv_.request.Nf = 100;
 		std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
 
 		// Start simulation
@@ -509,21 +559,47 @@ void runCalibration(std::string exp_name)
 
 		// Wait for simulation to end
 		waitCount = 0;
-		while( physics::worlds_running() )
+		int fastCount = 0;
+		std::ostringstream ss;
+		while( physics::worlds_running() && !calibration_done)
 		{
-			common::Time::MSleep(100);
-			waitCount++;
+			if(iterations < iterations_max/2)
+			{
+				common::Time::MSleep(100);
+				waitCount++;
 
-			// TODO Get calibration data
+				// Get calibration data
+				ros::spinOnce();
 
-			// Print status
-			if(waitCount > 10)
-				std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << std::flush;
+				// Print status
+				if(waitCount > 10)
+				{
+					ss.str(""); ss.clear();
+					ss << std::setw(4) << std::setfill('0')<<K_sma;
+					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<< std::flush;
+				}
+			}
+			else
+			{
+				fastCount++;
+
+				// Get calibration data
+				ros::spinOnce();
+
+				// Print status
+				if((fastCount % 10000) == 0)
+				{
+					ss.str(""); ss.clear();
+					ss << std::setw(4) << std::setfill('0')<<K_sma;
+					std::cout << '\r' << YELLOW << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<< std::flush;
+				}
+			}
 		}
+		if(physics::worlds_running())
+			physics::stop_worlds();
 
 		// Compute calibration constant
-		double K = 1.0;	// TODO f_applied / f_sensed;
-		out << YAML::Key << modelSpec.name << YAML::Value << K;
+		out << YAML::Key << modelSpec.name << YAML::Value << K_sma;
 
 		// Simulation finished
 		std::cout << RESET;
@@ -533,6 +609,7 @@ void runCalibration(std::string exp_name)
 		// Cleanup
 		Unload();
 		delete ros_node_;
+		delete[] buffer;
 
 		index++;
 	}
@@ -577,7 +654,8 @@ int main(int argc, char** argv)
 
 	// Run simulation
 	SkinSimTestingFramework skinSimTestingFrameworkObject;
-	skinSimTestingFrameworkObject.runTests(exp_name);
+	//skinSimTestingFrameworkObject.runTests(exp_name);
+	skinSimTestingFrameworkObject.runCalibration(exp_name);
 
 	// Print time elapsed
 	boost::chrono::duration<double> sec = boost::chrono::steady_clock::now() - start;
