@@ -205,30 +205,29 @@ int main(int argc, char** argv)
 	defaultControlSpec.impCtr_M     	= 0       ;
 	defaultControlSpec.impCtr_K     	= 0       ;
 	defaultControlSpec.impCtr_D     	= 0       ;
-	defaultControlSpec.targetForce  	= -2      ;
-	defaultControlSpec.controller_type	= 1		  ;		//DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3
+	defaultControlSpec.targetForce  	= 2       ;
+	defaultControlSpec.controller_type	= 4		  ;		//DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
 	defaultControlSpec.feedback_type	= 1 	  ; 	//PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
-	defaultControlSpec.plunger_Kp 		= 1		  ;
-	defaultControlSpec.plunger_Ki 		= 0 	  ;
-	defaultControlSpec.plunger_Kd 		= 0 	  ;
+	defaultControlSpec.plunger_Kp 		= 0.50    ;
+	defaultControlSpec.plunger_Ki 		= 0.05 	  ;
+	defaultControlSpec.plunger_Kd 		= 0.05	  ;
 	defaultControlSpec.plunger_Kv		= 0 	  ;
 
 	int num = 0;
 //	for(unsigned j  = 1; j < 3; j++ ) // Feedback type
 //	{
-//		for(unsigned i  = 0; i < 1; i++ ) // Kp
-//		{
-//			ControllerSpec tempControlSpec = defaultControlSpec;
-//
-//			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( num );
-//			tempControlSpec.explFctr_Kp = 0.5*i;
-//			tempControlSpec.explFctr_Kd = 0.0;
-//			tempControlSpec.controller_type = j;
-//			ctrSpecs.push_back( tempControlSpec ) ;
-//			num++;
-//		}
+		for(unsigned i  = 0; i < 5; i++ ) // Kp
+		{
+			ControllerSpec tempControlSpec = defaultControlSpec;
+
+			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( num );
+			tempControlSpec.plunger_Kp = 0.25*i;
+			//tempControlSpec.controller_type = j;
+			ctrSpecs.push_back( tempControlSpec ) ;
+			num++;
+		}
 //	}
-	ctrSpecs.push_back( defaultControlSpec ) ;
+
 //	for(unsigned i  = 0; i < 10 ; i++ )
 //	{
 //		ControllerSpec tempControlSpec = defaultControlSpec;
