@@ -165,8 +165,11 @@ class Plunger : public ModelPlugin
   /// \brief A pointer to the update event connection
   private: event::ConnectionPtr update_connection_;
 
-  /// \brief For saving last time
+  /// \brief For saving last time joint was updated
   private: common::Time last_time_;
+
+  /// \brief For saving last time controller was updated
+  private: common::Time last_time_controller_;
 
   //  \brief Update rate
   private: double update_rate_;
