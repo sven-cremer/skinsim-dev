@@ -226,6 +226,9 @@ class Plunger : public ModelPlugin
   /// \brief Number of contacts
   private: int num_contacts_;
 
+  /// \brief Calibration value for force sensed
+  private: double K_cali_;
+
 };
 
 }

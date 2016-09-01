@@ -217,6 +217,8 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	  ke_.setZero();
 	  N = 1;			// Filtering coefficient for derivative term
 	  Ts = 0.001;		// Sampling time of PID
+
+	  K_cali_ = 1.0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -396,6 +398,7 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 	this->lock_.lock();
 	this->controller_type_.selected = req.type.selected;
 	this->feedback_type_  .selected = req.fb.selected;
+	this->K_cali_ = req.K_cali;
 
 	switch(this->controller_type_.selected)
 	{
@@ -502,7 +505,7 @@ void Plunger::ForceFeedbackCB(const skinsim_ros_msgs::ForceFeedback::ConstPtr& _
 {
 	this->lock_.lock();
 	msg_fb_.force_applied = _msg->force_applied;
-	msg_fb_.force_sensed  = _msg->force_sensed;
+	msg_fb_.force_sensed  = _msg->force_sensed * K_cali_;	// Calibrate value
 	num_contacts_         = _msg->contacts;
 	this->lock_.unlock();
 }
