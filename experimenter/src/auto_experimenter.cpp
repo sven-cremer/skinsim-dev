@@ -35,7 +35,7 @@
 /* Author: Isura Ranatunga
  *         Sven Cremer
  *
- * auto_experimenter.cc
+ * auto_experimenter.cpp
  *  Created on: Jul 21, 2014
  */
 

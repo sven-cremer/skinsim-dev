@@ -60,7 +60,7 @@ target_link_libraries( generate_experiment_specification ${GAZEBO_LIBRARIES} ${B
 add_executable( auto_generator src/auto_generator.cpp )
 target_link_libraries( auto_generator ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES} yaml-cpp model_builder )
 
-add_executable( auto_experimenter src/auto_experimenter.cc )
+add_executable( auto_experimenter src/auto_experimenter.cpp )
 target_link_libraries( auto_experimenter SkinSimTestingFramework )
 
 add_executable( auto_calibrator src/auto_calibrator.cpp )
