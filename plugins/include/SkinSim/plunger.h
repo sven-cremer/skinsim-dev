@@ -203,6 +203,14 @@ class Plunger : public ModelPlugin
   private: physics::JointControllerPtr joint_pid_;
   private: common::PID pid_;
 
+  /// \brief explicit force controller
+  private: double force_error_;
+  private: double force_error_previous_;
+  private: double force_error_dot_;
+  private: double force_error_dot_previous_;
+  private: double force_error_ddot_;
+
+
   /// \brief Digital PID controller
   private: Eigen::Vector3d u_;
   private: Eigen::Vector3d e_;

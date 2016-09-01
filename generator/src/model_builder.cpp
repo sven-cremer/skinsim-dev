@@ -469,18 +469,20 @@ void ModelBuilder::addPlungerPlugin( std::string plugin_name,
 			double kv,
 			double jointPGain,
 			double jointIGain,
-			double jointDGain)
+			double jointDGain,
+			double mass)
 {
 	m_sdfStream << "  <plugin name='" + plugin_name + "' filename='" + plugin_filename + "' >\n"
-				<< "    <fileName>"       << plugin_file_name << "</fileName>\n"
+				<< "    <fileName>"       << plugin_file_name        << "</fileName>\n"
 				<< "    <rosNamespace>"   << m_.spec.ros_namespace   << "</rosNamespace>\n"
 				<< "    <updateRate>"     << m_.spec.update_rate     << "</updateRate>\n"
-				<< "    <Kp>"           << kp    << "</Kp>\n"
-				<< "    <Kd>"         << kd  << "</Kd>\n"
-				<< "    <Kv>"        << kv << "</Kv>\n"
-				<< "    <JointPgain>"  << jointPGain  << "</JointPgain>\n"
-				<< "    <JointIgain>"    << jointIGain    << "</JointIgain>\n"
-				<< "    <JointDgain>"    << jointDGain    << "</JointDgain>\n"
+				<< "    <Kp>"             << kp                      << "</Kp>\n"
+				<< "    <Kd>"             << kd                      << "</Kd>\n"
+				<< "    <Kv>"             << kv                      << "</Kv>\n"
+				<< "    <JointPgain>"     << jointPGain              << "</JointPgain>\n"
+				<< "    <JointIgain>"     << jointIGain              << "</JointIgain>\n"
+				<< "    <JointDgain>"     << jointDGain              << "</JointDgain>\n"
+				<< "    <mass>"           << mass                    << "</mass>\n"
 				<< "  </plugin>\n";
 }
 
@@ -732,7 +734,8 @@ void ModelBuilder::createPlungerModelFiles(std::string model_name )
 				      m_.spec.plunger_damping,
 				      0.5,
 				      0.1,
-				      0.0);
+				      0.0,
+					  m_.spec.plunger_mass);
 
 	///////////////////////////////////////////////////////
 

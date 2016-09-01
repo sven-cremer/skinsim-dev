@@ -102,15 +102,18 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	if (_sdf->HasElement("Kv"))
 		this->Kv_ = _sdf->GetElement("Kv")->Get<double>();
 
-	double JointPgain_ = 5.0;
+	double JointPgain_  = 5.0;
 	if (_sdf->HasElement("JointPgain"))
-		JointPgain_ = _sdf->GetElement("JointPgain")->Get<double>();
-	double JointIgain_ = 0.01;
+		JointPgain_     = _sdf->GetElement("JointPgain")->Get<double>();
+	double JointIgain_  = 0.01;
 	if (_sdf->HasElement("JointIgain"))
-		JointIgain_ = _sdf->GetElement("JointIgain")->Get<double>();
-	double JointDgain_ = 0.1;
+		JointIgain_     = _sdf->GetElement("JointIgain")->Get<double>();
+	double JointDgain_  = 0.1;
 	if (_sdf->HasElement("JointDgain"))
-		JointDgain_ = _sdf->GetElement("JointDgain")->Get<double>();
+		JointDgain_     = _sdf->GetElement("JointDgain")->Get<double>();
+	double  plunger_mass= 0.1;
+	if (_sdf->HasElement("mass"))
+		plunger_mass    = _sdf->GetElement("mass")->Get<double>();
 
 	// Get pointers to joint from Gazebo
 	this->joint_ = this->model_->GetJoint(this->joint_name_);
@@ -308,15 +311,19 @@ void Plunger::UpdateJoints()
 		{
 			this->joint_->SetVelocity (0, velocity_desired_);
 		}
+
 		break;
 	}
 	// Position-Based Explicit Force control
 	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
 	{
-		position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
-		double postion_error = position_current_ - position_desired_;
-		this->effort_ = this->pid_.Update(postion_error, step_time);
-		this->joint_->SetForce(0, -this->effort_);
+
+//		this->effort_    =   ;
+
+//		position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
+//		double postion_error = position_current_ - position_desired_;
+//		this->effort_ = this->pid_.Update(postion_error, step_time);
+//		this->joint_->SetForce(0, -this->effort_);
 		break;
 	}
 	// Digital PID control
