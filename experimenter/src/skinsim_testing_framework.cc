@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2014, UT Arlington
+ *  Copyright (c) 2016, UT Arlington
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,12 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Isura Ranatunga
+/*
+ * skinsim_testing_framework.cc
  *
- * automatedTest.cc
- *  Created on: Jul 21, 2014
+ *  Created on: Aug 31, 2016
+ *      Author: Sven Cremer
+ *              Isura Ranatunga
  */
 
 #include <iostream>
@@ -49,8 +51,8 @@
 // ROS
 #include <ros/ros.h>
 #include <skinsim_ros_msgs/SetController.h>
-
-//#include <sdf/sdf.hh>
+//#include <skinsim_ros_msgs/PlungerData.h>
+#include <skinsim_ros_msgs/ForceFeedback.h>
 
 // Boost
 #include <boost/thread.hpp>
@@ -58,22 +60,16 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/chrono.hpp>
 
+// Gazebo
 #include "gazebo/Server.hh"
 #include "gazebo/physics/PhysicsIface.hh"
 #include "gazebo/transport/transport.hh"
 #include "gazebo/msgs/msgs.hh"
 
-//#include "gazebo/common/CommonIface.hh"
-//#include "gazebo/common/SystemPaths.hh"
-//#include "gazebo/common/Console.hh"
-//#include "gazebo/physics/World.hh"
-//#include "gazebo/physics/PhysicsTypes.hh"
-//#include "gazebo/sensors/sensors.hh"
-//#include "gazebo/rendering/rendering.hh"
-//#include "gazebo/gazebo_config.h"
-
-//#include <Eigen/Core>
+// Utilities
 #include <yaml-cpp/yaml.h>
+//#include <Eigen/Core>
+//#include <sdf/sdf.hh>
 
 #include <SkinSim/ModelSpecYAML.hh>
 #include <SkinSim/ControlSpecYAML.hh>
@@ -104,6 +100,15 @@ private: ros::ServiceClient ros_srv_;
 private: skinsim_ros_msgs::SetController msg_srv_;
 private: int iterations_max;
 
+// Calibration
+private: double* buffer;
+private: int buffer_idx;
+private: int buffer_size;
+private: double K_sma;
+private: double f_target;
+private: bool calibration_done;
+private: int calibration_counter;
+
 // Color for terminal text
 private: static const char RED[];
 private: static const char GREEN[];
@@ -115,6 +120,35 @@ SkinSimTestingFramework()
 {
 	std::cout << "SkinSim Testing Framework Constructor" << std::endl;
 	this->server = NULL;
+}
+
+~SkinSimTestingFramework()
+{
+
+}
+
+// ROS subscriber CB
+void subscriberCB(const skinsim_ros_msgs::ForceFeedbackConstPtr& msg)
+{
+	if(msg->force_sensed == 0)
+		return;
+
+	double K = msg->force_applied / msg->force_sensed;
+	K_sma = K_sma + ( K - buffer[buffer_idx] )/(double)buffer_size;
+	buffer[buffer_idx] = K;
+	buffer_idx = (buffer_idx + 1)%buffer_size;
+
+	if(fabs(f_target - K_sma*msg->force_sensed ) < 0.01 )
+	{
+		calibration_counter++;
+		if(calibration_counter > 10)
+			calibration_done = true;
+	}
+	else
+	{
+		calibration_counter=0;
+	}
+
 }
 
 void OnStats(ConstWorldStatisticsPtr &_msg)
@@ -195,21 +229,6 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 		std::cerr<<"Failed parsing server arguments!\n";
 	}
 
-	//	if(! this->server->PreLoad() )
-	//		std::cerr<<"Failed to preload the Gazebo server";
-
-	//	if (_physics.length())
-	//		this->server->LoadFile(_worldFilename, _physics);
-	//	else
-	//		this->server->LoadFile(_worldFilename);
-	//
-	//	if (!rendering::get_scene(
-	//			gazebo::physics::get_world()->GetName()))
-	//	{
-	//		rendering::create_scene(
-	//				gazebo::physics::get_world()->GetName(), false, true);
-	//	}
-
 	this->server->SetParams(m_gazeboParams);
 	this->SetPause(_paused);
 
@@ -217,7 +236,7 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 
 	this->server->Fini();
 
-	//std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
+	std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
 
 	// Deallocate variables
 	delete this->server;
@@ -238,7 +257,7 @@ void runTests(std::string exp_name)
 	//std::cout << "TestingFramework::runTests()" << std::endl;
 
 	// Parameters
-	std::string filename_model   = "mdlSpecs.yaml";;
+	std::string filename_model   = "mdlSpecs.yaml";
 	std::string filename_control = "ctrSpecs.yaml";
 
 	// Create paths
@@ -246,6 +265,7 @@ void runTests(std::string exp_name)
 	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
 	std::string mdlSpecPath = pathExp + "/" + filename_model;
 	std::string ctrSpecPath = pathExp + "/" + filename_control;
+	std::string caliPath    = pathExp + "/tactile_calibration.yaml";
 
 	// Read YAML model file
 	std::ifstream fin(mdlSpecPath.c_str());
@@ -258,6 +278,12 @@ void runTests(std::string exp_name)
 	YAML::Node doc_control;
 	std::cout<<"Loading file: "<<ctrSpecPath<<"\n";
 	doc_control = YAML::LoadAll(fin2);
+
+	// Read YAML calibration file
+	std::ifstream fin3(caliPath.c_str());
+	YAML::Node doc_cali;
+	std::cout<<"Loading file: "<<caliPath<<"\n";
+	doc_cali = YAML::LoadAll(fin3);
 
 	// Gazebo parameters
 	std::string _worldFilename("~");
@@ -282,6 +308,11 @@ void runTests(std::string exp_name)
 			doc_model[0][i] >> modelSpec;
 			//print(modelSpec);
 
+			// Load calibration constant
+			double K_cali = 1.0;
+			if( doc_cali[0][modelSpec.name])
+				K_cali=doc_cali[0][modelSpec.name].as<double>();
+
 			// Generate experiment name
 			int skin_size    = modelSpec.spec.num_elements_x * modelSpec.spec.num_elements_y;
 			int tactile_size = modelSpec.spec.tactile_elements_x;// * modelSpec.spec.tactile_elements_x;
@@ -297,6 +328,7 @@ void runTests(std::string exp_name)
 			// Print info
 			std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
 			std::cout << "# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
+			std::cout << "  Calibration value: "<<K_cali<<"\n";
 
 			// Point model world file location
 			_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
@@ -353,6 +385,7 @@ void runTests(std::string exp_name)
 			msg_srv_.request.Kv    = controlSpec.Kv;
 			msg_srv_.request.Ts    = controlSpec.Ts;
 			msg_srv_.request.Nf    = controlSpec.Nf;
+			msg_srv_.request.K_cali = K_cali;
 			std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
 
 			// Start simulation
@@ -417,6 +450,209 @@ void runTests(std::string exp_name)
 
 }
 
+
+void runCalibration(std::string exp_name)
+{
+	// Parameters
+	std::string filename_model   = "mdlSpecs.yaml";
+
+	// Create paths
+	std::string pathSkinSim = getenv ("SKINSIM_PATH");
+	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
+	std::string mdlSpecPath = pathExp + "/" + filename_model;
+	std::string calibration_file = pathExp + "/tactile_calibration.yaml";
+
+	// Read YAML model file
+	std::ifstream fin(mdlSpecPath.c_str());
+	YAML::Node doc_model;
+	std::cout<<"Loading file: "<<mdlSpecPath<<"\n";
+	doc_model = YAML::LoadAll(fin);
+
+	// For saving calibration constants
+	std::ofstream fout(calibration_file.c_str());
+	YAML::Emitter out;
+	out << YAML::BeginMap;
+
+	// Gazebo parameters
+	std::string _worldFilename("~");
+	bool _paused = true;
+	std::string _physics = "ode";
+
+	BuildModelSpec modelSpec;
+
+	int index = 1;
+	int N = doc_model[0].size();
+
+	// Loop over models
+	for(unsigned i=0;i<doc_model[0].size();i++)
+	{
+		doc_model[0][i] >> modelSpec;
+		//print(modelSpec);
+
+		// Print info
+		std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
+		std::cout << "# Model: "<< modelSpec.name << " ("<< index << " out of " << N << ")\n";
+
+		// Point model world file location
+		_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
+
+		// Compute number of iterations
+		iterations_max = modelSpec.spec.max_sim_time/modelSpec.spec.step_size;
+		m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
+
+		// Create Gazebo world
+		std::cout << "Initializing World" << std::endl;
+		// Create, load, and run the server in its own thread
+		this->serverThread = new boost::thread(
+				boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
+						_paused, _physics));
+
+		std::cout << "Waiting for world completion" << std::endl;
+		// Wait for the server to come up (15 second timeout)
+		int waitCount = 0, maxWaitCount = 150;
+		while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )		// TODO error handling if timeout occurs
+			common::Time::MSleep(100);
+
+		std::cout << "Gazebo server loaded in "<<(double)waitCount*0.1<<" seconds (timeout after "<<(double)maxWaitCount*0.1<<" seconds)\n";
+
+		// Initialize Gazebo transport node (to get simulation time)
+		this->node = transport::NodePtr(new transport::Node());
+		this->node->Init();
+		this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
+
+		// Calibration
+		buffer_size = 20;
+		buffer = new double[buffer_size];
+		for(int i=0;i<buffer_size;i++)
+			buffer[i]=0.0;
+		buffer_idx = 0;
+		K_sma = 0;
+		f_target = 2.0;
+		calibration_done = false;
+		calibration_counter=0;
+
+		// Make sure the ROS node for Gazebo has already been initialized
+		if (!ros::isInitialized())
+		{
+			std::cerr<<"Error: ROS has not been initialized! \n";
+			exit(1);
+		}
+
+		// Create ROS service client
+		ros_namespace_ = "skinsim";
+		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
+		this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+
+		// Create ROS topic subscriber
+		std::string topic = "/skinsim/force_feedback";
+		ros::Subscriber ros_sub_ = this->ros_node_->subscribe(topic.c_str(), 1, &SkinSimTestingFramework::subscriberCB, this);
+
+		// Set plunger force message
+		msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::DIGITAL_PID;
+		msg_srv_.request.fb.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
+		msg_srv_.request.f_des = f_target;
+		msg_srv_.request.x_des = 0.0;
+		msg_srv_.request.v_des = -0.005;
+		msg_srv_.request.Kp = 2.0   ;
+		msg_srv_.request.Ki = 20.0  ;
+		msg_srv_.request.Kd = 0.0	  ;
+		msg_srv_.request.Kv = 0.0   ;
+		msg_srv_.request.Ts = 0.001;
+		msg_srv_.request.Nf = 100;
+		msg_srv_.request.K_cali = 1.0;
+		std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
+
+		// Start simulation
+		std::cout<<"Starting simulation...\n";
+		this->SetPause(false);
+
+		// Send control message
+		bool message_sent = false;
+		while( !message_sent )
+		{
+			// Send control message to plunger
+			if(!message_sent)
+			{
+				if (ros_srv_.call(msg_srv_))
+				{
+					message_sent = true;
+					std::cout<<"Control message sent!\n";
+				}
+				//else
+				//	std::cerr<<"Failed to send control message, trying again ...\n";
+			}
+			common::Time::MSleep(10);
+		}
+
+		// Wait for simulation to end
+		waitCount = 0;
+		int fastCount = 0;
+		std::ostringstream ss;
+		while( physics::worlds_running() && !calibration_done)
+		{
+			if(iterations < iterations_max*0.7)
+			{
+				common::Time::MSleep(100);
+				waitCount++;
+
+				// Get calibration data
+				ros::spinOnce();
+
+				// Print status
+				if(waitCount > 10)
+				{
+					ss.str(""); ss.clear();
+					ss << std::setw(4) << std::setfill('0')<<K_sma;
+					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<<calibration_counter<< std::flush;
+				}
+			}
+			else
+			{
+				//common::Time::MSleep(1);
+				fastCount++;
+
+				// Get calibration data
+				ros::spinOnce();
+
+				// Print status
+				if((fastCount % 10000) == 0)
+				{
+					ss.str(""); ss.clear();
+					ss << std::setw(4) << std::setfill('0')<<K_sma;
+					std::cout << '\r' << YELLOW << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<<calibration_counter<< std::flush;
+				}
+			}
+		}
+		if(physics::worlds_running())
+			physics::stop_worlds();
+
+		// Compute calibration constant
+		out << YAML::Key << modelSpec.name << YAML::Value << K_sma;
+
+		// Simulation finished
+		std::cout << RESET;
+		std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";
+		std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
+
+		// Cleanup
+		Unload();
+		delete ros_node_;
+		delete[] buffer;
+
+		index++;
+	}
+
+	delete this->server;
+
+	// Write to YAML file and close
+	std::cout<<"Saving: "<<calibration_file<<"\n";
+	out << YAML::EndMap;
+	fout << out.c_str();	// TODO save before in case of crash
+	fout.close();
+
+}
+
+
 };
 
 // Color for terminal text
@@ -424,35 +660,3 @@ const char SkinSimTestingFramework::RED[]    = "\033[0;31m";
 const char SkinSimTestingFramework::GREEN[]  = "\033[0;32m";
 const char SkinSimTestingFramework::YELLOW[] = "\033[0;33m";
 const char SkinSimTestingFramework::RESET[]  = "\033[0m";
-
-// Main
-int main(int argc, char** argv)
-{
-
-	std::string exp_name = "exp01";		// Default experiment name
-
-	// Check the number of command-line parameters
-	if (argc == 2)
-	{
-		exp_name = argv[1];				// Set experiment name
-	}
-	else
-	{
-		std::cout<<"\n\tUsage: "<<argv[0]<<" [EXPERIMENT NAME]\n\n";
-	}
-
-	// Save current time
-	boost::chrono::steady_clock::time_point start = boost::chrono::steady_clock::now();
-
-	// Run simulation
-	SkinSimTestingFramework skinSimTestingFrameworkObject;
-	skinSimTestingFrameworkObject.runTests(exp_name);
-
-	// Print time elapsed
-	boost::chrono::duration<double> sec = boost::chrono::steady_clock::now() - start;
-	std::cout << "\n -> Auto experimenter completed in " << sec.count() << " seconds.\n\n";
-
-	return 0;
-
-}
-
