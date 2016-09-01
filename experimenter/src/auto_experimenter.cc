@@ -137,8 +137,17 @@ void subscriberCB(const skinsim_ros_msgs::ForceFeedbackConstPtr& msg)
 	buffer[buffer_idx] = K;
 	buffer_idx = (buffer_idx + 1)%buffer_size;
 
-	if(fabs(f_target - K_sma*msg->force_sensed ) < 0.001 )
-		calibration_done = true;
+	if(fabs(f_target - K_sma*msg->force_sensed ) < 0.01 )
+	{
+		calibration_counter++;
+		if(calibration_counter > 10)
+			calibration_done = true;
+	}
+	else
+	{
+		calibration_counter=0;
+	}
+
 }
 
 void OnStats(ConstWorldStatisticsPtr &_msg)
@@ -255,6 +264,7 @@ void runTests(std::string exp_name)
 	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
 	std::string mdlSpecPath = pathExp + "/" + filename_model;
 	std::string ctrSpecPath = pathExp + "/" + filename_control;
+	std::string caliPath    = pathExp + "/tactile_calibration.yaml";
 
 	// Read YAML model file
 	std::ifstream fin(mdlSpecPath.c_str());
@@ -267,6 +277,12 @@ void runTests(std::string exp_name)
 	YAML::Node doc_control;
 	std::cout<<"Loading file: "<<ctrSpecPath<<"\n";
 	doc_control = YAML::LoadAll(fin2);
+
+	// Read YAML calibration file
+	std::ifstream fin3(caliPath.c_str());
+	YAML::Node doc_cali;
+	std::cout<<"Loading file: "<<caliPath<<"\n";
+	doc_cali = YAML::LoadAll(fin3);
 
 	// Gazebo parameters
 	std::string _worldFilename("~");
@@ -291,6 +307,11 @@ void runTests(std::string exp_name)
 			doc_model[0][i] >> modelSpec;
 			//print(modelSpec);
 
+			// Load calibration constant
+			double K_cali = 1.0;
+			if( doc_cali[0][modelSpec.name])
+				K_cali=doc_cali[0][modelSpec.name].as<double>();
+
 			// Generate experiment name
 			int skin_size    = modelSpec.spec.num_elements_x * modelSpec.spec.num_elements_y;
 			int tactile_size = modelSpec.spec.tactile_elements_x;// * modelSpec.spec.tactile_elements_x;
@@ -306,6 +327,7 @@ void runTests(std::string exp_name)
 			// Print info
 			std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
 			std::cout << "# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
+			std::cout << "  Calibration value: "<<K_cali<<"\n";
 
 			// Point model world file location
 			_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
@@ -362,6 +384,7 @@ void runTests(std::string exp_name)
 			msg_srv_.request.Kv    = controlSpec.Kv;
 			msg_srv_.request.Ts    = controlSpec.Ts;
 			msg_srv_.request.Nf    = controlSpec.Nf;
+			msg_srv_.request.K_cali = K_cali;
 			std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
 
 			// Start simulation
@@ -505,6 +528,7 @@ void runCalibration(std::string exp_name)
 		K_sma = 0;
 		f_target = 2.0;
 		calibration_done = false;
+		calibration_counter=0;
 
 		// Make sure the ROS node for Gazebo has already been initialized
 		if (!ros::isInitialized())
@@ -534,6 +558,7 @@ void runCalibration(std::string exp_name)
 		msg_srv_.request.Kv = 0.0   ;
 		msg_srv_.request.Ts = 0.001;
 		msg_srv_.request.Nf = 100;
+		msg_srv_.request.K_cali = 1.0;
 		std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
 
 		// Start simulation
@@ -564,7 +589,7 @@ void runCalibration(std::string exp_name)
 		std::ostringstream ss;
 		while( physics::worlds_running() && !calibration_done)
 		{
-			if(iterations < iterations_max/2)
+			if(iterations < iterations_max*0.7)
 			{
 				common::Time::MSleep(100);
 				waitCount++;
@@ -577,7 +602,7 @@ void runCalibration(std::string exp_name)
 				{
 					ss.str(""); ss.clear();
 					ss << std::setw(4) << std::setfill('0')<<K_sma;
-					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<< std::flush;
+					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<<calibration_counter<< std::flush;
 				}
 			}
 			else
@@ -593,7 +618,7 @@ void runCalibration(std::string exp_name)
 				{
 					ss.str(""); ss.clear();
 					ss << std::setw(4) << std::setfill('0')<<K_sma;
-					std::cout << '\r' << YELLOW << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<< std::flush;
+					std::cout << '\r' << YELLOW << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<<calibration_counter<< std::flush;
 				}
 			}
 		}
@@ -621,7 +646,7 @@ void runCalibration(std::string exp_name)
 	// Write to YAML file and close
 	std::cout<<"Saving: "<<calibration_file<<"\n";
 	out << YAML::EndMap;
-	fout << out.c_str();
+	fout << out.c_str();	// TODO save before in case of crash
 	fout.close();
 
 }
@@ -656,8 +681,8 @@ int main(int argc, char** argv)
 
 	// Run simulation
 	SkinSimTestingFramework skinSimTestingFrameworkObject;
-	//skinSimTestingFrameworkObject.runTests(exp_name);
-	skinSimTestingFrameworkObject.runCalibration(exp_name);
+	skinSimTestingFrameworkObject.runTests(exp_name);
+	//skinSimTestingFrameworkObject.runCalibration(exp_name);		// TODO create new auto_calibrator executable
 
 	// Print time elapsed
 	boost::chrono::duration<double> sec = boost::chrono::steady_clock::now() - start;
