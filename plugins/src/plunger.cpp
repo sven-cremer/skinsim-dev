@@ -231,15 +231,7 @@ void Plunger::UpdateJoints()
 
 	// Rate control
 	//	if (this->update_rate_ > 0 && (cur_time-this->last_time_).Double() < (1.0/this->update_rate_))
-	//		return;
-	if(controller_type_.selected == skinsim_ros_msgs::ControllerType::DIGITAL_PID)	// Check Ts
-	{
-		if( (cur_time - this->last_time_).Double() < Ts )
-		{
-			this->joint_->SetForce(0, -this->effort_);	// Send old value
-			return;
-		}
-	}
+	//		return;	<-- prevents data from being published
 
 	this->position_current_ = this->joint_->GetAngle(0).Radian();
 	this->velocity_current_ = this->joint_->GetVelocity(0);
@@ -326,27 +318,32 @@ void Plunger::UpdateJoints()
 	{
 		if(num_contacts_>0)
 		{
-			// Update variables
-			e_(2)=e_(1);
-			e_(1)=e_(0);
-			u_(2)=u_(1);
-			u_(1)=u_(0);
+			if( (cur_time - last_time_controller_).Double() >= Ts )// Update value
+			{
+				// Update variables
+				e_(2)=e_(1);
+				e_(1)=e_(0);
+				u_(2)=u_(1);
+				u_(1)=u_(0);
 
-			// Compute new error
-			e_(0) = force_desired_ - force_current_;	// Reference minus measured force
+				// Compute new error
+				e_(0) = force_desired_ - force_current_;	// Reference minus measured force
 
-			// Compute new control
-			u_(0) = -ku_(1)*u_(1) - ku_(2)*u_(2) + ke_(0)*e_(0) + ke_(1)*e_(1) + ke_(2)*e_(2);
+				// Compute new control
+				u_(0) = -ku_(1)*u_(1) - ku_(2)*u_(2) + ke_(0)*e_(0) + ke_(1)*e_(1) + ke_(2)*e_(2);
 
-			// Apply limits
-			double umax =  15;	// TODO
-			double umin = -15;	// TODO
-			if (u_(0) > umax)
-				u_(0) = umax;
-			if (u_(0) < umin)
-				u_(0) = umin;
+				// Apply limits
+				double umax =  15;	// TODO
+				double umin = -15;	// TODO
+				if (u_(0) > umax)
+					u_(0) = umax;
+				if (u_(0) < umin)
+					u_(0) = umin;
 
-			effort_ = u_(0); // 3.799893;		// FIXME Temporary scaling factor
+				effort_ = u_(0);
+
+				last_time_controller_ = cur_time;
+			}
 			this->joint_->SetForce(0, -this->effort_);
 		}
 		else
