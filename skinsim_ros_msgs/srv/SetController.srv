@@ -9,5 +9,6 @@ float64 Kd                              # Derivative gain
 float64 Kv                              # Velocity gain
 float64 Ts                              # Sampling rate of controller
 float64 Nf                              # Filtering coefficient
+float64 K_cali                          # Calibration value for force sensed
 ---
 bool success
