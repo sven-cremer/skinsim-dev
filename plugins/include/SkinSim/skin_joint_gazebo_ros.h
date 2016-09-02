@@ -59,6 +59,7 @@
 #include <skinsim_ros_msgs/PointArray.h>
 #include <skinsim_ros_msgs/TactileData.h>
 #include <skinsim_ros_msgs/ForceFeedback.h>
+#include <skinsim_ros_msgs/CenterOfPressure.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 
@@ -84,6 +85,14 @@ struct Tactile
 	std::vector<int> joint_index;
 	double force_sensed;
 	double force_applied;
+};
+
+struct TactileCOP
+{
+	int index;
+	double force;
+	double x;
+	double y;
 };
 
 bool indexSort(int a, int b, std::vector<double> data)
@@ -174,6 +183,9 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief A ROS publisher for RVIZ
   private: ros::Publisher ros_pub_rviz_;
 
+  /// \brief A ROS publisher for Center of Pressure
+  private: ros::Publisher ros_pub_COP_;
+
   /// \brief A custom ROS message for the joint data
   private: skinsim_ros_msgs::Joint1DArray msg_joint_;
 
@@ -189,6 +201,9 @@ class SkinJointGazeboRos : public ModelPlugin
   /// \brief A custom ROS message for the layout data
   private: visualization_msgs::MarkerArray msg_rviz_;
 
+  /// \brief A custom ROS message for the Center of Pressure data
+  private: skinsim_ros_msgs::CenterOfPressure msg_COP_;
+
   /// \brief Stores the ROS topic name for joint data
   private: std::string topic_name_;
 
@@ -203,17 +218,20 @@ class SkinJointGazeboRos : public ModelPlugin
   private: void RosConnectRviz();
   private: void RosConnectTactile();
   private: void RosConnectFb();
+  private: void RosConnectCOP();
   /// \brief Callback function when subscriber disconnects
   private: void RosDisconnectJoint();
   private: void RosDisconnectRviz();
   private: void RosDisconnectTactile();
   private: void RosDisconnectFb();
+  private: void RosDisconnectCOP();
 
   /// \brief Count connections to ROS publisher
   private: int ros_connections_joint_;
   private: int ros_connections_rviz_;
   private: int ros_connections_tactile_;
   private: int ros_connections_fb_;
+  private: int ros_connections_COP_;
 
   /// \brief Callback queue thread that processes messages
   private: ros::CallbackQueue ros_queue_;
@@ -230,6 +248,10 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief Finding COP
   private: void FindCOP();
+  private: std::vector<TactileCOP> tactile_COP_;
+  private: Eigen::VectorXd force_COP_;
+  private: Eigen::VectorXd force_x_;
+  private: Eigen::VectorXd force_y_;
 
   /// \brief A mutex to lock access to fields that are used in message callbacks
   private: boost::mutex lock_;

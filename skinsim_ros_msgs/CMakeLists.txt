@@ -19,6 +19,7 @@ add_message_files(FILES
   TactileData.msg
   ForceFeedback.msg
   PlungerData.msg
+  CenterOfPressure.msg
 )
 
 add_service_files(DIRECTORY srv FILES
