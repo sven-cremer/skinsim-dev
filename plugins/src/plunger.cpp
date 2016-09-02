@@ -114,6 +114,9 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	double  plunger_mass= 0.1;
 	if (_sdf->HasElement("mass"))
 		plunger_mass    = _sdf->GetElement("mass")->Get<double>();
+	double  spring_environment = 0.1;
+	if (_sdf->HasElement("springEnv"))
+		spring_environment    = _sdf->GetElement("springEnv")->Get<double>();
 
 	// Get pointers to joint from Gazebo
 	this->joint_ = this->model_->GetJoint(this->joint_name_);
@@ -209,7 +212,14 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	// Make sure the sensor is active
 	this->contact_sensor_ptr_->SetActive(false);
 
-	this->effort_ = 0.0;
+	//Get the link pointer to the plunger link
+	this->plunger_link_ = this->model_->GetLink("plunger_link");
+
+	this->effort_                = 0.0;
+	this->force_error_           = 0;
+	this->force_error_previous_  = 0;
+	this->plunger_mass_          = plunger_mass;
+	this->env_spring_            = spring_environment;
 
 	  // Digital PID controller
 	  u_.setZero();
@@ -312,7 +322,17 @@ void Plunger::UpdateJoints()
 	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
 	{
 
-//		this->effort_    =   ;
+		this->environment_force_   = this->plunger_link_->GetWorldForce().z + this->effort_;
+		this->force_error_         = this->force_desired_ - this->environment_force_;
+		this->force_error_dot_     = (this->force_error_ - this->force_error_previous_)/step_time.Double();
+
+		this->effort_              = ((this->plunger_mass_/this->env_spring_) * ((Kp_*this->force_error_) + (Kd_*this->force_error_dot_))) + this->environment_force_;
+
+		this->joint_->SetForce(0, -this->effort_);
+
+		this->force_error_previous_= this->force_error_dot_;
+
+
 
 //		position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
 //		double postion_error = position_current_ - position_desired_;

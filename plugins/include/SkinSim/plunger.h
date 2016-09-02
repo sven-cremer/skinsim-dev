@@ -207,11 +207,14 @@ class Plunger : public ModelPlugin
   private: common::PID pid_;
 
   /// \brief explicit force controller
-  private: double force_error_;
-  private: double force_error_previous_;
-  private: double force_error_dot_;
-  private: double force_error_dot_previous_;
-  private: double force_error_ddot_;
+  private: double force_error_              ;
+  private: double force_error_previous_     ;
+  private: double force_error_dot_          ;
+  private: physics::LinkPtr plunger_link_   ;
+  private: double environment_force_        ;
+  private: double plunger_mass_             ;
+  private: double env_spring_               ;
+
 
 
   /// \brief Digital PID controller

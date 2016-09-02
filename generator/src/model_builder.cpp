@@ -483,6 +483,7 @@ void ModelBuilder::addPlungerPlugin( std::string plugin_name,
 				<< "    <JointIgain>"     << jointIGain              << "</JointIgain>\n"
 				<< "    <JointDgain>"     << jointDGain              << "</JointDgain>\n"
 				<< "    <mass>"           << mass                    << "</mass>\n"
+				<< "    <springEnv>"      << m_.spec.element_spring  << "</springEnv>\n"
 				<< "  </plugin>\n";
 }
 
