@@ -626,6 +626,7 @@ void SkinJointGazeboRos::UpdateJoints()
 
 	// Save last time stamp
 	this->last_time_ = cur_time;
+	FindCOP();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -654,7 +655,7 @@ double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
 
 //////////////////////////////////////////////////////////////////////////
 // Calculate Center of Pressure
-void SkinJointGazeboRos::FindCOP( )
+void SkinJointGazeboRos::FindCOP()
 {
 
 	double force_sum 				=	0;

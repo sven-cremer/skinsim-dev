@@ -229,7 +229,7 @@ class SkinJointGazeboRos : public ModelPlugin
   private: double delay_;
 
   /// \brief Finding COP
-  private: void COP();
+  private: void FindCOP();
 
   /// \brief A mutex to lock access to fields that are used in message callbacks
   private: boost::mutex lock_;
