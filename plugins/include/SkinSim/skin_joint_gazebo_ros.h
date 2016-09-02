@@ -93,6 +93,13 @@ struct TactileCOP
 	double force;
 	double x;
 	double y;
+    TactileCOP()
+	{
+    	index    =    0;
+    	force    =    0;
+    	x        =    0;
+    	y        =    0;
+	}
 };
 
 bool indexSort(int a, int b, std::vector<double> data)

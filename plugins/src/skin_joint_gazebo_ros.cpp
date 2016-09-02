@@ -668,11 +668,11 @@ double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
 void SkinJointGazeboRos::FindCOP()
 {
 
+	math::Pose p;
 	double force_sum 				        =    0;
 	double x_sum 					        =    0;
 	double y_sum 					        =    0;
     TactileCOP tempCOP;
-
 
 
 	for (int i = 0; i < sensors_.size(); ++i)
@@ -680,10 +680,10 @@ void SkinJointGazeboRos::FindCOP()
         for (int j = 0; j < sensors_[i].joint_index.size(); ++j)
         {
         	tempCOP.index                   =    sensors_[i].joint_index[j];
-        	physics::JointWrench wrench     =    this->joints_[tempCOP.index]->GetForceTorque(0);
-        	tempCOP.force                   =    tempCOP.force + wrench.body1Force.z;
-        	tempCOP.x                       =    tempCOP.x + (this->joints_[tempCOP.index]->GetWorldPose().pos.x * wrench.body1Force.z);
-        	tempCOP.y                       =    tempCOP.y + (this->joints_[tempCOP.index]->GetWorldPose().pos.y * wrench.body1Force.z);
+        	p                               =    this->joints_[tempCOP.index]->GetChild()->GetInitialRelativePose ();
+        	tempCOP.force                   =    tempCOP.force + f_sen_(tempCOP.index);
+        	tempCOP.x                       =    tempCOP.x + (p.pos.x * tempCOP.force);
+        	tempCOP.y                       =    tempCOP.y + (p.pos.y * tempCOP.force);
         }
         tempCOP.x                           =    tempCOP.x/tempCOP.force;
         tempCOP.y                           =    tempCOP.y/tempCOP.force;
@@ -693,6 +693,7 @@ void SkinJointGazeboRos::FindCOP()
         force_y_(i)                         =    tempCOP.y;
 
         tactile_COP_.push_back(tempCOP);
+        tempCOP                             =    TactileCOP();
 	}
 
 	if(this->ros_connections_COP_ > 0 )
