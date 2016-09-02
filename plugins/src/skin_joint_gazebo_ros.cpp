@@ -652,6 +652,26 @@ double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
 	return X;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Calculate Center of Pressure
+void SkinJointGazeboRos::FindCOP( )
+{
+
+	double force_sum 				=	0;
+	double x_sum 					=	0;
+	double y_sum 					=	0;
+	for (int i = 0; i < this->joints_.size(); i++)
+	{
+		physics::JointWrench wrench = 	this->joints_[i]->GetForceTorque(0);
+		force_sum 					=	force_sum + wrench.body1Force.z;
+		x_sum 						=	x_sum + (this->joints_[i]->GetWorldPose().pos.x * wrench.body1Force.z);
+		y_sum 						=	y_sum + (this->joints_[i]->GetWorldPose().pos.y * wrench.body1Force.z);
+	}
+
+	std::cout << "COP : " << x_sum/force_sum << "," << y_sum/force_sum <<std::endl;
+
+
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Callback function when subscriber connects
