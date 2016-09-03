@@ -54,6 +54,7 @@ SkinJointGazeboRos::SkinJointGazeboRos()
 	this->ros_connections_rviz_    = 0;
 	this->ros_connections_tactile_ = 0;
 	this->ros_connections_fb_      = 0;
+	this->ros_connections_COP_     = 0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -265,6 +266,9 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	}
 	this->num_sensors_ = this->sensors_.size();
 
+	this->force_COP_ .resize(this->num_sensors_);
+	this->force_x_   .resize(this->num_sensors_);
+	this->force_y_   .resize(this->num_sensors_);
 
 	// Make sure the ROS node for Gazebo has already been initialized
 	if (!ros::isInitialized())
@@ -311,6 +315,12 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 				boost::bind( &SkinJointGazeboRos::RosConnectFb,this),
 				boost::bind( &SkinJointGazeboRos::RosDisconnectFb,this), ros::VoidPtr(), &this->ros_queue_);
 		this->ros_pub_fb_ = this->ros_node_->advertise(ao5);
+
+		ros::AdvertiseOptions ao6 = ros::AdvertiseOptions::create<skinsim_ros_msgs::CenterOfPressure>(
+				"center_of_pressure",1,
+				boost::bind( &SkinJointGazeboRos::RosConnectCOP,this),
+				boost::bind( &SkinJointGazeboRos::RosDisconnectCOP,this), ros::VoidPtr(), &this->ros_queue_);
+		this->ros_pub_COP_ = this->ros_node_->advertise(ao6);
 
 		// ROS services
 		this->ros_srv_ = this->ros_node_->advertiseService("publish_layout", &SkinJointGazeboRos::serviceCB, this);
@@ -626,6 +636,7 @@ void SkinJointGazeboRos::UpdateJoints()
 
 	// Save last time stamp
 	this->last_time_ = cur_time;
+	FindCOP();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -652,6 +663,54 @@ double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
 	return X;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Calculate Center of Pressure
+void SkinJointGazeboRos::FindCOP()
+{
+
+	math::Pose p;
+	double force_sum 				        =    0;
+	double x_sum 					        =    0;
+	double y_sum 					        =    0;
+    TactileCOP tempCOP;
+
+
+	for (int i = 0; i < sensors_.size(); ++i)
+	{
+        for (int j = 0; j < sensors_[i].joint_index.size(); ++j)
+        {
+        	tempCOP.index                   =    sensors_[i].joint_index[j];
+        	p                               =    this->joints_[tempCOP.index]->GetChild()->GetInitialRelativePose ();
+        	tempCOP.force                   =    tempCOP.force + f_sen_(tempCOP.index);
+        	tempCOP.x                       =    tempCOP.x + (p.pos.x * tempCOP.force);
+        	tempCOP.y                       =    tempCOP.y + (p.pos.y * tempCOP.force);
+        }
+        tempCOP.x                           =    tempCOP.x/tempCOP.force;
+        tempCOP.y                           =    tempCOP.y/tempCOP.force;
+
+        force_COP_(i)                       =    tempCOP.force;
+        force_x_(i)                         =    tempCOP.x;
+        force_y_(i)                         =    tempCOP.y;
+
+        tactile_COP_.push_back(tempCOP);
+        tempCOP                             =    TactileCOP();
+	}
+
+	if(this->ros_connections_COP_ > 0 )
+	{
+		this->lock_.lock();
+
+		// Copy data into ROS message
+		msg_COP_.force_magnitude            =    force_COP_.sum();
+		msg_COP_.x                          =    force_x_.sum()/force_COP_.sum();
+		msg_COP_.y                          =    force_y_.sum()/force_COP_.sum();
+
+		this->ros_pub_COP_.publish(this->msg_COP_);
+		this->lock_.unlock();
+	}
+
+
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Callback function when subscriber connects
@@ -743,6 +802,11 @@ void SkinJointGazeboRos::RosConnectFb()
 	this->ros_connections_fb_++;
 }
 
+void SkinJointGazeboRos::RosConnectCOP()
+{
+	this->ros_connections_COP_++;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Callback function when subscriber disconnects
 void SkinJointGazeboRos::RosDisconnectJoint()
@@ -760,6 +824,11 @@ void SkinJointGazeboRos::RosDisconnectTactile()
 void SkinJointGazeboRos::RosDisconnectFb()
 {
 	this->ros_connections_fb_--;
+}
+
+void SkinJointGazeboRos::RosDisconnectCOP()
+{
+	this->ros_connections_COP_--;
 }
 
 

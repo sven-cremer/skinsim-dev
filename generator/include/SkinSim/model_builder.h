@@ -199,7 +199,8 @@ public:
 			double kv,
 			double jointPGain,
 			double jointIGain,
-			double jointDGain);
+			double jointDGain,
+			double mass);
 
 	void addPlugin( std::string plugin_name, std::string plugin_filename);
 
