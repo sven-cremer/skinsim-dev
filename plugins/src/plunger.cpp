@@ -102,15 +102,21 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	if (_sdf->HasElement("Kv"))
 		this->Kv_ = _sdf->GetElement("Kv")->Get<double>();
 
-	double JointPgain_ = 5.0;
+	double JointPgain_  = 5.0;
 	if (_sdf->HasElement("JointPgain"))
-		JointPgain_ = _sdf->GetElement("JointPgain")->Get<double>();
-	double JointIgain_ = 0.01;
+		JointPgain_     = _sdf->GetElement("JointPgain")->Get<double>();
+	double JointIgain_  = 0.01;
 	if (_sdf->HasElement("JointIgain"))
-		JointIgain_ = _sdf->GetElement("JointIgain")->Get<double>();
-	double JointDgain_ = 0.1;
+		JointIgain_     = _sdf->GetElement("JointIgain")->Get<double>();
+	double JointDgain_  = 0.1;
 	if (_sdf->HasElement("JointDgain"))
-		JointDgain_ = _sdf->GetElement("JointDgain")->Get<double>();
+		JointDgain_     = _sdf->GetElement("JointDgain")->Get<double>();
+	double  plunger_mass= 0.1;
+	if (_sdf->HasElement("mass"))
+		plunger_mass    = _sdf->GetElement("mass")->Get<double>();
+	double  spring_environment = 0.1;
+	if (_sdf->HasElement("springEnv"))
+		spring_environment    = _sdf->GetElement("springEnv")->Get<double>();
 
 	// Get pointers to joint from Gazebo
 	this->joint_ = this->model_->GetJoint(this->joint_name_);
@@ -206,7 +212,14 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	// Make sure the sensor is active
 	this->contact_sensor_ptr_->SetActive(false);
 
-	this->effort_ = 0.0;
+	//Get the link pointer to the plunger link
+	this->plunger_link_ = this->model_->GetLink("plunger_link");
+
+	this->effort_                = 0.0;
+	this->force_error_           = 0;
+	this->force_error_previous_  = 0;
+	this->plunger_mass_          = plunger_mass;
+	this->env_spring_            = spring_environment;
 
 	  // Digital PID controller
 	  u_.setZero();
@@ -302,15 +315,29 @@ void Plunger::UpdateJoints()
 		{
 			this->joint_->SetVelocity (0, velocity_desired_);
 		}
+
 		break;
 	}
 	// Position-Based Explicit Force control
 	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
 	{
-		position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
-		double postion_error = position_current_ - position_desired_;
-		this->effort_ = this->pid_.Update(postion_error, step_time);
+
+		this->environment_force_   = this->plunger_link_->GetWorldForce().z + this->effort_;
+		this->force_error_         = this->force_desired_ - this->environment_force_;
+		this->force_error_dot_     = (this->force_error_ - this->force_error_previous_)/step_time.Double();
+
+		this->effort_              = ((this->plunger_mass_/this->env_spring_) * ((Kp_*this->force_error_) + (Kd_*this->force_error_dot_))) + this->environment_force_;
+
 		this->joint_->SetForce(0, -this->effort_);
+
+		this->force_error_previous_= this->force_error_dot_;
+
+
+
+//		position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
+//		double postion_error = position_current_ - position_desired_;
+//		this->effort_ = this->pid_.Update(postion_error, step_time);
+//		this->joint_->SetForce(0, -this->effort_);
 		break;
 	}
 	// Digital PID control
