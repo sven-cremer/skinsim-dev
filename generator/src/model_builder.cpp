@@ -53,14 +53,14 @@ ModelBuilder::ModelBuilder( )
 
 ModelBuilder::ModelBuilder( BuildModelSpec modelSpecs )
 {
-	plunger_name = "plunger_generated";
+	plunger_name = "generated_plunger";
 
 	// Create skin array models
 	initSkinSimModelBuilder();
 	createModelFiles( modelSpecs );
 
 	//Create Plunger Model
-	if(!checkModelDirectory(plunger_name))	// Only generate plunger once
+	if(!checkModelDirectory(plunger_name))	// Only generate plunger once	FIXME but create at least one plunger
 	{
 		std::cout<<"Generating plunger ...\n";
 		createPlungerModelFiles(plunger_name);

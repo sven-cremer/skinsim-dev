@@ -144,7 +144,7 @@ int main(int argc, char** argv)
 	// Tactile layout
 	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
 	{
-		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
+		for(unsigned j  = 1; j < 6 ; j++ )	// Tactile separation
 		{
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
