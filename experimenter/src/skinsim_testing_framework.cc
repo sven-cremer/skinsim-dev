@@ -199,7 +199,7 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 
 	std::string ros_api_plugin  = "/opt/ros/jade/lib/libgazebo_ros_api_plugin.so";
 	std::string ros_path_plugin = "/opt/ros/jade/lib/libgazebo_ros_paths_plugin.so";
-	std::string world_file = _worldFilename; //"/home/sven/skin_ws/src/skinsim-dev/model/worlds/skin_array_0.world";
+	std::string world_file = _worldFilename;
 
 	// Create fake command-line parameters for Gazebo server
 	// This seems to be the best way to set parameters such as sensor plugins
@@ -238,7 +238,7 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 
 	this->server->Fini();
 
-	std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
+	//std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
 
 	// Deallocate variables
 	delete this->server;
@@ -269,6 +269,7 @@ void runTests(std::string exp_name)
 	std::string ctrSpecPath = pathExp + "/" + filename_control;
 	std::string caliPath    = pathExp + "/tactile_calibration.yaml";
 	std::string plungerPositionPath = pathExp + "/plunger_position.yaml";
+	std::string plungerPositionPathTemp = pathExp + "/plunger_position_tmp.yaml";
 
 	// Read YAML model file
 	std::ifstream fin(mdlSpecPath.c_str());
@@ -401,11 +402,17 @@ void runTests(std::string exp_name)
 			std::cout<<"Starting simulation...\n";
 			this->SetPause(false);
 
-			// Save ROS topic data to file
+			// Save ROS topic data to file (plunger data)
 			std::string topic = modelSpec.spec.topic;
-			std::string cmd1 = std::string("rostopic echo -p ") + topic.c_str() + std::string(" > ") + pathExp.c_str() + std::string("/") + exp_name.c_str() + std::string(".csv &");
+			std::string cmd1 = "rostopic echo -p " + topic  + " > " + pathExp + "/" + exp_name + ".csv &";
 			std::cout<<"$ "<<cmd1.c_str()<<"\n";
 			system( cmd1.c_str() );
+
+			// Save ROS topic data to file (COP data)
+			std::string topic2 = "/skinsim/center_of_pressure";
+			std::string cmd2 = "rostopic echo -p " + topic2 + " > " + pathExp + "/" + exp_name + "_COP.csv &";
+			std::cout<<"$ "<<cmd2.c_str()<<"\n";
+			system( cmd2.c_str() );
 
 			// Send control message
 			bool message_sent = false;
@@ -442,7 +449,7 @@ void runTests(std::string exp_name)
 						// Temporary save results
 						YAML::Emitter out_tmp;
 						out_tmp << out.c_str() << YAML::EndSeq;
-						std::ofstream fout_tmp(plungerPositionPath.c_str());
+						std::ofstream fout_tmp(plungerPositionPathTemp.c_str());
 						fout_tmp << out_tmp.c_str();
 						fout_tmp.close();
 					}
@@ -468,9 +475,13 @@ void runTests(std::string exp_name)
 			std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
 
 			// Stop saving ROS topic data to file
-			std::string cmd2 = std::string("pkill -9 -f ") + topic.c_str();
-			std::cout<<"$ "<<cmd2.c_str()<<"\n";
-			system( cmd2.c_str() );
+			std::string cmdA = "pkill -9 -f " + topic;
+			std::cout<<"$ "<<cmdA.c_str()<<"\n";
+			system( cmdA.c_str() );
+
+			std::string cmdB = "pkill -9 -f " + topic2;
+			std::cout<<"$ "<<cmdB.c_str()<<"\n";
+			system( cmdB.c_str() );
 
 			// Cleanup
 			Unload();
@@ -679,7 +690,7 @@ void runCalibration(std::string exp_name)
 
 		// Simulation finished
 		std::cout << RESET;
-		std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";
+		std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";	// FIXME use timer instead
 		std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
 
 		// Cleanup
