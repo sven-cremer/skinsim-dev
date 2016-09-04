@@ -321,7 +321,7 @@ void Plunger::UpdateJoints()
 	// Position-Based Explicit Force control
 	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
 	{
-
+		// TODO: check
 		this->environment_force_   = this->plunger_link_->GetWorldForce().z + this->effort_;
 		this->force_error_         = this->force_desired_ - this->environment_force_;
 		this->force_error_dot_     = (this->force_error_ - this->force_error_previous_)/step_time.Double();
@@ -331,8 +331,6 @@ void Plunger::UpdateJoints()
 		this->joint_->SetForce(0, -this->effort_);
 
 		this->force_error_previous_= this->force_error_dot_;
-
-
 
 //		position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
 //		double postion_error = position_current_ - position_desired_;
