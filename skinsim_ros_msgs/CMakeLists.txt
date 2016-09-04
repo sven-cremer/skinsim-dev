@@ -26,6 +26,7 @@ add_service_files(DIRECTORY srv FILES
   Empty.srv
   SetController.srv
   GetLayout.srv
+  GetPosition.srv
   SetPIDGains.srv
 )
 

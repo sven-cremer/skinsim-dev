@@ -63,6 +63,7 @@
 #include <skinsim_ros_msgs/ControllerType.h>
 #include <skinsim_ros_msgs/FeedbackType.h>
 #include <skinsim_ros_msgs/ForceFeedback.h>
+#include <skinsim_ros_msgs/GetPosition.h>
 
 // Utilities
 #include <boost/thread.hpp>
@@ -109,11 +110,20 @@ class Plunger : public ModelPlugin
   /// \brief A ROS service server
   private: ros::ServiceServer ros_srv_, ros_srv_gains_;
 
+  /// \brief A ROS service server to get plunger position
+  private: ros::ServiceServer ros_srv_poition_;
+
    /// \brief Service callback function
    private: bool serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_ros_msgs::SetController::Response& res);
 
    /// \brief Service callback function
    private: bool serviceSetPIDCB(skinsim_ros_msgs::SetPIDGains::Request& req, skinsim_ros_msgs::SetPIDGains::Response& res);
+
+   /// \brief Service callback function for the plunger position
+   private: bool serviceGetPosition(skinsim_ros_msgs::GetPosition::Request& req, skinsim_ros_msgs::GetPosition::Response& res);
+
+   /// \brief A custom ROS message
+   skinsim_ros_msgs::GetPosition msg_position_;
 
    /// \brief A custom ROS message
    private: skinsim_ros_msgs::ControllerType controller_type_;
