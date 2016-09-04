@@ -292,7 +292,7 @@ void runTests(std::string exp_name)
 	// For saving plunger positions
 	std::ofstream fout4(plungerPositionPath.c_str());
 	YAML::Emitter out;
-	out << YAML::BeginSeq;
+	out << YAML::BeginMap;
 
 	// Gazebo parameters
 	std::string _worldFilename("~");
@@ -337,7 +337,7 @@ void runTests(std::string exp_name)
 			// Print info
 			std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
 			std::cout << "# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
-			std::cout << "  Calibration value: "<<K_cali<<"\n";
+			//std::cout << "  Calibration value: "<<K_cali<<"\n";
 
 			// Point model world file location
 			_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
@@ -441,14 +441,11 @@ void runTests(std::string exp_name)
 					{
 						message_sent = true;
 						std::cout<<"Plunger position: (" << msg_srv_pos_.response.x <<"," << msg_srv_pos_.response.y<< ")\n";
-						out << modelSpec.name << YAML::BeginMap;
-						out << YAML::Key << "x" << YAML::Value << msg_srv_pos_.response.x ;
-						out << YAML::Key << "y" << YAML::Value << msg_srv_pos_.response.y ;
-						out << YAML::Key << "z" << YAML::Value << msg_srv_pos_.response.z ;
-						out << modelSpec.name << YAML::EndMap;
+						out << YAML::Key << modelSpec.name << YAML::Value;
+						out << YAML::Flow<< YAML::BeginSeq << msg_srv_pos_.response.x << msg_srv_pos_.response.y << YAML::EndSeq;
 						// Temporary save results
 						YAML::Emitter out_tmp;
-						out_tmp << out.c_str() << YAML::EndSeq;
+						out_tmp << out.c_str() << YAML::EndMap;
 						std::ofstream fout_tmp(plungerPositionPathTemp.c_str());
 						fout_tmp << out_tmp.c_str();
 						fout_tmp.close();
@@ -493,8 +490,8 @@ void runTests(std::string exp_name)
 
 	// Write to YAML file and close
 	std::cout<<"Saving: "<<plungerPositionPath<<"\n";
-	out << YAML::EndSeq;
-	fout4 << out.c_str();	// TODO save before in case of crash
+	out << YAML::EndMap;
+	fout4 << out.c_str();
 	fout4.close();
 
 	delete this->server;
