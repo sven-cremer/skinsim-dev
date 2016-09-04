@@ -440,7 +440,11 @@ void runTests(std::string exp_name)
 						out << YAML::Key << "z" << YAML::Value << msg_srv_pos_.response.z ;
 						out << modelSpec.name << YAML::EndMap;
 						// Temporary save results
-
+						YAML::Emitter out_tmp;
+						out_tmp << out.c_str() << YAML::EndSeq;
+						std::ofstream fout_tmp(plungerPositionPath.c_str());
+						fout_tmp << out_tmp.c_str();
+						fout_tmp.close();
 					}
 				}
 				common::Time::MSleep(10);
@@ -497,6 +501,7 @@ void runCalibration(std::string exp_name)
 	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
 	std::string mdlSpecPath = pathExp + "/" + filename_model;
 	std::string calibration_file = pathExp + "/tactile_calibration.yaml";
+	std::string calibration_file_tmp = pathExp + "/tactile_calibration_tmp.yaml";
 
 	// Read YAML model file
 	std::ifstream fin(mdlSpecPath.c_str());
@@ -560,9 +565,9 @@ void runCalibration(std::string exp_name)
 		buffer_size = 20;
 		buffer = new double[buffer_size];
 		for(int i=0;i<buffer_size;i++)
-			buffer[i]=0.0;
+			buffer[i]=1.0;
 		buffer_idx = 0;
-		K_sma = 0;
+		K_sma = 1.0;
 		f_target = 2.0;
 		calibration_done = false;
 		calibration_counter=0;
@@ -638,8 +643,8 @@ void runCalibration(std::string exp_name)
 				if(waitCount > 10)
 				{
 					ss.str(""); ss.clear();
-					ss << std::setw(4) << std::setfill('0')<<K_sma;
-					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<<calibration_counter<< std::flush;
+					ss << std::fixed << std::setprecision(6) << K_sma  ;
+					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<", cc="<<calibration_counter<<"/10) "<< std::flush;
 				}
 			}
 			else
@@ -654,8 +659,8 @@ void runCalibration(std::string exp_name)
 				if((fastCount % 10000) == 0)
 				{
 					ss.str(""); ss.clear();
-					ss << std::setw(4) << std::setfill('0')<<K_sma;
-					std::cout << '\r' << YELLOW << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<<calibration_counter<< std::flush;
+					ss << std::fixed << std::setprecision(6) << K_sma;
+					std::cout << '\r' << YELLOW << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<", cc="<<calibration_counter<<"/10) "<< std::flush;
 				}
 			}
 		}
@@ -664,6 +669,13 @@ void runCalibration(std::string exp_name)
 
 		// Compute calibration constant
 		out << YAML::Key << modelSpec.name << YAML::Value << K_sma;
+
+		// Temporary save results
+		YAML::Emitter out_tmp;
+		out_tmp << out.c_str() << YAML::EndMap;		// TODO how to set out_tmp = out?
+		std::ofstream fout_tmp(calibration_file_tmp.c_str());
+		fout_tmp << out_tmp.c_str();
+		fout_tmp.close();
 
 		// Simulation finished
 		std::cout << RESET;
