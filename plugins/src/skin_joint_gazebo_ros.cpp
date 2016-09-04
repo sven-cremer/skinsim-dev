@@ -677,10 +677,19 @@ double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
 // Calculate Center of Pressure
 void SkinJointGazeboRos::FindCOP()
 {
+	// Check if a force has been applied
+	if(fabs( f_sen_.sum() ) == 0 )
+	{
+		msg_COP_.force_magnitude = 0.0;
+		msg_COP_.x = 0.0;
+		msg_COP_.y = 0.0;
+		return;
+	}
+
 	math::Pose p;
 	int index;
 
-	// Compute COP for each taxel i
+	// Compute COP of each taxel i
 	for (int i = 0; i < sensors_.size(); ++i)
 	{
 		TactileCOP cop;
@@ -691,23 +700,32 @@ void SkinJointGazeboRos::FindCOP()
 			index = sensors_[i].joint_index[j];
 			p     = this->joints_[index]->GetChild()->GetInitialRelativePose();
 			// Update COP variables
-			cop.force += f_sen_(index);
+			cop.force += -f_sen_(index);			// TODO check sign
 			cop.x     += p.pos.x * f_sen_(index);
 			cop.y     += p.pos.y * f_sen_(index);
 		}
 		// Normalize COP
-		cop.x = cop.x/cop.force;
-		cop.y = cop.y/cop.force;
-
+		if(cop.force != 0 )
+		{
+			cop.x = cop.x/cop.force;
+			cop.y = cop.y/cop.force;
+		}
 		// Save results
-		cop_force_(i) = cop.force;
-		cop_x_(i)   = cop.x;
-		cop_y_(i)   = cop.y;
+		cop_force_(i) = cop.force;	// TODO this is already stored in the tactile data
+		cop_x_(i)     = cop.x;
+		cop_y_(i)     = cop.y;
 	}
-	// Compute COP for entire array
-	msg_COP_.force_magnitude =    cop_force_.sum();
-	msg_COP_.x               =    (cop_x_.cwiseProduct(cop_force_)).sum()/msg_COP_.force_magnitude;
-	msg_COP_.y               =    (cop_y_.cwiseProduct(cop_force_)).sum()/msg_COP_.force_magnitude;
+
+	// Compute COP of entire array
+	msg_COP_.force_magnitude = cop_force_.sum();
+	msg_COP_.x               = (cop_x_.cwiseProduct(cop_force_)).sum();
+	msg_COP_.y               = (cop_y_.cwiseProduct(cop_force_)).sum();
+	// Normalize
+	if(msg_COP_.force_magnitude != 0)
+	{
+		msg_COP_.x           = msg_COP_.x/msg_COP_.force_magnitude;
+		msg_COP_.y           = msg_COP_.y/msg_COP_.force_magnitude;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
