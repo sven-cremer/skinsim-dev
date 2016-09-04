@@ -51,8 +51,10 @@
 // ROS
 #include <ros/ros.h>
 #include <skinsim_ros_msgs/SetController.h>
-//#include <skinsim_ros_msgs/PlungerData.h>
 #include <skinsim_ros_msgs/ForceFeedback.h>
+#include <skinsim_ros_msgs/GetPosition.h>
+//#include <skinsim_ros_msgs/PlungerData.h>
+//#include <skinsim_ros_msgs/CenterOfPressure.h>
 
 // Boost
 #include <boost/thread.hpp>
@@ -96,8 +98,8 @@ protected: transport::SubscriberPtr statsSub;
 
 private: ros::NodeHandle* ros_node_;
 private: std::string ros_namespace_;
-private: ros::ServiceClient ros_srv_;
 private: skinsim_ros_msgs::SetController msg_srv_;
+private: skinsim_ros_msgs::GetPosition msg_srv_pos_;
 private: int iterations_max;
 
 // Calibration
@@ -266,6 +268,7 @@ void runTests(std::string exp_name)
 	std::string mdlSpecPath = pathExp + "/" + filename_model;
 	std::string ctrSpecPath = pathExp + "/" + filename_control;
 	std::string caliPath    = pathExp + "/tactile_calibration.yaml";
+	std::string plungerPositionPath = pathExp + "/plunger_position.yaml";
 
 	// Read YAML model file
 	std::ifstream fin(mdlSpecPath.c_str());
@@ -284,6 +287,11 @@ void runTests(std::string exp_name)
 	YAML::Node doc_cali;
 	std::cout<<"Loading file: "<<caliPath<<"\n";
 	doc_cali = YAML::LoadAll(fin3);
+
+	// For saving plunger positions
+	std::ofstream fout4(plungerPositionPath.c_str());
+	YAML::Emitter out;
+	out << YAML::BeginSeq;
 
 	// Gazebo parameters
 	std::string _worldFilename("~");
@@ -371,7 +379,8 @@ void runTests(std::string exp_name)
 			// Create ROS service client
 			ros_namespace_ = "skinsim";
 			this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
-			this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+			ros::ServiceClient ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+			ros::ServiceClient ros_srv_p_ = this->ros_node_->serviceClient<skinsim_ros_msgs::GetPosition>("get_plunger_position");
 
 			// Set plunger force message
 			msg_srv_.request.type.selected = controlSpec.controller_type;
@@ -415,6 +424,27 @@ void runTests(std::string exp_name)
 				}
 				common::Time::MSleep(10);
 			}
+			message_sent = false;
+			while( !message_sent )
+			{
+				// Send control message to plunger
+				if(!message_sent)
+				{
+					if (ros_srv_p_.call(msg_srv_pos_))
+					{
+						message_sent = true;
+						std::cout<<"Plunger position: (" << msg_srv_pos_.response.x <<"," << msg_srv_pos_.response.y<< ")\n";
+						out << modelSpec.name << YAML::BeginMap;
+						out << YAML::Key << "x" << YAML::Value << msg_srv_pos_.response.x ;
+						out << YAML::Key << "y" << YAML::Value << msg_srv_pos_.response.y ;
+						out << YAML::Key << "z" << YAML::Value << msg_srv_pos_.response.z ;
+						out << modelSpec.name << YAML::EndMap;
+						// Temporary save results
+
+					}
+				}
+				common::Time::MSleep(10);
+			}
 
 			// Wait for simulation to end
 			waitCount = 0;
@@ -445,6 +475,12 @@ void runTests(std::string exp_name)
 			index++;
 		}
 	}
+
+	// Write to YAML file and close
+	std::cout<<"Saving: "<<plungerPositionPath<<"\n";
+	out << YAML::EndSeq;
+	fout4 << out.c_str();	// TODO save before in case of crash
+	fout4.close();
 
 	delete this->server;
 
@@ -541,7 +577,7 @@ void runCalibration(std::string exp_name)
 		// Create ROS service client
 		ros_namespace_ = "skinsim";
 		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
-		this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+		ros::ServiceClient ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
 
 		// Create ROS topic subscriber
 		std::string topic = "/skinsim/force_feedback";
