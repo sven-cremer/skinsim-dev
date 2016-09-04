@@ -269,7 +269,7 @@ void runTests(std::string exp_name)
 	std::string ctrSpecPath = pathExp + "/" + filename_control;
 	std::string caliPath    = pathExp + "/tactile_calibration.yaml";
 	std::string plungerPositionPath = pathExp + "/plunger_position.yaml";
-	std::string plungerPositionPathTemp = pathExp + "/plunger_position_tmp.yaml";
+	std::string plungerPositionPathTemp = pathExp + "/tmp_plunger_position.yaml";
 
 	// Read YAML model file
 	std::ifstream fin(mdlSpecPath.c_str());
@@ -348,16 +348,17 @@ void runTests(std::string exp_name)
 			//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
 			//	    std::cout << it->first << " => " << it->second << '\n';
 
-			// Create Gazebo world
-			std::cout << "Initializing World" << std::endl;
+			std::cout << "Initializing World in 2 seconds ..." << std::endl;
+			sleep(2.0);	// TODO make sure everything is ready
+
 			// Create, load, and run the server in its own thread
 			this->serverThread = new boost::thread(
 					boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
 							_paused, _physics));
 
 			std::cout << "Waiting for world completion" << std::endl;
-			// Wait for the server to come up (15 second timeout)
-			int waitCount = 0, maxWaitCount = 150;
+			// Wait for the server to come up (20 second timeout)
+			int waitCount = 0, maxWaitCount = 200;
 			while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )		// TODO error handling if timeout occurs
 				common::Time::MSleep(100);
 
@@ -410,7 +411,7 @@ void runTests(std::string exp_name)
 
 			// Save ROS topic data to file (COP data)
 			std::string topic2 = "/skinsim/center_of_pressure";
-			std::string cmd2 = "rostopic echo -p " + topic2 + " > " + pathExp + "/" + exp_name + "_COP.csv &";
+			std::string cmd2 = "rostopic echo -p " + topic2 + " > " + pathExp + "/COP_" + exp_name + ".csv &";
 			std::cout<<"$ "<<cmd2.c_str()<<"\n";
 			system( cmd2.c_str() );
 
@@ -509,7 +510,7 @@ void runCalibration(std::string exp_name)
 	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
 	std::string mdlSpecPath = pathExp + "/" + filename_model;
 	std::string calibration_file = pathExp + "/tactile_calibration.yaml";
-	std::string calibration_file_tmp = pathExp + "/tactile_calibration_tmp.yaml";
+	std::string calibration_file_tmp = pathExp + "/tmp_tactile_calibration.yaml";
 
 	// Read YAML model file
 	std::ifstream fin(mdlSpecPath.c_str());
@@ -550,15 +551,17 @@ void runCalibration(std::string exp_name)
 		m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
 
 		// Create Gazebo world
-		std::cout << "Initializing World" << std::endl;
+		std::cout << "Initializing World in 2 seconds ..." << std::endl;
+		sleep(2.0);	// TODO make sure everything is ready
+
 		// Create, load, and run the server in its own thread
 		this->serverThread = new boost::thread(
 				boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
 						_paused, _physics));
 
 		std::cout << "Waiting for world completion" << std::endl;
-		// Wait for the server to come up (15 second timeout)
-		int waitCount = 0, maxWaitCount = 150;
+		// Wait for the server to come up (20 second timeout)
+		int waitCount = 0, maxWaitCount = 200;
 		while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )		// TODO error handling if timeout occurs
 			common::Time::MSleep(100);
 
