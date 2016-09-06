@@ -190,6 +190,21 @@ Kp: 0.0
 Ki: 0.0
 Kd: 0.0"
 ```
+```
+rosservice call /skinsim/set_controller "type: {selected: 4}
+fb: {selected: 2}
+f_des: 2.0
+x_des: 0.0
+v_des: -0.005
+Kp: 2.0
+Ki: 20.0
+Kd: 0.0
+Kv: 0.0
+Ts: 0.001
+Nf: 100
+K_cali: 1"
+```
+
 The controller and feedback types are defined in
 ```
 skinsim_ros_msgs/msg/ControllerType.msg
