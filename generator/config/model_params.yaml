@@ -42,7 +42,8 @@
       plunger_spring               : 0.0                # Stiffness [N/m] (note: also used by plugin)
       plunger_damping              : 0.0                # Damping (note: also used by plugin)
       plunger_gravity              : false              # Turn on gravity for plunger
-      plunger_offset               : 0                  # Plunger Location offset
+      plunger_offset_x             : 0                  # Plunger Location offset X
+      plunger_offset_y             : 0                  # Plunger Location offset Y
       #############################
       # PLUGIN                    #
       #############################

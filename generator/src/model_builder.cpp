@@ -615,8 +615,8 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 //	std::string px = boost::lexical_cast<std::string>(plunger_x);
 //	std::string py = boost::lexical_cast<std::string>(plunger_y);
 
-	std::string px = boost::lexical_cast<std::string>(plunger_x + m_.spec.plunger_offset);
-	std::string py = boost::lexical_cast<std::string>(plunger_y + m_.spec.plunger_offset);
+	std::string px = boost::lexical_cast<std::string>(plunger_x + m_.spec.plunger_offset_x);
+	std::string py = boost::lexical_cast<std::string>(plunger_y + m_.spec.plunger_offset_y);
 
 
 	// Physics engine

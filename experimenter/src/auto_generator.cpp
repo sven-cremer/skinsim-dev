@@ -160,14 +160,18 @@ int main(int argc, char** argv)
 
 
 	// Plunger Offset value
-	for (int i  = -2; i < 3 ; i++)
+	for (double i  = -0.12; i <= .12 ; i = i+0.05)
 	{
-		BuildModelSpec tempModelSpec = defaultModelSpec;
+		for (double j  = 0 ; j < 1 ; j++)
+		{
+			BuildModelSpec tempModelSpec = defaultModelSpec;
 
-		tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 3 ) + "_sep_" + boost::lexical_cast<std::string>( 3 )+ "_off_" + boost::lexical_cast<std::string>( i );
-		tempModelSpec.spec.plunger_offset = i;
+			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 3 ) + "_sep_" + boost::lexical_cast<std::string>( 3 ) + "_off_x" + boost::lexical_cast<std::string>( i ) + "_off_y" + boost::lexical_cast<std::string>( j );
+			tempModelSpec.spec.plunger_offset_x = i;
+			tempModelSpec.spec.plunger_offset_y = j;
 
-		modelSpecs.push_back( tempModelSpec ) ;
+			modelSpecs.push_back( tempModelSpec ) ;
+		}
 	}
 
 
