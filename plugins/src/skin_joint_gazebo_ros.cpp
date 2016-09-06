@@ -677,15 +677,35 @@ double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
 // Calculate Center of Pressure
 void SkinJointGazeboRos::FindCOP()
 {
+	msg_COP_.force_magnitude = 0.0;
+	msg_COP_.x = 0.0;
+	msg_COP_.y = 0.0;
+
 	// Check if a force has been applied
 	if(fabs( f_sen_.sum() ) == 0 )
 	{
-		msg_COP_.force_magnitude = 0.0;
-		msg_COP_.x = 0.0;
-		msg_COP_.y = 0.0;
 		return;
 	}
 
+	double force;
+
+	for (int i = 0; i < sensors_.size(); ++i)
+	{
+		force = -sensors_[i].force_sensed; // TODO check sign
+
+		msg_COP_.force_magnitude += force;
+		msg_COP_.x += sensors_[i].position.x * force;
+		msg_COP_.y += sensors_[i].position.y * force;
+	}
+
+	// Normalize
+	if(msg_COP_.force_magnitude != 0)
+	{
+		msg_COP_.x           = msg_COP_.x/msg_COP_.force_magnitude;
+		msg_COP_.y           = msg_COP_.y/msg_COP_.force_magnitude;
+	}
+
+	/*
 	math::Pose p;
 	int index;
 
@@ -720,12 +740,7 @@ void SkinJointGazeboRos::FindCOP()
 	msg_COP_.force_magnitude = cop_force_.sum();
 	msg_COP_.x               = (cop_x_.cwiseProduct(cop_force_)).sum();
 	msg_COP_.y               = (cop_y_.cwiseProduct(cop_force_)).sum();
-	// Normalize
-	if(msg_COP_.force_magnitude != 0)
-	{
-		msg_COP_.x           = msg_COP_.x/msg_COP_.force_magnitude;
-		msg_COP_.y           = msg_COP_.y/msg_COP_.force_magnitude;
-	}
+	*/
 }
 
 //////////////////////////////////////////////////////////////////////////
