@@ -36,7 +36,7 @@
       tactile_separation_x         : 1                  # Spaceing between sensors in terms of number of elements in x-direction
       tactile_separation_y         : 1                  # Spaceing between sensors in terms of number of elements in x-direction
       # Plunger properties
-      plunger_radius               : 0.08
+      plunger_radius               : 0.05
       plunger_length               : 0.10
       plunger_mass                 : 1.0                # Mass of plunger [kg]
       plunger_spring               : 0.0                # Stiffness [N/m] (note: also used by plugin)
@@ -63,7 +63,7 @@
       #############################
       # AUTO GENERATOR            #
       #############################
-      solver_iterations            : 200                # Physics engine solver iterations
+      solver_iterations            : 250                # Physics engine solver iterations
       step_size                    : 0.0001             # Max step size of simulation [seconds]
       max_sim_time                 : 1.0                # When to stop simulation [seconds]
       topic : /skinsim/plunger_data                     # Which ROS topic to save during simulation

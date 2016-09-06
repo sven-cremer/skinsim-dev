@@ -89,13 +89,11 @@ struct Tactile
 
 struct TactileCOP
 {
-	int index;
 	double force;
 	double x;
 	double y;
     TactileCOP()
 	{
-    	index    =    0;
     	force    =    0;
     	x        =    0;
     	y        =    0;
@@ -255,10 +253,11 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief Finding COP
   private: void FindCOP();
-  private: std::vector<TactileCOP> tactile_COP_;
-  private: Eigen::VectorXd force_COP_;
-  private: Eigen::VectorXd force_x_;
-  private: Eigen::VectorXd force_y_;
+
+  /// \brief COP of each tactile sensor
+  private: Eigen::VectorXd cop_force_;
+  private: Eigen::VectorXd cop_x_;
+  private: Eigen::VectorXd cop_y_;
 
   /// \brief A mutex to lock access to fields that are used in message callbacks
   private: boost::mutex lock_;

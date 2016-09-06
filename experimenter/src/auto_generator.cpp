@@ -144,7 +144,7 @@ int main(int argc, char** argv)
 	// Tactile layout
 	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
 	{
-		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
+		for(unsigned j  = 1; j < 6 ; j++ )	// Tactile separation
 		{
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
@@ -217,6 +217,19 @@ int main(int argc, char** argv)
 
 	ctrSpecs.push_back( defaultControlSpec ) ;
 
+	/*
+	// Test differnet Ts values
+	double dt = 0.001;
+	for(unsigned i  = 1; i < 9 ; i++ )
+	{
+		ControllerSpec tempControlSpec = defaultControlSpec;
+
+		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
+		tempControlSpec.Ts = dt*i;
+		ctrSpecs.push_back( tempControlSpec ) ;
+	}
+	*/
+
 //	int num = 0;
 //	for(unsigned j  = 1; j < 3; j++ ) // Feedback type
 //	{
@@ -231,16 +244,6 @@ int main(int argc, char** argv)
 //			ctrSpecs.push_back( tempControlSpec ) ;
 //			num++;
 //		}
-//	}
-
-//	for(unsigned i  = 0; i < 10 ; i++ )
-//	{
-//		ControllerSpec tempControlSpec = defaultControlSpec;
-//
-//		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
-//		tempControlSpec.explFctr_Kp = 1.6;
-//		tempControlSpec.explFctr_Kd = 0.1*i;
-//		ctrSpecs.push_back( tempControlSpec ) ;
 //	}
 
 	// Save to YAML

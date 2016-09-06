@@ -53,14 +53,14 @@ ModelBuilder::ModelBuilder( )
 
 ModelBuilder::ModelBuilder( BuildModelSpec modelSpecs )
 {
-	plunger_name = "plunger_generated";
+	plunger_name = "generated_plunger";
 
 	// Create skin array models
 	initSkinSimModelBuilder();
 	createModelFiles( modelSpecs );
 
 	//Create Plunger Model
-	if(!checkModelDirectory(plunger_name))	// Only generate plunger once
+	if(!checkModelDirectory(plunger_name))	// Only generate plunger once	FIXME but create at least one plunger
 	{
 		std::cout<<"Generating plunger ...\n";
 		createPlungerModelFiles(plunger_name);
@@ -605,15 +605,15 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 	// Place plunger 0.05 cm above skin
 	double plunger_length = 0.10;
 	double plunger_height = 0.10;
-	double plunger_z  =  m_.spec.element_height + m_.spec.element_diameter
-			            +(plunger_height-0.5*plunger_length) + 0.0005;
+	plunger_z  =  m_.spec.element_height + m_.spec.element_diameter
+			      +(plunger_height-0.5*plunger_length) + 0.0005;
 	std::string pz = boost::lexical_cast<std::string>(plunger_z);
 
 	// Move plunger to center of tactile patches
-	double p_x = (total_sensors_x*unit_size_x - total_elements_x - m_.spec.tactile_separation_x)*m_.spec.element_diameter*0.5;
-	double p_y = (total_sensors_y*unit_size_y - total_elements_y - m_.spec.tactile_separation_y)*m_.spec.element_diameter*0.5;
-	std::string px = boost::lexical_cast<std::string>(p_x);
-	std::string py = boost::lexical_cast<std::string>(p_y);
+	plunger_x = (total_sensors_x*unit_size_x - total_elements_x - m_.spec.tactile_separation_x)*m_.spec.element_diameter*0.5;
+	plunger_y = (total_sensors_y*unit_size_y - total_elements_y - m_.spec.tactile_separation_y)*m_.spec.element_diameter*0.5;
+	std::string px = boost::lexical_cast<std::string>(plunger_x);
+	std::string py = boost::lexical_cast<std::string>(plunger_y);
 
 	// Physics engine
 	std::string step_size = boost::lexical_cast<std::string>(m_.spec.step_size);
@@ -914,6 +914,12 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 	saveSDFFile(   m_.name );
 	saveConfigFile(m_.name );
 	saveWorldFile( m_.name );
+
+	// Save plunger position ?
+//	std::string plunger_pose_filename = modelDirectory + "plunger_pose.yaml";
+//	std::ofstream fout3(plunger_pose_filename.c_str());
+//	YAML::Emitter out3;
+//	out << YAML::BeginMap;
 }
 
 void ModelBuilder::createPlane(
