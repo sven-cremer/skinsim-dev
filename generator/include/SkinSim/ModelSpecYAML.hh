@@ -99,6 +99,7 @@ struct ModelSpec
   double plunger_spring               ; // Stiffness [N/m]
   double plunger_damping              ; // Damping
   bool   plunger_gravity              ; // Turn on gravity for plunger
+  double plunger_offset               ; // Plunger Location Offset
   // Physics engine
   int    solver_iterations            ; // Solver iterations
   double step_size                    ; // Max step size [seconds]
@@ -152,6 +153,7 @@ inline void print(BuildModelSpec b)
 	std::cout<<" plunger_spring         : "<<b.spec.plunger_spring         <<"\n";
 	std::cout<<" plunger_damping        : "<<b.spec.plunger_damping        <<"\n";
 	std::cout<<" plunger_gravity        : "<<b.spec.plunger_gravity        <<"\n";
+	std::cout<<" plunger_offset         : "<<b.spec.plunger_offset         <<"\n";
 	std::cout<<" solver_iterations      : "<<b.spec.solver_iterations      <<"\n";
 	std::cout<<" step_size              : "<<b.spec.step_size              <<"\n";
 	std::cout<<" max_sim_time           : "<<b.spec.max_sim_time           <<"\n";
@@ -196,8 +198,9 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.plunger_mass        = node["plunger_mass"      ].as<double>() ;
 	spec.plunger_spring      = node["plunger_spring"    ].as<double>() ;
 	spec.plunger_damping     = node["plunger_damping"   ].as<double>() ;
-	spec.plunger_gravity     = node["plunger_gravity"   ].as<bool>() ;
-	spec.solver_iterations   = node["solver_iterations" ].as<int>() ;
+	spec.plunger_gravity     = node["plunger_gravity"   ].as<bool>()   ;
+	spec.plunger_offset      = node["plunger_offset"    ].as<double>() ;
+	spec.solver_iterations   = node["solver_iterations" ].as<int>()    ;
 	spec.step_size           = node["step_size"         ].as<double>() ;
 	spec.max_sim_time        = node["max_sim_time"      ].as<double>() ;
 	spec.topic               = node["topic"             ].as<std::string>() ;
@@ -259,6 +262,7 @@ inline YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
     out << YAML::Key << "plunger_spring"       << YAML::Value <<  spec.plunger_spring     ;
     out << YAML::Key << "plunger_damping"      << YAML::Value <<  spec.plunger_damping    ;
     out << YAML::Key << "plunger_gravity"      << YAML::Value <<  spec.plunger_gravity    ;
+    out << YAML::Key << "plunger_offset"       << YAML::Value <<  spec.plunger_offset     ;
     out << YAML::Key << "solver_iterations"    << YAML::Value <<  spec.solver_iterations  ;
     out << YAML::Key << "step_size"            << YAML::Value <<  spec.step_size          ;
     out << YAML::Key << "max_sim_time"         << YAML::Value <<  spec.max_sim_time       ;
