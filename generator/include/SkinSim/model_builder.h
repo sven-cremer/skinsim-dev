@@ -67,6 +67,10 @@ private:
 	BuildModelSpec m_;
 	std::string plunger_name;
 
+	double plunger_x;			// Plunger position
+	double plunger_y;
+	double plunger_z;
+
 	int total_elements_x;		// elements/patch * patches
 	int total_elements_y;
 	int unit_size_x;			// tactile elements + tactile separation

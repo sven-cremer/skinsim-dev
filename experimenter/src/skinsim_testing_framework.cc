@@ -51,8 +51,10 @@
 // ROS
 #include <ros/ros.h>
 #include <skinsim_ros_msgs/SetController.h>
-//#include <skinsim_ros_msgs/PlungerData.h>
 #include <skinsim_ros_msgs/ForceFeedback.h>
+#include <skinsim_ros_msgs/GetPosition.h>
+//#include <skinsim_ros_msgs/PlungerData.h>
+//#include <skinsim_ros_msgs/CenterOfPressure.h>
 
 // Boost
 #include <boost/thread.hpp>
@@ -96,8 +98,8 @@ protected: transport::SubscriberPtr statsSub;
 
 private: ros::NodeHandle* ros_node_;
 private: std::string ros_namespace_;
-private: ros::ServiceClient ros_srv_;
 private: skinsim_ros_msgs::SetController msg_srv_;
+private: skinsim_ros_msgs::GetPosition msg_srv_pos_;
 private: int iterations_max;
 
 // Calibration
@@ -197,7 +199,7 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 
 	std::string ros_api_plugin  = "/opt/ros/jade/lib/libgazebo_ros_api_plugin.so";
 	std::string ros_path_plugin = "/opt/ros/jade/lib/libgazebo_ros_paths_plugin.so";
-	std::string world_file = _worldFilename; //"/home/sven/skin_ws/src/skinsim-dev/model/worlds/skin_array_0.world";
+	std::string world_file = _worldFilename;
 
 	// Create fake command-line parameters for Gazebo server
 	// This seems to be the best way to set parameters such as sensor plugins
@@ -236,7 +238,7 @@ void RunServer(const std::string &_worldFilename, bool _paused, const std::strin
 
 	this->server->Fini();
 
-	std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
+	//std::cout << "SkinSimTestingFramework::RunServer() - DONE" << std::endl;
 
 	// Deallocate variables
 	delete this->server;
@@ -266,6 +268,8 @@ void runTests(std::string exp_name)
 	std::string mdlSpecPath = pathExp + "/" + filename_model;
 	std::string ctrSpecPath = pathExp + "/" + filename_control;
 	std::string caliPath    = pathExp + "/tactile_calibration.yaml";
+	std::string plungerPositionPath = pathExp + "/plunger_position.yaml";
+	std::string plungerPositionPathTemp = pathExp + "/tmp_plunger_position.yaml";
 
 	// Read YAML model file
 	std::ifstream fin(mdlSpecPath.c_str());
@@ -284,6 +288,11 @@ void runTests(std::string exp_name)
 	YAML::Node doc_cali;
 	std::cout<<"Loading file: "<<caliPath<<"\n";
 	doc_cali = YAML::LoadAll(fin3);
+
+	// For saving plunger positions
+	std::ofstream fout4(plungerPositionPath.c_str());
+	YAML::Emitter out;
+	out << YAML::BeginMap;
 
 	// Gazebo parameters
 	std::string _worldFilename("~");
@@ -328,7 +337,7 @@ void runTests(std::string exp_name)
 			// Print info
 			std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
 			std::cout << "# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
-			std::cout << "  Calibration value: "<<K_cali<<"\n";
+			//std::cout << "  Calibration value: "<<K_cali<<"\n";
 
 			// Point model world file location
 			_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
@@ -339,16 +348,17 @@ void runTests(std::string exp_name)
 			//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
 			//	    std::cout << it->first << " => " << it->second << '\n';
 
-			// Create Gazebo world
-			std::cout << "Initializing World" << std::endl;
+			std::cout << "Initializing World in 2 seconds ..." << std::endl;
+			sleep(2.0);	// TODO make sure everything is ready
+
 			// Create, load, and run the server in its own thread
 			this->serverThread = new boost::thread(
 					boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
 							_paused, _physics));
 
 			std::cout << "Waiting for world completion" << std::endl;
-			// Wait for the server to come up (15 second timeout)
-			int waitCount = 0, maxWaitCount = 150;
+			// Wait for the server to come up (20 second timeout)
+			int waitCount = 0, maxWaitCount = 200;
 			while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )		// TODO error handling if timeout occurs
 				common::Time::MSleep(100);
 
@@ -371,7 +381,8 @@ void runTests(std::string exp_name)
 			// Create ROS service client
 			ros_namespace_ = "skinsim";
 			this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
-			this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+			ros::ServiceClient ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+			ros::ServiceClient ros_srv_p_ = this->ros_node_->serviceClient<skinsim_ros_msgs::GetPosition>("get_plunger_position");
 
 			// Set plunger force message
 			msg_srv_.request.type.selected = controlSpec.controller_type;
@@ -392,11 +403,17 @@ void runTests(std::string exp_name)
 			std::cout<<"Starting simulation...\n";
 			this->SetPause(false);
 
-			// Save ROS topic data to file
+			// Save ROS topic data to file (plunger data)
 			std::string topic = modelSpec.spec.topic;
-			std::string cmd1 = std::string("rostopic echo -p ") + topic.c_str() + std::string(" > ") + pathExp.c_str() + std::string("/") + exp_name.c_str() + std::string(".csv &");
+			std::string cmd1 = "rostopic echo -p " + topic  + " > " + pathExp + "/" + exp_name + ".csv &";
 			std::cout<<"$ "<<cmd1.c_str()<<"\n";
 			system( cmd1.c_str() );
+
+			// Save ROS topic data to file (COP data)
+			std::string topic2 = "/skinsim/center_of_pressure";
+			std::string cmd2 = "rostopic echo -p " + topic2 + " > " + pathExp + "/COP_" + exp_name + ".csv &";
+			std::cout<<"$ "<<cmd2.c_str()<<"\n";
+			system( cmd2.c_str() );
 
 			// Send control message
 			bool message_sent = false;
@@ -412,6 +429,28 @@ void runTests(std::string exp_name)
 					}
 					//else
 					//	std::cerr<<"Failed to send control message, trying again ...\n";
+				}
+				common::Time::MSleep(10);
+			}
+			message_sent = false;
+			while( !message_sent )
+			{
+				// Send control message to plunger
+				if(!message_sent)
+				{
+					if (ros_srv_p_.call(msg_srv_pos_))
+					{
+						message_sent = true;
+						std::cout<<"Plunger position: (" << msg_srv_pos_.response.x <<"," << msg_srv_pos_.response.y<< ")\n";
+						out << YAML::Key << modelSpec.name << YAML::Value;
+						out << YAML::Flow<< YAML::BeginSeq << msg_srv_pos_.response.x << msg_srv_pos_.response.y << YAML::EndSeq;
+						// Temporary save results
+						YAML::Emitter out_tmp;
+						out_tmp << out.c_str() << YAML::EndMap;
+						std::ofstream fout_tmp(plungerPositionPathTemp.c_str());
+						fout_tmp << out_tmp.c_str();
+						fout_tmp.close();
+					}
 				}
 				common::Time::MSleep(10);
 			}
@@ -434,9 +473,13 @@ void runTests(std::string exp_name)
 			std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
 
 			// Stop saving ROS topic data to file
-			std::string cmd2 = std::string("pkill -9 -f ") + topic.c_str();
-			std::cout<<"$ "<<cmd2.c_str()<<"\n";
-			system( cmd2.c_str() );
+			std::string cmdA = "pkill -9 -f " + topic;
+			std::cout<<"$ "<<cmdA.c_str()<<"\n";
+			system( cmdA.c_str() );
+
+			std::string cmdB = "pkill -9 -f " + topic2;
+			std::cout<<"$ "<<cmdB.c_str()<<"\n";
+			system( cmdB.c_str() );
 
 			// Cleanup
 			Unload();
@@ -445,6 +488,12 @@ void runTests(std::string exp_name)
 			index++;
 		}
 	}
+
+	// Write to YAML file and close
+	std::cout<<"Saving: "<<plungerPositionPath<<"\n";
+	out << YAML::EndMap;
+	fout4 << out.c_str();
+	fout4.close();
 
 	delete this->server;
 
@@ -461,6 +510,7 @@ void runCalibration(std::string exp_name)
 	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
 	std::string mdlSpecPath = pathExp + "/" + filename_model;
 	std::string calibration_file = pathExp + "/tactile_calibration.yaml";
+	std::string calibration_file_tmp = pathExp + "/tmp_tactile_calibration.yaml";
 
 	// Read YAML model file
 	std::ifstream fin(mdlSpecPath.c_str());
@@ -501,15 +551,17 @@ void runCalibration(std::string exp_name)
 		m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
 
 		// Create Gazebo world
-		std::cout << "Initializing World" << std::endl;
+		std::cout << "Initializing World in 2 seconds ..." << std::endl;
+		sleep(2.0);	// TODO make sure everything is ready
+
 		// Create, load, and run the server in its own thread
 		this->serverThread = new boost::thread(
 				boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
 						_paused, _physics));
 
 		std::cout << "Waiting for world completion" << std::endl;
-		// Wait for the server to come up (15 second timeout)
-		int waitCount = 0, maxWaitCount = 150;
+		// Wait for the server to come up (20 second timeout)
+		int waitCount = 0, maxWaitCount = 200;
 		while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )		// TODO error handling if timeout occurs
 			common::Time::MSleep(100);
 
@@ -524,9 +576,9 @@ void runCalibration(std::string exp_name)
 		buffer_size = 20;
 		buffer = new double[buffer_size];
 		for(int i=0;i<buffer_size;i++)
-			buffer[i]=0.0;
+			buffer[i]=1.0;
 		buffer_idx = 0;
-		K_sma = 0;
+		K_sma = 1.0;
 		f_target = 2.0;
 		calibration_done = false;
 		calibration_counter=0;
@@ -541,7 +593,7 @@ void runCalibration(std::string exp_name)
 		// Create ROS service client
 		ros_namespace_ = "skinsim";
 		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
-		this->ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+		ros::ServiceClient ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
 
 		// Create ROS topic subscriber
 		std::string topic = "/skinsim/force_feedback";
@@ -602,8 +654,8 @@ void runCalibration(std::string exp_name)
 				if(waitCount > 10)
 				{
 					ss.str(""); ss.clear();
-					ss << std::setw(4) << std::setfill('0')<<K_sma;
-					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<<calibration_counter<< std::flush;
+					ss << std::fixed << std::setprecision(6) << K_sma  ;
+					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<", cc="<<calibration_counter<<"/10) "<< std::flush;
 				}
 			}
 			else
@@ -618,8 +670,8 @@ void runCalibration(std::string exp_name)
 				if((fastCount % 10000) == 0)
 				{
 					ss.str(""); ss.clear();
-					ss << std::setw(4) << std::setfill('0')<<K_sma;
-					std::cout << '\r' << YELLOW << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<" )     "<<calibration_counter<< std::flush;
+					ss << std::fixed << std::setprecision(6) << K_sma;
+					std::cout << '\r' << YELLOW << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<", cc="<<calibration_counter<<"/10) "<< std::flush;
 				}
 			}
 		}
@@ -629,9 +681,16 @@ void runCalibration(std::string exp_name)
 		// Compute calibration constant
 		out << YAML::Key << modelSpec.name << YAML::Value << K_sma;
 
+		// Temporary save results
+		YAML::Emitter out_tmp;
+		out_tmp << out.c_str() << YAML::EndMap;		// TODO how to set out_tmp = out?
+		std::ofstream fout_tmp(calibration_file_tmp.c_str());
+		fout_tmp << out_tmp.c_str();
+		fout_tmp.close();
+
 		// Simulation finished
 		std::cout << RESET;
-		std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";
+		std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";	// FIXME use timer instead
 		std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
 
 		// Cleanup

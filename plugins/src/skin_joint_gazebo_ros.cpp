@@ -266,9 +266,10 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	}
 	this->num_sensors_ = this->sensors_.size();
 
-	this->force_COP_ .resize(this->num_sensors_);
-	this->force_x_   .resize(this->num_sensors_);
-	this->force_y_   .resize(this->num_sensors_);
+	// Center of Pressure (COP)
+	this->cop_force_ .resize(this->num_sensors_);
+	this->cop_x_     .resize(this->num_sensors_);
+	this->cop_y_     .resize(this->num_sensors_);
 
 	// Make sure the ROS node for Gazebo has already been initialized
 	if (!ros::isInitialized())
@@ -634,9 +635,18 @@ void SkinJointGazeboRos::UpdateJoints()
 		this->lock_.unlock();
 	}
 
+	// Publish Center of Pressure (COP)
+	if(this->ros_connections_COP_ > 0 )
+	{
+		FindCOP();
+
+		this->lock_.lock();
+		this->ros_pub_COP_.publish(this->msg_COP_);
+		this->lock_.unlock();
+	}
+
 	// Save last time stamp
 	this->last_time_ = cur_time;
-	FindCOP();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -667,49 +677,70 @@ double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
 // Calculate Center of Pressure
 void SkinJointGazeboRos::FindCOP()
 {
+	msg_COP_.force_magnitude = 0.0;
+	msg_COP_.x = 0.0;
+	msg_COP_.y = 0.0;
 
-	math::Pose p;
-	double force_sum 				        =    0;
-	double x_sum 					        =    0;
-	double y_sum 					        =    0;
-    TactileCOP tempCOP;
+	// Check if a force has been applied
+	if(fabs( f_sen_.sum() ) == 0 )
+	{
+		return;
+	}
 
+	double force;
 
 	for (int i = 0; i < sensors_.size(); ++i)
 	{
-        for (int j = 0; j < sensors_[i].joint_index.size(); ++j)
-        {
-        	tempCOP.index                   =    sensors_[i].joint_index[j];
-        	p                               =    this->joints_[tempCOP.index]->GetChild()->GetInitialRelativePose ();
-        	tempCOP.force                   =    tempCOP.force + f_sen_(tempCOP.index);
-        	tempCOP.x                       =    tempCOP.x + (p.pos.x * tempCOP.force);
-        	tempCOP.y                       =    tempCOP.y + (p.pos.y * tempCOP.force);
-        }
-        tempCOP.x                           =    tempCOP.x/tempCOP.force;
-        tempCOP.y                           =    tempCOP.y/tempCOP.force;
+		force = -sensors_[i].force_sensed; // TODO check sign
 
-        force_COP_(i)                       =    tempCOP.force;
-        force_x_(i)                         =    tempCOP.x;
-        force_y_(i)                         =    tempCOP.y;
-
-        tactile_COP_.push_back(tempCOP);
-        tempCOP                             =    TactileCOP();
+		msg_COP_.force_magnitude += force;
+		msg_COP_.x += sensors_[i].position.x * force;
+		msg_COP_.y += sensors_[i].position.y * force;
 	}
 
-	if(this->ros_connections_COP_ > 0 )
+	// Normalize
+	if(msg_COP_.force_magnitude != 0)
 	{
-		this->lock_.lock();
-
-		// Copy data into ROS message
-		msg_COP_.force_magnitude            =    force_COP_.sum();
-		msg_COP_.x                          =    force_x_.sum()/force_COP_.sum();
-		msg_COP_.y                          =    force_y_.sum()/force_COP_.sum();
-
-		this->ros_pub_COP_.publish(this->msg_COP_);
-		this->lock_.unlock();
+		msg_COP_.x           = msg_COP_.x/msg_COP_.force_magnitude;
+		msg_COP_.y           = msg_COP_.y/msg_COP_.force_magnitude;
 	}
 
+	/*
+	math::Pose p;
+	int index;
 
+	// Compute COP of each taxel i
+	for (int i = 0; i < sensors_.size(); ++i)
+	{
+		TactileCOP cop;
+		// Loop over elements j inside taxel i
+		for (int j = 0; j < sensors_[i].joint_index.size(); ++j)
+		{
+			// Get skin element info
+			index = sensors_[i].joint_index[j];
+			p     = this->joints_[index]->GetChild()->GetInitialRelativePose();
+			// Update COP variables
+			cop.force += -f_sen_(index);			// TODO check sign
+			cop.x     += p.pos.x * f_sen_(index);
+			cop.y     += p.pos.y * f_sen_(index);
+		}
+		// Normalize COP
+		if(cop.force != 0 )
+		{
+			cop.x = cop.x/cop.force;
+			cop.y = cop.y/cop.force;
+		}
+		// Save results
+		cop_force_(i) = cop.force;	// TODO this is already stored in the tactile data
+		cop_x_(i)     = cop.x;
+		cop_y_(i)     = cop.y;
+	}
+
+	// Compute COP of entire array
+	msg_COP_.force_magnitude = cop_force_.sum();
+	msg_COP_.x               = (cop_x_.cwiseProduct(cop_force_)).sum();
+	msg_COP_.y               = (cop_y_.cwiseProduct(cop_force_)).sum();
+	*/
 }
 
 //////////////////////////////////////////////////////////////////////////

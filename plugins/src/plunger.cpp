@@ -155,6 +155,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		// ROS services
 		this->ros_srv_ 			= 	this->ros_node_->advertiseService("set_controller", &Plunger::serviceCB, this);
 		this->ros_srv_gains_ 	= 	this->ros_node_->advertiseService("set_PIDGains", &Plunger::serviceSetPIDCB, this);
+		this->ros_srv_poition_ 	= 	this->ros_node_->advertiseService("get_plunger_position", &Plunger::serviceGetPosition, this);
 
 		// Custom Callback Queue
 		this->callback_ros_queue_thread_ = boost::thread( boost::bind( &Plunger::RosQueueThread,this ) );
@@ -321,7 +322,7 @@ void Plunger::UpdateJoints()
 	// Position-Based Explicit Force control
 	case skinsim_ros_msgs::ControllerType::POSITION_BASED_FORCE_CONTROL:
 	{
-
+		// TODO: check
 		this->environment_force_   = this->plunger_link_->GetWorldForce().z + this->effort_;
 		this->force_error_         = this->force_desired_ - this->environment_force_;
 		this->force_error_dot_     = (this->force_error_ - this->force_error_previous_)/step_time.Double();
@@ -331,8 +332,6 @@ void Plunger::UpdateJoints()
 		this->joint_->SetForce(0, -this->effort_);
 
 		this->force_error_previous_= this->force_error_dot_;
-
-
 
 //		position_desired_ = Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
 //		double postion_error = position_current_ - position_desired_;
@@ -523,6 +522,23 @@ bool Plunger::serviceSetPIDCB(skinsim_ros_msgs::SetPIDGains::Request& req, skins
 	return true;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Callback function when subscriber connects
+bool Plunger::serviceGetPosition(skinsim_ros_msgs::GetPosition::Request& req, skinsim_ros_msgs::GetPosition::Response& res)
+{
+	// Store data
+	this->lock_.lock();
+
+	math::Pose p = this->joint_->GetChild()->GetWorldPose();
+
+	res.x = p.pos.x;
+	res.y = p.pos.y;
+	res.z = p.pos.z;
+	res.success = true;	// TODO check values
+
+	this->lock_.unlock();
+	return true;
+}
 //////////////////////////////////////////////////////////////////////////
 // Callback function for force feedback subscriber
 void Plunger::ForceFeedbackCB(const skinsim_ros_msgs::ForceFeedback::ConstPtr& _msg)
