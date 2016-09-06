@@ -141,22 +141,40 @@ int main(int argc, char** argv)
 	//modelSpecs.push_back( defaultModelSpec ) ;
 
 
-	// Tactile layout
-	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
+//	// Tactile layout
+//	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
+//	{
+//		for(unsigned j  = 1; j < 6 ; j++ )	// Tactile separation
+//		{
+//			BuildModelSpec tempModelSpec = defaultModelSpec;
+//
+//			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
+//			tempModelSpec.spec.tactile_elements_x   = i;
+//			tempModelSpec.spec.tactile_elements_y   = i;
+//			tempModelSpec.spec.tactile_separation_x = j;
+//			tempModelSpec.spec.tactile_separation_y = j;
+//
+//			modelSpecs.push_back( tempModelSpec ) ;
+//		}
+//	}
+
+
+	// Plunger Offset value
+	for (double i  = -0.12; i <= .12 ; i = i+0.05)
 	{
-		for(unsigned j  = 1; j < 6 ; j++ )	// Tactile separation
+		for (double j  = 0 ; j < 1 ; j++)
 		{
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
-			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
-			tempModelSpec.spec.tactile_elements_x   = i;
-			tempModelSpec.spec.tactile_elements_y   = i;
-			tempModelSpec.spec.tactile_separation_x = j;
-			tempModelSpec.spec.tactile_separation_y = j;
+			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 3 ) + "_sep_" + boost::lexical_cast<std::string>( 3 ) + "_off_x" + boost::lexical_cast<std::string>( i ) + "_off_y" + boost::lexical_cast<std::string>( j );
+			tempModelSpec.spec.plunger_offset_x = i;
+			tempModelSpec.spec.plunger_offset_y = j;
 
 			modelSpecs.push_back( tempModelSpec ) ;
 		}
 	}
+
+
 /*
 	// Model parameters
 	for(unsigned i  = 0; i < 3 ; i++ )
