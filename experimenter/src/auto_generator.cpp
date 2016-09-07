@@ -155,13 +155,16 @@ int main(int argc, char** argv)
 			tempModelSpec.spec.tactile_separation_x = j;
 			tempModelSpec.spec.tactile_separation_y = j;
 
+			//tempModelSpec.spec.plunger_offset_x = j*tempModelSpec.spec.element_diameter*0.5;	// Assume this gives max COP error
+
 			modelSpecs.push_back( tempModelSpec ) ;
 		}
 	}
 	*/
 
 	// Plunger Offset value
-	for (int i  = 0; i < 7 ; i = i++ )
+
+	for (int i  = 7; i < 13 ; i++ )
 	{
 		BuildModelSpec tempModelSpec = defaultModelSpec;
 
@@ -171,11 +174,12 @@ int main(int argc, char** argv)
 		tempModelSpec.spec.tactile_separation_x = 3;
 		tempModelSpec.spec.tactile_separation_y = 3;
 
-		tempModelSpec.spec.plunger_offset_x = i*0.005;
-		//tempModelSpec.spec.plunger_offset_y =
+		tempModelSpec.spec.plunger_offset_x = i*0.0025;
+		tempModelSpec.spec.plunger_offset_y = i*0.0025;
 
 		modelSpecs.push_back( tempModelSpec ) ;
 	}
+
 
 
 	// Model parameters
