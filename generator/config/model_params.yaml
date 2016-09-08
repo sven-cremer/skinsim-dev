@@ -15,8 +15,8 @@
       element_diameter             : 0.010              # Diameter of each skin element [meters]
       element_height               : 0.010              # The height of the skin element from the ground [meters]
       element_mass                 : 0.001              # Mass of skin element [kg]  (note: doesn't matter since model gravity is turned off but has to >0)
-      element_spring               : 10.0               # Spring constant of skin element [N/m] (note: also used by plugin)
-      element_damping              : 0.1                # Damping of skin element (note: also used by plugin)
+      element_spring               : 16.37              # Spring constant of skin element [N/m] (note: also used by plugin)
+      element_damping              : 0.130             # Damping of skin element (note: also used by plugin)
       # Skin plane properties
       plane_thickness              : 0.002              # Thickness of the skin plane [meters]
       plane_height                 : 0.001              # The height of the plane from the ground [meters]
@@ -65,7 +65,7 @@
       #############################
       # AUTO GENERATOR            #
       #############################
-      solver_iterations            : 2000               # Physics engine solver iterations
+      solver_iterations            : 500                # Physics engine solver iterations
       step_size                    : 0.0001             # Max step size of simulation [seconds]
       max_sim_time                 : 1.00               # When to stop simulation [seconds]
       topic : /skinsim/plunger_data                     # Which ROS topic to save during simulation
