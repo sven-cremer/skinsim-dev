@@ -154,12 +154,35 @@ int main(int argc, char** argv)
 			tempModelSpec.spec.tactile_separation_x = j;
 			tempModelSpec.spec.tactile_separation_y = j;
 
+			//tempModelSpec.spec.plunger_offset_x = j*tempModelSpec.spec.element_diameter*0.5;	// Assume this gives max COP error
+
 			modelSpecs.push_back( tempModelSpec ) ;
 		}
 	}
+	*/
 
-/*
+	// Plunger Offset value
+
+	for (int i  = 7; i < 13 ; i++ )
+	{
+		BuildModelSpec tempModelSpec = defaultModelSpec;
+
+		tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 3 ) + "_sep_" + boost::lexical_cast<std::string>( 3 ) + "_offset_" + boost::lexical_cast<std::string>( i );
+		tempModelSpec.spec.tactile_elements_x   = 3;
+		tempModelSpec.spec.tactile_elements_y   = 3;
+		tempModelSpec.spec.tactile_separation_x = 3;
+		tempModelSpec.spec.tactile_separation_y = 3;
+
+		tempModelSpec.spec.plunger_offset_x = i*0.0025;
+		tempModelSpec.spec.plunger_offset_y = i*0.0025;
+
+		modelSpecs.push_back( tempModelSpec ) ;
+	}
+
+
+
 	// Model parameters
+	/*
 	for(unsigned i  = 0; i < 3 ; i++ )
 	{
 		BuildModelSpec tempModelSpec = defaultModelSpec;
@@ -170,7 +193,7 @@ int main(int argc, char** argv)
 		defaultModelSpec.spec.element_mass      = 0.0001*pow(10,i+1);
 		modelSpecs.push_back( tempModelSpec ) ;
 	}
-*/
+	*/
 
 	// Save to YAML
 	YAML::Emitter mdlYAMLEmitter;
@@ -216,12 +239,12 @@ int main(int argc, char** argv)
 	defaultControlSpec.Ts = 0.001;
 	defaultControlSpec.Nf = 100;
 
-	//ctrSpecs.push_back( defaultControlSpec ) ;
+	ctrSpecs.push_back( defaultControlSpec ) ;
 
-//	
-	// Test differnet Ts values
-	double dt = 0.0005;
-	for(unsigned i  = 1; i < 17 ; i++ )
+	/*
+	// Test different Ts values
+	double dt = 0.001;
+	for(unsigned i  = 1; i < 9 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
@@ -229,7 +252,7 @@ int main(int argc, char** argv)
 		tempControlSpec.Ts = dt*i;
 		ctrSpecs.push_back( tempControlSpec ) ;
 	}
-//
+	*/
 
 //	int num = 0;
 //	for(unsigned j  = 1; j < 3; j++ ) // Feedback type
