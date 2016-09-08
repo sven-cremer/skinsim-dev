@@ -31,10 +31,10 @@
       total_length_x               : 0.0                # Length of skin array in x-direction
       total_length_y               : 0.0                # Length of skin array in y-direction
       # Tactile sensor properties
-      tactile_elements_x           : 2                  # Number of skin elements per sensor in x-direction
-      tactile_elements_y           : 2                  # Number of skin elements per sensor in y-direction
-      tactile_separation_x         : 1                  # Spaceing between sensors in terms of number of elements in x-direction
-      tactile_separation_y         : 1                  # Spaceing between sensors in terms of number of elements in x-direction
+      tactile_elements_x           : 3                  # Number of skin elements per sensor in x-direction
+      tactile_elements_y           : 3                  # Number of skin elements per sensor in y-direction
+      tactile_separation_x         : 3                  # Spaceing between sensors in terms of number of elements in x-direction
+      tactile_separation_y         : 3                  # Spaceing between sensors in terms of number of elements in x-direction
       # Plunger properties
       plunger_radius               : 0.05
       plunger_length               : 0.10
@@ -63,7 +63,7 @@
       #############################
       # AUTO GENERATOR            #
       #############################
-      solver_iterations            : 250                # Physics engine solver iterations
+      solver_iterations            : 2000                # Physics engine solver iterations
       step_size                    : 0.0001             # Max step size of simulation [seconds]
-      max_sim_time                 : 1.0                # When to stop simulation [seconds]
+      max_sim_time                 : 1.20                # When to stop simulation [seconds]
       topic : /skinsim/plunger_data                     # Which ROS topic to save during simulation

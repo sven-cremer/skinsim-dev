@@ -142,9 +142,9 @@ int main(int argc, char** argv)
 
 
 	// Tactile layout
-	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
+	for(unsigned i  = 3; i < 4 ; i++ )		// Tactile size
 	{
-		for(unsigned j  = 1; j < 6 ; j++ )	// Tactile separation
+		for(unsigned j  = 3; j < 4 ; j++ )	// Tactile separation
 		{
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
@@ -157,6 +157,7 @@ int main(int argc, char** argv)
 			modelSpecs.push_back( tempModelSpec ) ;
 		}
 	}
+
 /*
 	// Model parameters
 	for(unsigned i  = 0; i < 3 ; i++ )
@@ -215,12 +216,12 @@ int main(int argc, char** argv)
 	defaultControlSpec.Ts = 0.001;
 	defaultControlSpec.Nf = 100;
 
-	ctrSpecs.push_back( defaultControlSpec ) ;
+	//ctrSpecs.push_back( defaultControlSpec ) ;
 
-	/*
+//	
 	// Test differnet Ts values
-	double dt = 0.001;
-	for(unsigned i  = 1; i < 9 ; i++ )
+	double dt = 0.0005;
+	for(unsigned i  = 1; i < 17 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
@@ -228,7 +229,7 @@ int main(int argc, char** argv)
 		tempControlSpec.Ts = dt*i;
 		ctrSpecs.push_back( tempControlSpec ) ;
 	}
-	*/
+//
 
 //	int num = 0;
 //	for(unsigned j  = 1; j < 3; j++ ) // Feedback type
