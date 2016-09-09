@@ -1,0 +1,19 @@
+skin_array_s_1_sep_1: [-0.005, -0.005]
+skin_array_s_1_sep_2: [-0.01, -0.01]
+skin_array_s_1_sep_3: [-0.015, -0.015]
+skin_array_s_1_sep_4: [-0.015, -0.015]
+
+skin_array_s_2_sep_1: [-0.005, -0.005]
+skin_array_s_2_sep_2: [-0.01, -0.01]
+skin_array_s_2_sep_3: [-0.01, -0.01]
+skin_array_s_2_sep_4: [-0.02, -0.02]
+
+skin_array_s_3_sep_1: [-0.005, -0.005]
+skin_array_s_3_sep_2: [-0.005, -0.005]
+skin_array_s_3_sep_3: [-0.015, -0.015]
+skin_array_s_3_sep_4: [0, 0]
+
+skin_array_s_4_sep_1: [0, 0]
+skin_array_s_4_sep_2: [-0.01, -0.01]
+skin_array_s_4_sep_3: [-0.03, -0.03]
+skin_array_s_4_sep_4: [-0.02, -0.02]

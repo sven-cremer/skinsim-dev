@@ -608,17 +608,19 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 	double plunger_height = 0.10;
 	plunger_z  =  m_.spec.element_height + m_.spec.element_diameter
 			      +(plunger_height-0.5*plunger_length) + 0.0005;
-	std::string pz = boost::lexical_cast<std::string>(plunger_z);
 
 	// Move plunger to center of tactile patches
 	plunger_x = (total_sensors_x*unit_size_x - total_elements_x - m_.spec.tactile_separation_x)*m_.spec.element_diameter*0.5;
 	plunger_y = (total_sensors_y*unit_size_y - total_elements_y - m_.spec.tactile_separation_y)*m_.spec.element_diameter*0.5;
-//	std::string px = boost::lexical_cast<std::string>(plunger_x);
-//	std::string py = boost::lexical_cast<std::string>(plunger_y);
 
-	std::string px = boost::lexical_cast<std::string>(plunger_x + m_.spec.plunger_offset_x);
-	std::string py = boost::lexical_cast<std::string>(plunger_y + m_.spec.plunger_offset_y);
+	// Add plunger offset
+	plunger_x += m_.spec.plunger_offset_x;
+	plunger_y += m_.spec.plunger_offset_y;
 
+	// Convert to strings
+	std::string px = boost::lexical_cast<std::string>(plunger_x);
+	std::string py = boost::lexical_cast<std::string>(plunger_y);
+	std::string pz = boost::lexical_cast<std::string>(plunger_z);
 
 	// Physics engine
 	std::string step_size = boost::lexical_cast<std::string>(m_.spec.step_size);

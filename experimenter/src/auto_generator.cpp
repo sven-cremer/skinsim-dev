@@ -98,8 +98,7 @@ int main(int argc, char** argv)
 	std::string defaultModelSpecPath = pathSkinSim + "/generator/config/model_params.yaml";
 
 	// ---------------------------------------------
-
-	// Generate model specifications
+	// Set default Model values
 
 	std::vector<BuildModelSpec>  modelSpecs;
 	BuildModelSpec defaultModelSpec;
@@ -110,10 +109,39 @@ int main(int argc, char** argv)
 	std::cout<<"Loading file: "<<defaultModelSpecPath<<"\n";
 	doc_model = YAML::LoadAll(fin);
 	doc_model[0][0] >> defaultModelSpec;
-	std::cout<<"DEFAULT VALUES:\n";
+	std::cout<<"DEFAULT MODEL VALUES:\n";
 	print(defaultModelSpec);
 
+	// ---------------------------------------------
+	// Set default Controller values
+
+	std::vector<ControllerSpec> ctrSpecs;
+	ControllerSpec defaultControlSpec;
+
 	// Set default values
+	defaultControlSpec.name         	= "efc_00_00_00" ;
+	defaultControlSpec.impCtr_Xnom  	= 0;
+	defaultControlSpec.impCtr_M     	= 0;
+	defaultControlSpec.impCtr_D     	= 0;
+	defaultControlSpec.impCtr_K     	= 0;
+
+	defaultControlSpec.controller_type  = 4;    //DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
+	defaultControlSpec.feedback_type    = 2;    //PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
+	defaultControlSpec.Fd = 2     ;
+
+	defaultControlSpec.Kp = 2.0   ;
+	defaultControlSpec.Ki = 20.0  ;
+	defaultControlSpec.Kd = 0.0	  ;
+	defaultControlSpec.Kv = 0.0   ;
+
+	defaultControlSpec.Ts = 0.001;
+	defaultControlSpec.Nf = 100;
+
+	std::cout<<"DEFAULT CONTROL VALUES:\n";
+	print(defaultControlSpec);
+
+	// ---------------------------------------------
+	// Generate model specifications
 
 	/* Shook, "Experimental testbed for robotic skin characterization and interaction control", 2014.
 	 * Table 4-6: Parameters for 4mm Frubber skin
@@ -135,46 +163,51 @@ int main(int argc, char** argv)
 	 * b_element =  485.6 * (0.16/0.99) * (1/201) = 0.390 [N/m]
 	 *
 	 */
+
 	//defaultModelSpec.spec.element_spring       = 10.0;  // TODO compute this automatically from plunger diameter
 	//defaultModelSpec.spec.element_damping      = 0.1;   // TODO compute this automatically from plunger diameter
 
 	//modelSpecs.push_back( defaultModelSpec ) ;
 
-
-//	// Tactile layout
-//	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
-//	{
-//		for(unsigned j  = 1; j < 6 ; j++ )	// Tactile separation
-//		{
-//			BuildModelSpec tempModelSpec = defaultModelSpec;
-//
-//			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
-//			tempModelSpec.spec.tactile_elements_x   = i;
-//			tempModelSpec.spec.tactile_elements_y   = i;
-//			tempModelSpec.spec.tactile_separation_x = j;
-//			tempModelSpec.spec.tactile_separation_y = j;
-//
-//			modelSpecs.push_back( tempModelSpec ) ;
-//		}
-//	}
-
-
-	// Plunger Offset value
-	for (double i  = -0.12; i <= .12 ; i = i+0.05)
+/*
+	// Tactile layout
+	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
 	{
-		for (double j  = 0 ; j < 1 ; j++)
+		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
 		{
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
-			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 3 ) + "_sep_" + boost::lexical_cast<std::string>( 3 ) + "_off_x" + boost::lexical_cast<std::string>( i ) + "_off_y" + boost::lexical_cast<std::string>( j );
-			tempModelSpec.spec.plunger_offset_x = i;
-			tempModelSpec.spec.plunger_offset_y = j;
+			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
+			tempModelSpec.spec.tactile_elements_x   = i;
+			tempModelSpec.spec.tactile_elements_y   = i;
+			tempModelSpec.spec.tactile_separation_x = j;
+			tempModelSpec.spec.tactile_separation_y = j;
+
+			//tempModelSpec.spec.plunger_offset_x = j*tempModelSpec.spec.element_diameter*0.5;	// Assume this gives max COP error
+			//tempModelSpec.spec.plunger_offset_y = j*tempModelSpec.spec.element_diameter*0.5;
 
 			modelSpecs.push_back( tempModelSpec ) ;
 		}
 	}
+*/
+/*
+	// Plunger Offset value
+	for (int i  = 0; i < 13 ; i++ )
+	{
+		BuildModelSpec tempModelSpec = defaultModelSpec;
 
+		tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 3 ) + "_sep_" + boost::lexical_cast<std::string>( 3 ) + "_offset_" + boost::lexical_cast<std::string>( i );
+		tempModelSpec.spec.tactile_elements_x   = 3;
+		tempModelSpec.spec.tactile_elements_y   = 3;
+		tempModelSpec.spec.tactile_separation_x = 3;
+		tempModelSpec.spec.tactile_separation_y = 3;
 
+		tempModelSpec.spec.plunger_offset_x = i*0.0025;
+		tempModelSpec.spec.plunger_offset_y = i*0.0025;
+
+		modelSpecs.push_back( tempModelSpec ) ;
+	}
+*/
 /*
 	// Model parameters
 	for(unsigned i  = 0; i < 3 ; i++ )
@@ -199,46 +232,26 @@ int main(int argc, char** argv)
 	mdlOut << mdlYAMLEmitter.c_str();;
 	mdlOut.close();
 
-	// ---------------------------------------------
 
+	// ---------------------------------------------
 	// Generate and save SDF models
+
 	for(unsigned i = 0; i < modelSpecs.size() ;i++)
 	{
 		ModelBuilder skinSimModelBuilderObject( modelSpecs[i] );	// TODO store in exp directory and update Gazebo model path
 	}
 
-	// ---------------------------------------------
 
+	// ---------------------------------------------
 	// Generate control specifications
 
-	std::vector<ControllerSpec> ctrSpecs;
-	ControllerSpec defaultControlSpec;
 
-	// Set default values
-	defaultControlSpec.name         	= "efc_00_00_00" ;
-	defaultControlSpec.impCtr_Xnom  	= 0;
-	defaultControlSpec.impCtr_M     	= 0;
-	defaultControlSpec.impCtr_D     	= 0;
-	defaultControlSpec.impCtr_K     	= 0;
+	//ctrSpecs.push_back( defaultControlSpec ) ;
 
-	defaultControlSpec.controller_type	= 4;	//DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
-	defaultControlSpec.feedback_type	= 2;	//PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
-	defaultControlSpec.Fd = 2     ;
-
-	defaultControlSpec.Kp = 2.0   ;
-	defaultControlSpec.Ki = 20.0  ;
-	defaultControlSpec.Kd = 0.0	  ;
-	defaultControlSpec.Kv = 0.0   ;
-
-	defaultControlSpec.Ts = 0.001;
-	defaultControlSpec.Nf = 100;
-
-	ctrSpecs.push_back( defaultControlSpec ) ;
-
-	/*
-	// Test differnet Ts values
-	double dt = 0.001;
-	for(unsigned i  = 1; i < 9 ; i++ )
+/*
+	// Test different Ts values
+	double dt = 0.0005;
+	for(unsigned i  = 2; i < 17 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
@@ -246,23 +259,23 @@ int main(int argc, char** argv)
 		tempControlSpec.Ts = dt*i;
 		ctrSpecs.push_back( tempControlSpec ) ;
 	}
-	*/
+*/
+/*
+	// PID tuning
+	int num = 1;
+	for(int i  = 0; i < 4; i++ )
+	{
+		ControllerSpec tempControlSpec = defaultControlSpec;
 
-//	int num = 0;
-//	for(unsigned j  = 1; j < 3; j++ ) // Feedback type
-//	{
-//		for(unsigned i  = 0; i < 4; i++ ) // Kp
-//		{
-//			ControllerSpec tempControlSpec = defaultControlSpec;
-//
-//			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( num );
-//			//tempControlSpec.Ts = 0.0001 * pow(10, i);
-//			//tempControlSpec.controller_type = j;
-//			tempControlSpec.Kd = 0.0001 * pow(10, i);
-//			ctrSpecs.push_back( tempControlSpec ) ;
-//			num++;
-//		}
-//	}
+		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( num );
+		//tempControlSpec.Ts = 0.0001 * pow(10, i);
+		//tempControlSpec.controller_type = j;
+
+		tempControlSpec.Kp = 0.01 * pow(10, i);
+		ctrSpecs.push_back( tempControlSpec ) ;
+		num++;
+	}
+*/
 
 	// Save to YAML
 	YAML::Emitter ctrYAMLEmitter;

@@ -348,8 +348,8 @@ void runTests(std::string exp_name)
 			//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
 			//	    std::cout << it->first << " => " << it->second << '\n';
 
-			std::cout << "Initializing World in 2 seconds ..." << std::endl;
-			sleep(2.0);	// TODO make sure everything is ready
+			std::cout << "Initializing World in 3 seconds ..." << std::endl;
+			sleep(3.0);	// TODO make sure everything is ready
 
 			// Create, load, and run the server in its own thread
 			this->serverThread = new boost::thread(
