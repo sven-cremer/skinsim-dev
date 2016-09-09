@@ -135,7 +135,7 @@ int main(int argc, char** argv)
 	defaultControlSpec.Kv = 0.0   ;
 
 	defaultControlSpec.Ts = 0.001;
-	defaultControlSpec.Nf = 100;
+	defaultControlSpec.Nf = 0;
 
 	std::cout<<"DEFAULT CONTROL VALUES:\n";
 	print(defaultControlSpec);
@@ -222,6 +222,25 @@ int main(int argc, char** argv)
 	}
 */
 
+//	// Noise
+//	for(double i  = 1; i <= 3 ; i++ )		// Tactile size
+//	{
+//		for(double j  = 1; j <= 3 ; j++ )	// Tactile separation
+//		{
+			BuildModelSpec tempModelSpec = defaultModelSpec;
+
+			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 3 ) + "_sep_" + boost::lexical_cast<std::string>( 3 );
+			tempModelSpec.spec.tactile_separation_x = 3;
+			tempModelSpec.spec.tactile_separation_y = 3;
+			tempModelSpec.spec.tactile_elements_x   = 3;
+			tempModelSpec.spec.tactile_elements_y   = 3;
+			tempModelSpec.spec.solver_iterations    = 750;
+
+
+			modelSpecs.push_back( tempModelSpec ) ;
+//		}
+//	}
+
 	// Save to YAML
 	YAML::Emitter mdlYAMLEmitter;
 	mdlYAMLEmitter << modelSpecs;
@@ -246,7 +265,7 @@ int main(int argc, char** argv)
 	// Generate control specifications
 
 
-	//ctrSpecs.push_back( defaultControlSpec ) ;
+	ctrSpecs.push_back( defaultControlSpec ) ;
 
 /*
 	// Test different Ts values
