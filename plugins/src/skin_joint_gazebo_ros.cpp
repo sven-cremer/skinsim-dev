@@ -125,6 +125,9 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	if (_sdf->HasElement("delay"))
 			this->delay_ = _sdf->GetElement("delay")->Get<double>();
 
+	if (_sdf->HasElement("noiseAmplitude"))
+				this->noiseAmplitude_ = _sdf->GetElement("noiseAmplitude")->Get<double>();
+
 	// Compute force spread parameters
 	this->spread_variance = spread_sigma*spread_sigma;
     //this->K_spread = spread_scaling / sqrt( 2*spread_variance*M_PI );
@@ -542,6 +545,7 @@ void SkinJointGazeboRos::UpdateJoints()
 			sensors_[i].force_applied += f_app_(index);
 			sensors_[i].force_sensed  += f_sen_(index);
 		}
+		sensors_[i].force_sensed  += (this->noiseAmplitude_ * (CalulateNoise(this->mu_,this->sigma_)/sqrt(sensors_[i].joint_index.size())));
 		//std::cout<<"\nSensor "<<i<<":\tf_app="<<sensors_[i].force_applied<<"\tf_sen="<<sensors_[i].force_sensed<<"\n";
 	}
 
