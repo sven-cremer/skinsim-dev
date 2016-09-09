@@ -135,7 +135,7 @@ int main(int argc, char** argv)
 	defaultControlSpec.Kv = 0.0   ;
 
 	defaultControlSpec.Ts = 0.001;
-	defaultControlSpec.Nf = 100;
+	defaultControlSpec.Nf = 0.0;
 
 	std::cout<<"DEFAULT CONTROL VALUES:\n";
 	print(defaultControlSpec);
@@ -223,19 +223,19 @@ int main(int argc, char** argv)
 */
 
 	// Compute Ts from N
-	int idx = 0;
-	const int A = 1;
-	int ix [A] = { 4};
-	int jx [A] = { 1};
+//	int idx = 0;
+//	const int A = 1;
+//	int ix [A] = { 4};
+//	int jx [A] = { 2};
 
-//	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
-//	{
-//		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
-//		{
-	for(unsigned k  = 0; k < A ; k++ )	// Tactile separation
+	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
 	{
-		int i = ix[k];
-		int j = jx[k];
+		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
+		{
+			//	for(unsigned k  = 0; k < A ; k++ )	// Tactile separation
+			//	{
+			//		int i = ix[k];
+			//		int j = jx[k];
 
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
@@ -244,6 +244,8 @@ int main(int argc, char** argv)
 			tempModelSpec.spec.tactile_elements_y   = i;
 			tempModelSpec.spec.tactile_separation_x = j;
 			tempModelSpec.spec.tactile_separation_y = j;
+
+
 
 			modelSpecs.push_back( tempModelSpec ) ;
 
@@ -271,8 +273,9 @@ int main(int argc, char** argv)
 
 			std::cout<<"Size & Sep: "<<i<<", "<<j<<"\tN: "<<N<<"\tTs: "<<tempControlSpec.Ts<<"\n";
 
+			//}
+		}
 	}
-//	}
 
 
 	// Save to YAML
