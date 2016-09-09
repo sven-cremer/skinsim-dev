@@ -222,6 +222,59 @@ int main(int argc, char** argv)
 	}
 */
 
+	// Compute Ts from N
+	int idx = 0;
+	const int A = 1;
+	int ix [A] = { 4};
+	int jx [A] = { 1};
+
+//	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
+//	{
+//		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
+//		{
+	for(unsigned k  = 0; k < A ; k++ )	// Tactile separation
+	{
+		int i = ix[k];
+		int j = jx[k];
+
+			BuildModelSpec tempModelSpec = defaultModelSpec;
+
+			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
+			tempModelSpec.spec.tactile_elements_x   = i;
+			tempModelSpec.spec.tactile_elements_y   = i;
+			tempModelSpec.spec.tactile_separation_x = j;
+			tempModelSpec.spec.tactile_separation_y = j;
+
+			modelSpecs.push_back( tempModelSpec ) ;
+
+			// Compute number of sensors N
+			int total_elements_x = tempModelSpec.spec.num_elements_x*tempModelSpec.spec.num_patches_x;
+			int total_elements_y = tempModelSpec.spec.num_elements_y*tempModelSpec.spec.num_patches_y;
+			int unit_size_x      = tempModelSpec.spec.tactile_elements_x+tempModelSpec.spec.tactile_separation_x;
+			int unit_size_y      = tempModelSpec.spec.tactile_elements_y+tempModelSpec.spec.tactile_separation_y;
+			int total_sensors_x  = total_elements_x/unit_size_x;	// Note: integer devision rounds down
+			int total_sensors_y  = total_elements_y/unit_size_y;
+
+			// Check if there is room for one more sensor
+			if(total_elements_x - total_sensors_x*unit_size_x >=  tempModelSpec.spec.tactile_elements_x )
+				total_sensors_x++;
+			if(total_elements_y - total_sensors_y*unit_size_y >=  tempModelSpec.spec.tactile_elements_y )
+				total_sensors_y++;
+			int N = total_sensors_y*total_sensors_y;
+
+			// Control Specs
+			ControllerSpec tempControlSpec = defaultControlSpec;
+			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( idx );
+			tempControlSpec.Ts = 0.0001*(double)N;		// Assume a linear mapping
+			ctrSpecs.push_back( tempControlSpec ) ;
+			idx++;
+
+			std::cout<<"Size & Sep: "<<i<<", "<<j<<"\tN: "<<N<<"\tTs: "<<tempControlSpec.Ts<<"\n";
+
+	}
+//	}
+
+
 	// Save to YAML
 	YAML::Emitter mdlYAMLEmitter;
 	mdlYAMLEmitter << modelSpecs;
