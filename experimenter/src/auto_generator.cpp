@@ -223,23 +223,23 @@ int main(int argc, char** argv)
 */
 
 //	// Noise
-//	for(double i  = 1; i <= 3 ; i++ )		// Tactile size
-//	{
-//		for(double j  = 1; j <= 3 ; j++ )	// Tactile separation
-//		{
+	for(double i  = 1; i <= 4 ; i++ )		// Tactile size
+	{
+		for(double j  = 1; j <= 4 ; j++ )	// Tactile separation
+		{
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
-			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 3 ) + "_sep_" + boost::lexical_cast<std::string>( 3 );
-			tempModelSpec.spec.tactile_separation_x = 3;
-			tempModelSpec.spec.tactile_separation_y = 3;
-			tempModelSpec.spec.tactile_elements_x   = 3;
-			tempModelSpec.spec.tactile_elements_y   = 3;
+			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
+			tempModelSpec.spec.tactile_separation_x = j;
+			tempModelSpec.spec.tactile_separation_y = j;
+			tempModelSpec.spec.tactile_elements_x   = i;
+			tempModelSpec.spec.tactile_elements_y   = i;
 			tempModelSpec.spec.solver_iterations    = 750;
 
 
 			modelSpecs.push_back( tempModelSpec ) ;
-//		}
-//	}
+		}
+	}
 
 	// Save to YAML
 	YAML::Emitter mdlYAMLEmitter;

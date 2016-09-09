@@ -249,6 +249,7 @@ class SkinJointGazeboRos : public ModelPlugin
   private: double mu_;
   private: double sigma_;
   private: double noiseAmplitude_;
+  private: unsigned int seed;
 
   /// \brief Signal delay
   private: double delay_;
