@@ -125,6 +125,9 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	if (_sdf->HasElement("delay"))
 			this->delay_ = _sdf->GetElement("delay")->Get<double>();
 
+	if (_sdf->HasElement("noiseAmplitude"))
+				this->noiseAmplitude_ = _sdf->GetElement("noiseAmplitude")->Get<double>();
+
 	// Compute force spread parameters
 	this->spread_variance = spread_sigma*spread_sigma;
     //this->K_spread = spread_scaling / sqrt( 2*spread_variance*M_PI );
@@ -270,6 +273,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	this->cop_force_ .resize(this->num_sensors_);
 	this->cop_x_     .resize(this->num_sensors_);
 	this->cop_y_     .resize(this->num_sensors_);
+	this->seed       = 255;								//TODO randomize seed
 
 	// Make sure the ROS node for Gazebo has already been initialized
 	if (!ros::isInitialized())
@@ -542,6 +546,7 @@ void SkinJointGazeboRos::UpdateJoints()
 			sensors_[i].force_applied += f_app_(index);
 			sensors_[i].force_sensed  += f_sen_(index);
 		}
+		sensors_[i].force_sensed  += (this->noiseAmplitude_ * (CalulateNoise(this->mu_,this->sigma_)/sqrt(sensors_[i].joint_index.size())));
 		//std::cout<<"\nSensor "<<i<<":\tf_app="<<sensors_[i].force_applied<<"\tf_sen="<<sensors_[i].force_sensed<<"\n";
 	}
 
@@ -655,13 +660,13 @@ double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
 {
 	// using Box-Muller transform to generate two independent standard
 	// normally disbributed normal variables see wikipedia
-	unsigned int seed = 255;
+	this->seed += 100;
 	// normalized uniform random variable
-	double U = static_cast<double>(rand_r(&seed)) /
+	double U = static_cast<double>(rand_r(&this->seed)) /
 			 static_cast<double>(RAND_MAX);
 
 	// normalized uniform random variable
-	double V = static_cast<double>(rand_r(&	seed)) /
+	double V = static_cast<double>(rand_r(&this->seed)) /
 			 static_cast<double>(RAND_MAX);
 
 	double X = sqrt(-2.0 * ::log(U)) * cos(2.0*M_PI * V);

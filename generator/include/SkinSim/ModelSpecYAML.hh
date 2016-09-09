@@ -87,6 +87,7 @@ struct ModelSpec
   // Tactile sensor noise
   double noiseSigma                   ; // Gaussian Noise Sigma
   double noiseMu                      ; // Gaussiam Noise Mu
+  double noiseAmplitude               ; // Gaussian Noise Amplitude
   // Time Delay
   double delay                        ; // Time Delay
   // Force spread model
@@ -147,6 +148,7 @@ inline void print(BuildModelSpec b)
 	std::cout<<" spread_sigma           : "<<b.spec.spread_sigma           <<"\n";
 	std::cout<<" noise_sigma            : "<<b.spec.noiseSigma             <<"\n";
 	std::cout<<" noise_mu               : "<<b.spec.noiseMu                <<"\n";
+	std::cout<<" noiseAmplitude         : "<<b.spec.noiseAmplitude         <<"\n";
 	std::cout<<" delay                  : "<<b.spec.delay                  <<"\n";
 	std::cout<<" plunger_radius         : "<<b.spec.plunger_radius         <<"\n";
 	std::cout<<" plunger_length         : "<<b.spec.plunger_length         <<"\n";
@@ -194,6 +196,7 @@ inline void operator >> (const YAML::Node& node, ModelSpec& spec)
 	spec.spread_sigma        = node["spread_sigma"      ].as<double>() ;
 	spec.noiseSigma          = node["noiseSigma"        ].as<double>() ;
 	spec.noiseMu             = node["noiseMu"           ].as<double>() ;
+	spec.noiseAmplitude      = node["noiseAmplitude"    ].as<double>() ;
 	spec.delay               = node["delay"             ].as<double>() ;
 	spec.plunger_radius      = node["plunger_radius"    ].as<double>() ;
 	spec.plunger_length      = node["plunger_length"    ].as<double>() ;
@@ -259,6 +262,7 @@ inline YAML::Emitter& operator << (YAML::Emitter& out, const ModelSpec& spec)
     out << YAML::Key << "spread_sigma"         << YAML::Value <<  spec.spread_sigma       ;
     out << YAML::Key << "noiseSigma"           << YAML::Value <<  spec.noiseSigma         ;
     out << YAML::Key << "noiseMu"              << YAML::Value <<  spec.noiseMu            ;
+    out << YAML::Key << "noiseAmplitude"       << YAML::Value <<  spec.noiseAmplitude     ;
     out << YAML::Key << "plunger_radius"       << YAML::Value <<  spec.plunger_radius     ;
     out << YAML::Key << "plunger_length"       << YAML::Value <<  spec.plunger_length     ;
     out << YAML::Key << "plunger_mass"         << YAML::Value <<  spec.plunger_mass       ;
