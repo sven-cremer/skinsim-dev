@@ -223,19 +223,19 @@ int main(int argc, char** argv)
 */
 
 	// Compute Ts from N
-//	int idx = 0;
-//	const int A = 1;
-//	int ix [A] = { 4};
-//	int jx [A] = { 2};
+	int idx = 0;
+	const int A = 1;
+	int ix [A] = { 3};
+	int jx [A] = { 2};
 
-	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
+//	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
+//	{
+//		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
+//		{
+	for(unsigned k  = 0; k < A ; k++ )	// Tactile separation
 	{
-		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
-		{
-			//	for(unsigned k  = 0; k < A ; k++ )	// Tactile separation
-			//	{
-			//		int i = ix[k];
-			//		int j = jx[k];
+		int i = ix[k];
+		int j = jx[k];
 
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
@@ -245,6 +245,8 @@ int main(int argc, char** argv)
 			tempModelSpec.spec.tactile_separation_x = j;
 			tempModelSpec.spec.tactile_separation_y = j;
 
+			// Noise
+			tempModelSpec.spec.noiseAmplitude = 0.003;
 
 
 			modelSpecs.push_back( tempModelSpec ) ;
@@ -275,7 +277,7 @@ int main(int argc, char** argv)
 
 			//}
 		}
-	}
+	//}
 
 /*
 	// Noise
