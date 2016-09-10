@@ -71,6 +71,7 @@
 #include <SkinSim/ModelPath.hh>
 #include <Eigen/Core>
 #include <stdlib.h>
+#include <cmath>
 
 struct Distances
 {
@@ -247,6 +248,8 @@ class SkinJointGazeboRos : public ModelPlugin
   private: double CalulateNoise(double mu, double sigma);
   private: double mu_;
   private: double sigma_;
+  private: double noiseAmplitude_;
+  private: unsigned int seed;
 
   /// \brief Signal delay
   private: double delay_;
