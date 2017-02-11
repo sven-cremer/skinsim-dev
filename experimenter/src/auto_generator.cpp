@@ -223,7 +223,7 @@ int main(int argc, char** argv)
 */
 
 //	// Noise
-	for(double i  = 1; i <= 4 ; i++ )		// Tactile size
+	/*for(double i  = 1; i <= 4 ; i++ )		// Tactile size
 	{
 		for(double j  = 1; j <= 4 ; j++ )	// Tactile separation
 		{
@@ -239,7 +239,22 @@ int main(int argc, char** argv)
 
 			modelSpecs.push_back( tempModelSpec ) ;
 		}
-	}
+	}*/
+
+	//Build one model
+	BuildModelSpec tempModelSpec = defaultModelSpec;
+	tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 1 ) + "_sep_" + boost::lexical_cast<std::string>( 2 );
+	tempModelSpec.spec.tactile_separation_x = 2;
+	tempModelSpec.spec.tactile_separation_y = 2;
+	tempModelSpec.spec.tactile_elements_x   = 1;
+	tempModelSpec.spec.tactile_elements_y   = 1;
+	tempModelSpec.spec.element_diameter     = 0.0016633;
+	tempModelSpec.spec.element_height       = 0.0016633;
+	tempModelSpec.spec.spread_scaling       = 0.65;
+	tempModelSpec.spec.spread_sigma         = 0.00105;
+	tempModelSpec.spec.plunger_radius       = 0.010;
+	tempModelSpec.spec.plane_thickness      = 0.0005;
+	modelSpecs.push_back( tempModelSpec ) ;
 
 	// Save to YAML
 	YAML::Emitter mdlYAMLEmitter;
