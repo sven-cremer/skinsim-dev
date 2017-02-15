@@ -119,23 +119,23 @@ int main(int argc, char** argv)
 	ControllerSpec defaultControlSpec;
 
 	// Set default values
-	defaultControlSpec.name         	= "efc_00_00_00" ;
-	defaultControlSpec.impCtr_Xnom  	= 0;
-	defaultControlSpec.impCtr_M     	= 0;
-	defaultControlSpec.impCtr_D     	= 0;
-	defaultControlSpec.impCtr_K     	= 0;
+	defaultControlSpec.name         	 = "efc_00_00_00" ;
+	defaultControlSpec.impCtr_Xnom  	 = 0;
+	defaultControlSpec.impCtr_M     	 = 0;
+	defaultControlSpec.impCtr_D     	 = 0;
+	defaultControlSpec.impCtr_K     	 = 0;
 
-	defaultControlSpec.controller_type  = 4;    //DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
-	defaultControlSpec.feedback_type    = 2;    //PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
-	defaultControlSpec.Fd = 2     ;
+	defaultControlSpec.controller_type   = 4;    //DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
+	defaultControlSpec.feedback_type     = 2;    //PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
+	defaultControlSpec.Fd                = 10;
 
-	defaultControlSpec.Kp = 2.0   ;
-	defaultControlSpec.Ki = 20.0  ;
-	defaultControlSpec.Kd = 0.0	  ;
-	defaultControlSpec.Kv = 0.0   ;
+	defaultControlSpec.Kp                = 2.5;
+	defaultControlSpec.Ki                = 25.0;
+	defaultControlSpec.Kd                = 0.0;
+	defaultControlSpec.Kv                = 0.0;
 
-	defaultControlSpec.Ts = 0.001;
-	defaultControlSpec.Nf = 0;
+	defaultControlSpec.Ts                = 0.001;
+	defaultControlSpec.Nf                = 100;
 
 	std::cout<<"DEFAULT CONTROL VALUES:\n";
 	print(defaultControlSpec);
@@ -248,12 +248,25 @@ int main(int argc, char** argv)
 	tempModelSpec.spec.tactile_separation_y = 2;
 	tempModelSpec.spec.tactile_elements_x   = 1;
 	tempModelSpec.spec.tactile_elements_y   = 1;
-	tempModelSpec.spec.element_diameter     = 0.0016633;
-	tempModelSpec.spec.element_height       = 0.0016633;
-	tempModelSpec.spec.spread_scaling       = 0.65;
-	tempModelSpec.spec.spread_sigma         = 0.00105;
+	tempModelSpec.spec.element_mass         = 0.001;
+	tempModelSpec.spec.element_damping      = 2.02;
+	tempModelSpec.spec.element_spring       = 12.69;
+	tempModelSpec.spec.element_diameter     = 0.0016644;
+	tempModelSpec.spec.element_height       = 0.0096644;
+	tempModelSpec.spec.spread_scaling       = 0.085;
+	tempModelSpec.spec.spread_sigma         = 0.00102;
 	tempModelSpec.spec.plunger_radius       = 0.010;
+	tempModelSpec.spec.plunger_mass         = 1.0;
 	tempModelSpec.spec.plane_thickness      = 0.0005;
+	tempModelSpec.spec.plunger_length       = 0.03;
+
+	tempModelSpec.spec.noiseAmplitude       = 0.0;
+	tempModelSpec.spec.noiseSigma           = 0.0;
+
+	tempModelSpec.spec.max_sim_time         = 1;
+	tempModelSpec.spec.solver_iterations    = 500;
+	tempModelSpec.spec.step_size            = 0.0001;
+
 	modelSpecs.push_back( tempModelSpec ) ;
 
 	// Save to YAML
