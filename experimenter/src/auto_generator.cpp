@@ -253,7 +253,7 @@ int main(int argc, char** argv)
 	tempModelSpec.spec.element_spring       = 12.69;
 	tempModelSpec.spec.element_diameter     = 0.0016644;
 	tempModelSpec.spec.element_height       = 0.0096644;
-	tempModelSpec.spec.spread_scaling       = 0.085;
+	tempModelSpec.spec.spread_scaling       = 1.0; //0.085;
 	tempModelSpec.spec.spread_sigma         = 0.00102;
 	tempModelSpec.spec.plunger_radius       = 0.010;
 	tempModelSpec.spec.plunger_mass         = 1.0;
@@ -264,10 +264,22 @@ int main(int argc, char** argv)
 	tempModelSpec.spec.noiseSigma           = 0.0;
 
 	tempModelSpec.spec.max_sim_time         = 1;
-	tempModelSpec.spec.solver_iterations    = 500;
+	tempModelSpec.spec.solver_iterations    = 750;
 	tempModelSpec.spec.step_size            = 0.0001;
 
-	modelSpecs.push_back( tempModelSpec ) ;
+	//modelSpecs.push_back( tempModelSpec ) ;
+
+	int sepArray[] = {2,5,8};
+	for(int j  = 0; j < 3 ; j++ )	// Tactile separation
+	{
+		//BuildModelSpec tempModelSpec = defaultModelSpec;
+
+		tempModelSpec.name = "skin_array_s_1_sep_" + boost::lexical_cast<std::string>( sepArray[j] );
+		tempModelSpec.spec.tactile_separation_x = sepArray[j];
+		tempModelSpec.spec.tactile_separation_y = sepArray[j];
+
+		modelSpecs.push_back( tempModelSpec ) ;
+	}
 
 	// Save to YAML
 	YAML::Emitter mdlYAMLEmitter;
@@ -293,20 +305,21 @@ int main(int argc, char** argv)
 	// Generate control specifications
 
 
-	ctrSpecs.push_back( defaultControlSpec ) ;
+	//ctrSpecs.push_back( defaultControlSpec ) ;
 
-/*
+
 	// Test different Ts values
-	double dt = 0.0005;
-	for(unsigned i  = 2; i < 17 ; i++ )
+	double Kdata = 0.0002;
+	int numSensors[] = {8,4,3};
+	for(unsigned i  = 0; i < 3 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
 		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
-		tempControlSpec.Ts = dt*i;
+		tempControlSpec.Ts = Kdata*numSensors[i];
 		ctrSpecs.push_back( tempControlSpec ) ;
 	}
-*/
+
 /*
 	// PID tuning
 	int num = 1;

@@ -312,7 +312,8 @@ void runTests(std::string exp_name)
 		//print(controlSpec);
 
 		// Loop over models
-		for(unsigned i=0;i<doc_model[0].size();i++)
+		int i = j;
+		//for(unsigned i=0;i<doc_model[0].size();i++)
 		{
 			doc_model[0][i] >> modelSpec;
 			//print(modelSpec);
