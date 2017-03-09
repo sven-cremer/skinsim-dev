@@ -312,7 +312,7 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	this->cop_force_ .resize(this->num_sensors_);
 	this->cop_x_     .resize(this->num_sensors_);
 	this->cop_y_     .resize(this->num_sensors_);
-	this->seed       = 255;								//TODO randomize seed
+	this->seed       = 1;								//TODO randomize seed
 
 	// Make sure the ROS node for Gazebo has already been initialized
 	if (!ros::isInitialized())
@@ -706,9 +706,11 @@ void SkinJointGazeboRos::UpdateJoints()
 // Calculate Noise
 double SkinJointGazeboRos::CalulateNoise(double mu, double sigma)
 {
+	this->seed ++;
+
 	// using Box-Muller transform to generate two independent standard
 	// normally disbributed normal variables see wikipedia
-	this->seed += 100;
+
 	// normalized uniform random variable
 	double U = static_cast<double>(rand_r(&this->seed)) /
 			 static_cast<double>(RAND_MAX);

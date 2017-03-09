@@ -221,12 +221,22 @@ int main(int argc, char** argv)
 		modelSpecs.push_back( tempModelSpec ) ;
 	}
 */
+/*
+	// Compute Ts from N
+	int idx = 0;
+	const int A = 1;
+	int ix [A] = { 3};
+	int jx [A] = { 2};
 
-//	// Noise
-	/*for(double i  = 1; i <= 4 ; i++ )		// Tactile size
+//	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
+//	{
+//		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
+//		{
+	for(unsigned k  = 0; k < A ; k++ )	// Tactile separation
 	{
-		for(double j  = 1; j <= 4 ; j++ )	// Tactile separation
-		{
+		int i = ix[k];
+		int j = jx[k];
+
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
 			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
@@ -238,9 +248,36 @@ int main(int argc, char** argv)
 
 
 			modelSpecs.push_back( tempModelSpec ) ;
-		}
-	}*/
 
+
+			// Compute number of sensors N
+			int total_elements_x = tempModelSpec.spec.num_elements_x*tempModelSpec.spec.num_patches_x;
+			int total_elements_y = tempModelSpec.spec.num_elements_y*tempModelSpec.spec.num_patches_y;
+			int unit_size_x      = tempModelSpec.spec.tactile_elements_x+tempModelSpec.spec.tactile_separation_x;
+			int unit_size_y      = tempModelSpec.spec.tactile_elements_y+tempModelSpec.spec.tactile_separation_y;
+			int total_sensors_x  = total_elements_x/unit_size_x;	// Note: integer devision rounds down
+			int total_sensors_y  = total_elements_y/unit_size_y;
+
+			// Check if there is room for one more sensor
+			if(total_elements_x - total_sensors_x*unit_size_x >=  tempModelSpec.spec.tactile_elements_x )
+				total_sensors_x++;
+			if(total_elements_y - total_sensors_y*unit_size_y >=  tempModelSpec.spec.tactile_elements_y )
+				total_sensors_y++;
+			int N = total_sensors_y*total_sensors_y;
+
+			// Control Specs
+			ControllerSpec tempControlSpec = defaultControlSpec;
+			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( idx );
+			tempControlSpec.Ts = 0.0001*(double)N;		// Assume a linear mapping
+			ctrSpecs.push_back( tempControlSpec ) ;
+			idx++;
+
+			std::cout<<"Size & Sep: "<<i<<", "<<j<<"\tN: "<<N<<"\tTs: "<<tempControlSpec.Ts<<"\n";
+
+			//}
+		}
+	//}
+*/
 	//Build one model
 	BuildModelSpec tempModelSpec = defaultModelSpec;
 	tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 1 ) + "_sep_" + boost::lexical_cast<std::string>( 2 );
@@ -270,7 +307,7 @@ int main(int argc, char** argv)
 	//modelSpecs.push_back( tempModelSpec ) ;
 
 	int sepArray[] = {2,5,8};
-	for(int j  = 0; j < 10 ; j++ )	// Tactile separation
+	for(int j  = 0; j < 3 ; j++ )	// Tactile separation
 	{
 		//BuildModelSpec tempModelSpec = defaultModelSpec;
 
@@ -278,8 +315,9 @@ int main(int argc, char** argv)
 		tempModelSpec.spec.tactile_separation_x = sepArray[0];
 		tempModelSpec.spec.tactile_separation_y = sepArray[0];
 
-		tempModelSpec.spec.plunger_offset_x = j*tempModelSpec.spec.element_diameter*0.25;
-		tempModelSpec.spec.plunger_offset_y = j*tempModelSpec.spec.element_diameter*0.25;
+		// Test different offsets
+		//tempModelSpec.spec.plunger_offset_x = j*tempModelSpec.spec.element_diameter*0.25;
+		//tempModelSpec.spec.plunger_offset_y = j*tempModelSpec.spec.element_diameter*0.25;
 
 		modelSpecs.push_back( tempModelSpec ) ;
 	}
