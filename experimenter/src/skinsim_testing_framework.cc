@@ -505,11 +505,13 @@ void runCalibration(std::string exp_name)
 {
 	// Parameters
 	std::string filename_model   = "mdlSpecs.yaml";
+	std::string filename_control = "ctrSpecs.yaml";
 
 	// Create paths
 	std::string pathSkinSim = getenv ("SKINSIM_PATH");
 	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
 	std::string mdlSpecPath = pathExp + "/" + filename_model;
+	std::string ctrSpecPath = pathExp + "/" + filename_control;
 	std::string calibration_file = pathExp + "/tactile_calibration.yaml";
 	std::string calibration_file_tmp = pathExp + "/tmp_tactile_calibration.yaml";
 
@@ -518,6 +520,12 @@ void runCalibration(std::string exp_name)
 	YAML::Node doc_model;
 	std::cout<<"Loading file: "<<mdlSpecPath<<"\n";
 	doc_model = YAML::LoadAll(fin);
+
+	// Read YAML control file
+	std::ifstream fin2(ctrSpecPath.c_str());
+	YAML::Node doc_control;
+	std::cout<<"Loading file: "<<ctrSpecPath<<"\n";
+	doc_control = YAML::LoadAll(fin2);
 
 	// For saving calibration constants
 	std::ofstream fout(calibration_file.c_str());
@@ -530,6 +538,7 @@ void runCalibration(std::string exp_name)
 	std::string _physics = "ode";
 
 	BuildModelSpec modelSpec;
+	ControllerSpec controlSpec;
 
 	int index = 1;
 	int N = doc_model[0].size();
@@ -539,6 +548,8 @@ void runCalibration(std::string exp_name)
 	{
 		doc_model[0][i] >> modelSpec;
 		//print(modelSpec);
+
+		doc_control[0][i] >> controlSpec;
 
 		// Print info
 		std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
@@ -600,19 +611,31 @@ void runCalibration(std::string exp_name)
 		std::string topic = "/skinsim/force_feedback";
 		ros::Subscriber ros_sub_ = this->ros_node_->subscribe(topic.c_str(), 1, &SkinSimTestingFramework::subscriberCB, this);
 
-		// Set plunger force message
-		msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::DIGITAL_PID;
-		msg_srv_.request.fb.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
-		msg_srv_.request.f_des = f_target;
+		// Set plunger force message - TODO load from file
+		msg_srv_.request.type.selected = controlSpec.controller_type;
+		msg_srv_.request.fb.selected   = controlSpec.feedback_type;
+		msg_srv_.request.f_des = controlSpec.Fd;
 		msg_srv_.request.x_des = 0.0;
 		msg_srv_.request.v_des = -0.005;
-		msg_srv_.request.Kp = 2.0   ;
-		msg_srv_.request.Ki = 20.0  ;
-		msg_srv_.request.Kd = 0.0	  ;
-		msg_srv_.request.Kv = 0.0   ;
-		msg_srv_.request.Ts = 0.001;
-		msg_srv_.request.Nf = 100;
+		msg_srv_.request.Kp    = controlSpec.Kp;
+		msg_srv_.request.Ki    = controlSpec.Ki;
+		msg_srv_.request.Kd    = controlSpec.Kd;
+		msg_srv_.request.Kv    = controlSpec.Kv;
+		msg_srv_.request.Ts    = controlSpec.Ts;
+		msg_srv_.request.Nf    = controlSpec.Nf;
 		msg_srv_.request.K_cali = 1.0;
+//		msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::DIGITAL_PID;
+//		msg_srv_.request.fb.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
+//		msg_srv_.request.f_des = f_target;
+//		msg_srv_.request.x_des = 0.0;
+//		msg_srv_.request.v_des = -0.005;
+//		msg_srv_.request.Kp = 2.0   ;
+//		msg_srv_.request.Ki = 20.0  ;
+//		msg_srv_.request.Kd = 0.0	  ;
+//		msg_srv_.request.Kv = 0.0   ;
+//		msg_srv_.request.Ts = 0.001;
+//		msg_srv_.request.Nf = 100;
+//		msg_srv_.request.K_cali = 1.0;
 		std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
 
 		// Start simulation
