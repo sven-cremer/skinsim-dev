@@ -3,7 +3,7 @@ project(plugins)
 
 set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_C_COMPILER "clang")
-#set(CMAKE_CXX_FLAGS ${CMAKE_CSS_FLAGS} "-fPIC")
+set(CMAKE_CXX_FLAGS ${CMAKE_CSS_FLAGS} "-fPIC") # Uncomment to compile with digitalFilter class
 
 # Depend on system install of Gazebo
 include (FindPkgConfig)
@@ -40,10 +40,11 @@ link_directories($ENV{SKINSIM_PATH}/msgs/build)
 
 # Build library
 #add_library(digitalFilter src/digitalFilter.cpp)
+add_library(digitalFilterLIB src/digitalFilter.cpp)
 
 # Build plugins
 add_library(SkinJointGazeboRos SHARED src/skin_joint_gazebo_ros.cpp)
-target_link_libraries(SkinJointGazeboRos ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES} yaml-cpp msgs)
+target_link_libraries(SkinJointGazeboRos ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES} digitalFilterLIB yaml-cpp msgs)
 
 add_library(Plunger SHARED src/plunger.cpp)
 target_link_libraries(Plunger ${GAZEBO_LIBRARIES} )

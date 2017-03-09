@@ -604,10 +604,10 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 	std::ostringstream modelConfig;
 
 	// Place plunger 0.05 cm above skin
-	double plunger_length = 0.10;
-	double plunger_height = 0.10;
+	double plunger_length = m_.spec.plunger_length;
+	double plunger_height = 0.0;
 	plunger_z  =  m_.spec.element_height + m_.spec.element_diameter
-			      +(plunger_height-0.5*plunger_length) + 0.0005;
+			      +(plunger_height+0.5*plunger_length) + 0.0005;
 
 	// Move plunger to center of tactile patches
 	plunger_x = (total_sensors_x*unit_size_x - total_elements_x - m_.spec.tactile_separation_x)*m_.spec.element_diameter*0.5;
@@ -823,7 +823,8 @@ void ModelBuilder::createModelFiles( BuildModelSpec modelSpecs_ )
 			plane_mass,
 			m_.spec.total_length_x,
 			m_.spec.total_length_y,
-			m_.spec.plane_thickness,
+			//m_.spec.plane_thickness,
+			(0.7*m_.spec.plane_thickness),
 			0.0,
 			0.0,
 			m_.spec.plane_height,

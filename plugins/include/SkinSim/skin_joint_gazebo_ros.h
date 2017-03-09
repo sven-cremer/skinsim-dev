@@ -63,6 +63,9 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 
+// Digital Filter
+#include "digitalFilter.h"
+
 // Utilities
 #include <yaml-cpp/yaml.h>
 #include <boost/thread.hpp>
@@ -297,6 +300,9 @@ class SkinJointGazeboRos : public ModelPlugin
 
   /// \brief Number of sensors inside the model
   private: int num_sensors_;
+
+  /// \Implementation of digital filter
+  private: std::vector<ice::digitalFilter> digitalFilters;
 
 };
 

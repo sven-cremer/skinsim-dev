@@ -248,6 +248,9 @@ class Plunger : public ModelPlugin
   /// \brief Number of contacts
   private: int num_contacts_;
 
+  /// \brief Flag to track first contact
+  private: bool first_contact_;
+
   /// \brief Calibration value for force sensed
   private: double K_cali_;
 

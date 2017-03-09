@@ -233,6 +233,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	  Ts = 0.001;		// Sampling time of PID
 
 	  K_cali_ = 1.0;
+	  first_contact_  = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -342,8 +343,9 @@ void Plunger::UpdateJoints()
 	// Digital PID control
 	case skinsim_ros_msgs::ControllerType::DIGITAL_PID:
 	{
-		if(num_contacts_>0)
+		if(num_contacts_>0 || first_contact_)
 		{
+			first_contact_                        = true;
 			if( (cur_time - last_time_controller_).Double() >= Ts )// Update value
 			{
 				// Update variables
@@ -357,10 +359,9 @@ void Plunger::UpdateJoints()
 
 				// Compute new control
 				u_(0) = -ku_(1)*u_(1) - ku_(2)*u_(2) + ke_(0)*e_(0) + ke_(1)*e_(1) + ke_(2)*e_(2);
-
 				// Apply limits
-				double umax =  15;	// TODO
-				double umin = -15;	// TODO
+				double umax =  45;	// TODO
+				double umin = -45;	// TODO
 				if (u_(0) > umax)
 					u_(0) = umax;
 				if (u_(0) < umin)
@@ -371,6 +372,7 @@ void Plunger::UpdateJoints()
 				last_time_controller_ = cur_time;
 			}
 			this->joint_->SetForce(0, -this->effort_);
+			//std::cout<<"\nError:" << e_(0) <<" = "<<force_desired_<<"-"<<force_current_<<"\tF="<< u_(0)<<"";
 		}
 		else
 		{
@@ -476,6 +478,7 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		ke_(2) = b_(2)/a_(0);
 
 		res.success = true;
+		first_contact_        = false;
 		break;
 	}
 	default:

@@ -269,6 +269,45 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	}
 	this->num_sensors_ = this->sensors_.size();
 
+
+	/* Init filters
+	std::vector<digitalFilter> filters_;
+	digitalFilter temp;
+	temp.init(..)
+	for( < num_sensors)
+	filters_.push_back(temp)
+	*/
+	int num_coeff;
+	Eigen::VectorXd a_filt;			// Filter coefficients (denominator)
+	Eigen::VectorXd b_filt;			// Filter coefficients (numerator)
+
+	a_filt.resize(2);
+	b_filt.resize(2);
+
+	a_filt << 1.0, 0.2679;
+	b_filt << 0.634, 0.634;
+
+	std::cout<<"Loaded /a_filt: \n"<<a_filt<<"\n---\n";
+	std::cout<<"Loaded /b_filt: \n"<<b_filt<<"\n---\n";
+
+	num_coeff = a_filt.size();
+	int order = num_coeff-1;
+	std::cout<<"Filter order: "<<order<<"\n";
+
+	ice::digitalFilter tmp;
+	if(!tmp.init(order, true, b_filt, a_filt))
+	{
+		ROS_ERROR("Failed to init digital filter!");
+	}
+	for(int i=0;i<this->num_sensors_;i++)
+	{
+
+		digitalFilters.push_back(tmp);
+	}
+
+
+
+
 	// Center of Pressure (COP)
 	this->cop_force_ .resize(this->num_sensors_);
 	this->cop_x_     .resize(this->num_sensors_);
@@ -546,8 +585,17 @@ void SkinJointGazeboRos::UpdateJoints()
 			sensors_[i].force_applied += f_app_(index);
 			sensors_[i].force_sensed  += f_sen_(index);
 		}
-		sensors_[i].force_sensed  += (this->noiseAmplitude_ * (CalulateNoise(this->mu_,this->sigma_)/sqrt(sensors_[i].joint_index.size())));
+		//sensors_[i].force_sensed  += (this->noiseAmplitude_ * (CalulateNoise(this->mu_,this->sigma_)/sqrt(sensors_[i].joint_index.size())));
 		//std::cout<<"\nSensor "<<i<<":\tf_app="<<sensors_[i].force_applied<<"\tf_sen="<<sensors_[i].force_sensed<<"\n";
+	}
+
+	// Filter sensed force
+	if(true)
+	{
+		for (unsigned int i = 0; i < this->num_sensors_; ++i)
+		{
+			sensors_[i].force_sensed = digitalFilters[i].getNextFilteredValue(sensors_[i].force_sensed);
+		}
 	}
 
     // Decide whether to publish

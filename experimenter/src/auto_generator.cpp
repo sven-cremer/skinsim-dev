@@ -119,23 +119,23 @@ int main(int argc, char** argv)
 	ControllerSpec defaultControlSpec;
 
 	// Set default values
-	defaultControlSpec.name         	= "efc_00_00_00" ;
-	defaultControlSpec.impCtr_Xnom  	= 0;
-	defaultControlSpec.impCtr_M     	= 0;
-	defaultControlSpec.impCtr_D     	= 0;
-	defaultControlSpec.impCtr_K     	= 0;
+	defaultControlSpec.name         	 = "efc_00_00_00" ;
+	defaultControlSpec.impCtr_Xnom  	 = 0;
+	defaultControlSpec.impCtr_M     	 = 0;
+	defaultControlSpec.impCtr_D     	 = 0;
+	defaultControlSpec.impCtr_K     	 = 0;
 
-	defaultControlSpec.controller_type  = 4;    //DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
-	defaultControlSpec.feedback_type    = 2;    //PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
-	defaultControlSpec.Fd = 2     ;
+	defaultControlSpec.controller_type   = 4;    //DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
+	defaultControlSpec.feedback_type     = 2;    //PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
+	defaultControlSpec.Fd                = 10;
 
-	defaultControlSpec.Kp = 2.0   ;
-	defaultControlSpec.Ki = 20.0  ;
-	defaultControlSpec.Kd = 0.0	  ;
-	defaultControlSpec.Kv = 0.0   ;
+	defaultControlSpec.Kp                = 0.001;
+	defaultControlSpec.Ki                = 0.000008333;
+	defaultControlSpec.Kd                = 0.0003;
+	defaultControlSpec.Kv                = 0.0;
 
-	defaultControlSpec.Ts = 0.001;
-	defaultControlSpec.Nf = 0.0;
+	defaultControlSpec.Ts                = 0.001;
+	defaultControlSpec.Nf                = 100;
 
 	std::cout<<"DEFAULT CONTROL VALUES:\n";
 	print(defaultControlSpec);
@@ -221,7 +221,7 @@ int main(int argc, char** argv)
 		modelSpecs.push_back( tempModelSpec ) ;
 	}
 */
-
+/*
 	// Compute Ts from N
 	int idx = 0;
 	const int A = 1;
@@ -240,16 +240,15 @@ int main(int argc, char** argv)
 			BuildModelSpec tempModelSpec = defaultModelSpec;
 
 			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
-			tempModelSpec.spec.tactile_elements_x   = i;
-			tempModelSpec.spec.tactile_elements_y   = i;
 			tempModelSpec.spec.tactile_separation_x = j;
 			tempModelSpec.spec.tactile_separation_y = j;
-
-			// Noise
-			tempModelSpec.spec.noiseAmplitude = 0.003;
+			tempModelSpec.spec.tactile_elements_x   = i;
+			tempModelSpec.spec.tactile_elements_y   = i;
+			tempModelSpec.spec.solver_iterations    = 750;
 
 
 			modelSpecs.push_back( tempModelSpec ) ;
+
 
 			// Compute number of sensors N
 			int total_elements_x = tempModelSpec.spec.num_elements_x*tempModelSpec.spec.num_patches_x;
@@ -278,28 +277,50 @@ int main(int argc, char** argv)
 			//}
 		}
 	//}
-
-/*
-	// Noise
-	for(double i  = 1; i <= 4 ; i++ )		// Tactile size
-	{
-		for(double j  = 1; j <= 4 ; j++ )	// Tactile separation
-		{
-			BuildModelSpec tempModelSpec = defaultModelSpec;
-
-			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
-			tempModelSpec.spec.tactile_separation_x = j;
-			tempModelSpec.spec.tactile_separation_y = j;
-			tempModelSpec.spec.tactile_elements_x   = i;
-			tempModelSpec.spec.tactile_elements_y   = i;
-			tempModelSpec.spec.solver_iterations    = 750;
-
-
-			modelSpecs.push_back( tempModelSpec ) ;
-		}
-	}
 */
+	//Build one model
+	BuildModelSpec tempModelSpec = defaultModelSpec;
+	tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 1 ) + "_sep_" + boost::lexical_cast<std::string>( 2 );
+	tempModelSpec.spec.tactile_separation_x = 2;
+	tempModelSpec.spec.tactile_separation_y = 2;
+	tempModelSpec.spec.tactile_elements_x   = 1;
+	tempModelSpec.spec.tactile_elements_y   = 1;
+	tempModelSpec.spec.element_mass         = 0.001;
+	tempModelSpec.spec.element_damping      = 2.02;
+	tempModelSpec.spec.element_spring       = 12.69;
+	tempModelSpec.spec.element_diameter     = 0.0016644;
+	tempModelSpec.spec.element_height       = 0.0096644;
+	tempModelSpec.spec.spread_scaling       = 1.0; //0.085;
+	tempModelSpec.spec.spread_sigma         = 0.00102;
+	tempModelSpec.spec.plunger_radius       = 0.010;
+	tempModelSpec.spec.plunger_mass         = 1.0;
+	tempModelSpec.spec.plane_thickness      = 0.0005;
+	tempModelSpec.spec.plunger_length       = 0.03;
 
+	tempModelSpec.spec.noiseAmplitude       = 0.0;
+	tempModelSpec.spec.noiseSigma           = 0.0;
+
+	tempModelSpec.spec.max_sim_time         = 0.5;
+	tempModelSpec.spec.solver_iterations    = 750;
+	tempModelSpec.spec.step_size            = 0.0001;
+
+	//modelSpecs.push_back( tempModelSpec ) ;
+
+	int sepArray[] = {2,5,8};
+	for(int j  = 0; j < 3 ; j++ )	// Tactile separation
+	{
+		//BuildModelSpec tempModelSpec = defaultModelSpec;
+
+		tempModelSpec.name = "skin_array_s_1_sep_" + boost::lexical_cast<std::string>( j );	//sepArray[j]
+		tempModelSpec.spec.tactile_separation_x = sepArray[0];
+		tempModelSpec.spec.tactile_separation_y = sepArray[0];
+
+		// Test different offsets
+		//tempModelSpec.spec.plunger_offset_x = j*tempModelSpec.spec.element_diameter*0.25;
+		//tempModelSpec.spec.plunger_offset_y = j*tempModelSpec.spec.element_diameter*0.25;
+
+		modelSpecs.push_back( tempModelSpec ) ;
+	}
 
 	// Save to YAML
 	YAML::Emitter mdlYAMLEmitter;
@@ -327,18 +348,21 @@ int main(int argc, char** argv)
 
 	//ctrSpecs.push_back( defaultControlSpec ) ;
 
-/*
+
 	// Test different Ts values
-	double dt = 0.0005;
-	for(unsigned i  = 2; i < 17 ; i++ )
+	double Kdata = 0.0002;
+	int numSensors[] = {8,4,3};
+	int freq[] = {4,16,36};
+	for(unsigned i  = 0; i < 10 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
 		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
-		tempControlSpec.Ts = dt*i;
+//		tempControlSpec.Ts = Kdata*numSensors[i];
+		tempControlSpec.Ts = 1/freq[0];
 		ctrSpecs.push_back( tempControlSpec ) ;
 	}
-*/
+
 /*
 	// PID tuning
 	int num = 1;
