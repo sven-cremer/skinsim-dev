@@ -129,9 +129,9 @@ int main(int argc, char** argv)
 	defaultControlSpec.feedback_type     = 2;    //PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
 	defaultControlSpec.Fd                = 10;
 
-	defaultControlSpec.Kp                = 2.5;
-	defaultControlSpec.Ki                = 25.0;
-	defaultControlSpec.Kd                = 0.0;
+	defaultControlSpec.Kp                = 0.001;
+	defaultControlSpec.Ki                = 0.000008333;
+	defaultControlSpec.Kd                = 0.0003;
 	defaultControlSpec.Kv                = 0.0;
 
 	defaultControlSpec.Ts                = 0.001;
@@ -263,20 +263,23 @@ int main(int argc, char** argv)
 	tempModelSpec.spec.noiseAmplitude       = 0.0;
 	tempModelSpec.spec.noiseSigma           = 0.0;
 
-	tempModelSpec.spec.max_sim_time         = 1;
+	tempModelSpec.spec.max_sim_time         = 0.5;
 	tempModelSpec.spec.solver_iterations    = 750;
 	tempModelSpec.spec.step_size            = 0.0001;
 
 	//modelSpecs.push_back( tempModelSpec ) ;
 
 	int sepArray[] = {2,5,8};
-	for(int j  = 0; j < 3 ; j++ )	// Tactile separation
+	for(int j  = 0; j < 10 ; j++ )	// Tactile separation
 	{
 		//BuildModelSpec tempModelSpec = defaultModelSpec;
 
-		tempModelSpec.name = "skin_array_s_1_sep_" + boost::lexical_cast<std::string>( sepArray[j] );
-		tempModelSpec.spec.tactile_separation_x = sepArray[j];
-		tempModelSpec.spec.tactile_separation_y = sepArray[j];
+		tempModelSpec.name = "skin_array_s_1_sep_" + boost::lexical_cast<std::string>( j );	//sepArray[j]
+		tempModelSpec.spec.tactile_separation_x = sepArray[0];
+		tempModelSpec.spec.tactile_separation_y = sepArray[0];
+
+		tempModelSpec.spec.plunger_offset_x = j*tempModelSpec.spec.element_diameter*0.25;
+		tempModelSpec.spec.plunger_offset_y = j*tempModelSpec.spec.element_diameter*0.25;
 
 		modelSpecs.push_back( tempModelSpec ) ;
 	}
@@ -311,12 +314,14 @@ int main(int argc, char** argv)
 	// Test different Ts values
 	double Kdata = 0.0002;
 	int numSensors[] = {8,4,3};
-	for(unsigned i  = 0; i < 3 ; i++ )
+	int freq[] = {4,16,36};
+	for(unsigned i  = 0; i < 10 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
 		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
-		tempControlSpec.Ts = Kdata*numSensors[i];
+//		tempControlSpec.Ts = Kdata*numSensors[i];
+		tempControlSpec.Ts = 1/freq[0];
 		ctrSpecs.push_back( tempControlSpec ) ;
 	}
 
