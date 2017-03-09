@@ -95,7 +95,7 @@ If another version of Gazebo is already installed, then the following errors mig
 
 For example, the PR2 simulator is still using Gazebo 2. To check the version, execute the following in a terminal
 ```
-gazebo -v
+gazebo --version
 ```
 If for example version 2 is installed, remove it by executing
 ```
