@@ -58,7 +58,7 @@
       #############################
       noiseSigma                   : 1                  # Gaussian Noise Sigma
       noiseMu                      : 0.0                # Gaussian Noise Mu
-      noiseAmplitude               : 0.00625            # Gaussian Noise Amplitude
+      noiseAmplitude               : 0.0                # Gaussian Noise Amplitude
       #############################
       # Time Delay                #
       #############################

@@ -303,7 +303,7 @@ void runTests(std::string exp_name)
 	ControllerSpec controlSpec;
 
 	int index = 1;
-	int N = doc_model[0].size() * doc_control[0].size();
+	int N = doc_model[0].size();// * doc_control[0].size();
 
 	// Loop over control settings
 	for(unsigned j=0;j<doc_control[0].size();j++)
@@ -312,9 +312,9 @@ void runTests(std::string exp_name)
 		//print(controlSpec);
 
 		// Loop over models
-		for(unsigned i=0;i<doc_model[0].size();i++)
+		//for(unsigned i=0;i<doc_model[0].size();i++)
 		{
-			doc_model[0][i] >> modelSpec;
+			doc_model[0][j] >> modelSpec;
 			//print(modelSpec);
 
 			// Load calibration constant
