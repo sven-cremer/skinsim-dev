@@ -300,15 +300,28 @@ void Plunger::UpdateJoints()
 	// Set force directly in Gazebo
 	case skinsim_ros_msgs::ControllerType::DIRECT:
 	{
-		this->effort_ = this->force_desired_;
-		this->joint_->SetForce(0, -this->effort_);
+		if(num_contacts_>0  || first_contact_)
+		{
+			if(!first_contact_)
+			{
+				first_contact_ = true;
+				//this->joint_->SetVelocity (0, 0); <- never reaches surface
+			}
+			this->effort_ = this->force_desired_;
+			this->joint_->SetForce(0, -this->effort_);
+		}
+		else
+		{
+			this->joint_->SetVelocity (0, velocity_desired_);
+		}
 		break;
 	}
 	// Force-Based Explicit Force control
 	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
 	{
-		if(num_contacts_>0)
+		if(num_contacts_>0  || first_contact_)
 		{
+			first_contact_ = true;
 			this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_current_;
 			//this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
 			this->joint_->SetForce(0, -this->effort_);
@@ -432,6 +445,9 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 	this->feedback_type_  .selected = req.fb.selected;
 	this->K_cali_ = req.K_cali;
 
+	first_contact_ = false;
+	num_contacts_  = 0;
+
 	switch(this->controller_type_.selected)
 	{
 	case skinsim_ros_msgs::ControllerType::DIRECT:
@@ -485,7 +501,6 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		ke_(2) = b_(2)/a_(0);
 
 		res.success = true;
-		first_contact_        = false;
 		break;
 	}
 	default:
