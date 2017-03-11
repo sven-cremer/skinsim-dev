@@ -127,11 +127,11 @@ int main(int argc, char** argv)
 
 	defaultControlSpec.controller_type   = 4;    //DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
 	defaultControlSpec.feedback_type     = 2;    //PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
-	defaultControlSpec.Fd                = 10;
+	defaultControlSpec.Fd                = 2;
 
-	defaultControlSpec.Kp                = 0.001;
-	defaultControlSpec.Ki                = 0.000008333;
-	defaultControlSpec.Kd                = 0.0003;
+	defaultControlSpec.Kp                = 0.2;  //0.001;
+	defaultControlSpec.Ki                = 0.0; //0.000008333;
+	defaultControlSpec.Kd                = 0.0; //0.0003;
 	defaultControlSpec.Kv                = 0.0;
 
 	defaultControlSpec.Ts                = 0.001;
@@ -278,6 +278,8 @@ int main(int argc, char** argv)
 		}
 	//}
 */
+	double contacts = 120;
+
 	//Build one model
 	BuildModelSpec tempModelSpec = defaultModelSpec;
 	tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 1 ) + "_sep_" + boost::lexical_cast<std::string>( 2 );
@@ -285,9 +287,9 @@ int main(int argc, char** argv)
 	tempModelSpec.spec.tactile_separation_y = 2;
 	tempModelSpec.spec.tactile_elements_x   = 1;
 	tempModelSpec.spec.tactile_elements_y   = 1;
-	tempModelSpec.spec.element_mass         = 0.001;
-	tempModelSpec.spec.element_damping      = 2.02;
-	tempModelSpec.spec.element_spring       = 12.69;
+	tempModelSpec.spec.element_mass         = 0.01;
+	tempModelSpec.spec.element_damping      = 242.6/(contacts*6); //2.02;		Si: 248.6/contacts    Frubber: 242.6
+	tempModelSpec.spec.element_spring       = 1523 /(contacts*6); //12.69;		Si: 4338/contacts     Frubber: 1523
 	tempModelSpec.spec.element_diameter     = 0.0016644;
 	tempModelSpec.spec.element_height       = 0.0096644;
 	tempModelSpec.spec.spread_scaling       = 1.0; //0.085;
@@ -300,14 +302,14 @@ int main(int argc, char** argv)
 	tempModelSpec.spec.noiseAmplitude       = 0.0;
 	tempModelSpec.spec.noiseSigma           = 0.0;
 
-	tempModelSpec.spec.max_sim_time         = 0.5;
+	tempModelSpec.spec.max_sim_time         = 1.0;
 	tempModelSpec.spec.solver_iterations    = 750;
-	tempModelSpec.spec.step_size            = 0.0001;
+	tempModelSpec.spec.step_size            = 0.001;
 
 	//modelSpecs.push_back( tempModelSpec ) ;
 
 	int sepArray[] = {2,5,8};
-	for(int j  = 0; j < 3 ; j++ )	// Tactile separation
+	for(int j  = 0; j < 1 ; j++ )	// Tactile separation
 	{
 		//BuildModelSpec tempModelSpec = defaultModelSpec;
 
@@ -353,13 +355,13 @@ int main(int argc, char** argv)
 	double Kdata = 0.0002;
 	int numSensors[] = {8,4,3};
 	int freq[] = {4,16,36};
-	for(unsigned i  = 0; i < 10 ; i++ )
+	for(unsigned i  = 0; i < 1 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
 		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
 //		tempControlSpec.Ts = Kdata*numSensors[i];
-		tempControlSpec.Ts = 1/freq[0];
+		tempControlSpec.Ts = 1/freq[i];
 		ctrSpecs.push_back( tempControlSpec ) ;
 	}
 
