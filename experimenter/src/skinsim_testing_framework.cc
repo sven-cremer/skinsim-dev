@@ -102,6 +102,29 @@ private: skinsim_ros_msgs::SetController msg_srv_;
 private: skinsim_ros_msgs::GetPosition msg_srv_pos_;
 private: int iterations_max;
 
+// Gazebo parameters
+private: std::string _worldFilename;
+private: bool _paused;
+private: std::string _physics;
+
+// Path and file names
+private: std::string pathSkinSim;
+private: std::string pathExp    ;
+private: std::string mdlSpecPath;
+private: std::string ctrSpecPath;
+private: std::string caliPath   ;
+private: std::string plungerPositionPath    ;
+private: std::string plungerPositionPathTemp;
+private: std::string filename_model  ;
+private: std::string filename_control;
+private: std::string calibration_file    ;
+private: std::string calibration_file_tmp;
+
+// YAML files
+private: YAML::Node doc_model;
+private: YAML::Node doc_control;
+private: YAML::Node doc_cali;
+
 // Calibration
 private: double* buffer;
 private: int buffer_idx;
@@ -122,6 +145,10 @@ SkinSimTestingFramework()
 {
 	std::cout << "SkinSim Testing Framework Constructor" << std::endl;
 	this->server = NULL;
+
+	this->_worldFilename = "~";
+	this->_paused        = true;
+	this->_physics       = "ode";
 }
 
 ~SkinSimTestingFramework()
@@ -254,306 +281,110 @@ void saveData( std::string exp_name )
 	// TODO
 }
 
-void runTests(std::string exp_name)
+void setPaths(std::string exp_name)
+{
+	this->filename_model   = "mdlSpecs.yaml";
+	this->filename_control = "ctrSpecs.yaml";
+
+	this->pathSkinSim = getenv ("SKINSIM_PATH");
+	this->pathExp     = pathSkinSim + "/data/" + exp_name;
+	this->mdlSpecPath = pathExp + "/" + filename_model;
+	this->ctrSpecPath = pathExp + "/" + filename_control;
+	this->caliPath    = pathExp + "/tactile_calibration.yaml";
+
+	this->plungerPositionPath     = pathExp + "/plunger_position.yaml";
+	this->plungerPositionPathTemp = pathExp + "/tmp_plunger_position.yaml";
+
+	this->calibration_file        = pathExp + "/tactile_calibration.yaml";
+	this->calibration_file_tmp    = pathExp + "/tmp_tactile_calibration.yaml";
+}
+
+void loadYAML(std::string fname, YAML::Node& doc_)
+{
+	std::cout<<"Loading file: "<<fname<<"\n";
+	std::ifstream fin(fname.c_str());
+	doc_.reset();
+	doc_ = YAML::LoadAll(fin);
+}
+
+void saveYAML(std::string fname, YAML::Emitter& out_)
+{
+	std::cout<<"Saving file: "<<fname<<"\n";
+	std::ofstream fout(fname.c_str());
+	fout << out_.c_str();
+	fout.close();
+}
+
+std::string getExpName(int index, BuildModelSpec modelSpec, ControllerSpec controlSpec)
+{
+	// Generate experiment name
+	int skin_size    = modelSpec.spec.num_elements_x * modelSpec.spec.num_elements_y;
+	int tactile_size = modelSpec.spec.tactile_elements_x;// * modelSpec.spec.tactile_elements_x;
+	int tactile_sep  = modelSpec.spec.tactile_separation_x;// * modelSpec.spec.tactile_separation_y;
+
+	std::ostringstream ss;
+	ss << std::setw(2) << std::setfill('0') << index
+	<< "_FB_" << controlSpec.feedback_type << "_Kp_" << std::setprecision(1) <<std::fixed << controlSpec.Kp
+	<< "_tSize_" << tactile_size << "_tSep_" << tactile_sep;
+
+	std::string exp_name = "exp_" + ss.str()  ;
+
+	return exp_name;
+}
+
+void runTests(std::string exp_name, bool calibrate)
 {
 	//std::cout << "TestingFramework::runTests()" << std::endl;
 
-	// Parameters
-	std::string filename_model   = "mdlSpecs.yaml";
-	std::string filename_control = "ctrSpecs.yaml";
+	this->setPaths(exp_name);
 
-	// Create paths
-	std::string pathSkinSim = getenv ("SKINSIM_PATH");
-	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
-	std::string mdlSpecPath = pathExp + "/" + filename_model;
-	std::string ctrSpecPath = pathExp + "/" + filename_control;
-	std::string caliPath    = pathExp + "/tactile_calibration.yaml";
-	std::string plungerPositionPath = pathExp + "/plunger_position.yaml";
-	std::string plungerPositionPathTemp = pathExp + "/tmp_plunger_position.yaml";
+	// Load YAML files
+	this->loadYAML(mdlSpecPath, doc_model);
+	this->loadYAML(ctrSpecPath, doc_control);
 
-	// Read YAML model file
-	std::ifstream fin(mdlSpecPath.c_str());
-	YAML::Node doc_model;
-	std::cout<<"Loading file: "<<mdlSpecPath<<"\n";
-	doc_model = YAML::LoadAll(fin);
-
-	// Read YAML control file
-	std::ifstream fin2(ctrSpecPath.c_str());
-	YAML::Node doc_control;
-	std::cout<<"Loading file: "<<ctrSpecPath<<"\n";
-	doc_control = YAML::LoadAll(fin2);
-
-	// Read YAML calibration file
-	std::ifstream fin3(caliPath.c_str());
-	YAML::Node doc_cali;
-	std::cout<<"Loading file: "<<caliPath<<"\n";
-	doc_cali = YAML::LoadAll(fin3);
-
-	// For saving plunger positions
-	std::ofstream fout4(plungerPositionPath.c_str());
-	YAML::Emitter out;
-	out << YAML::BeginMap;
-
-	// Gazebo parameters
-	std::string _worldFilename("~");
-	bool _paused = true;
-	std::string _physics = "ode";
-
-	BuildModelSpec modelSpec;
-	ControllerSpec controlSpec;
-
-	int index = 1;
-	int N = doc_model[0].size();// * doc_control[0].size();
-
-	// Loop over control settings
-	for(unsigned j=0;j<doc_control[0].size();j++)
+	if(doc_model[0].size() != doc_control[0].size())
 	{
-		doc_control[0][j] >> controlSpec;
-		//print(controlSpec);
-
-		// Loop over models
-		int i = j;
-		//for(unsigned i=0;i<doc_model[0].size();i++)
-		{
-			doc_model[0][i] >> modelSpec;
-			//print(modelSpec);
-
-			// Load calibration constant
-			double K_cali = 1.0;
-			if( doc_cali[0][modelSpec.name])
-				K_cali=doc_cali[0][modelSpec.name].as<double>();
-
-			// Generate experiment name
-			int skin_size    = modelSpec.spec.num_elements_x * modelSpec.spec.num_elements_y;
-			int tactile_size = modelSpec.spec.tactile_elements_x;// * modelSpec.spec.tactile_elements_x;
-			int tactile_sep  = modelSpec.spec.tactile_separation_x;// * modelSpec.spec.tactile_separation_y;
-
-			std::ostringstream ss;
-			ss << std::setw(2) << std::setfill('0') << index
-			<< "_FB_" << controlSpec.feedback_type << "_Kp_" << std::setprecision(1) <<std::fixed << controlSpec.Kp
-			<< "_tSize_" << tactile_size << "_tSep_" << tactile_sep;
-
-			std::string exp_name = "exp_" + ss.str()  ;
-
-			// Print info
-			std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
-			std::cout << "# Experiment: "<< exp_name << " ("<< index << " out of " << N << ")\n";
-			//std::cout << "  Calibration value: "<<K_cali<<"\n";
-
-			// Point model world file location
-			_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
-
-			// Compute number of iterations
-			iterations_max = modelSpec.spec.max_sim_time/modelSpec.spec.step_size;
-			m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
-			//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
-			//	    std::cout << it->first << " => " << it->second << '\n';
-
-			std::cout << "Initializing World in 3 seconds ..." << std::endl;
-			sleep(3.0);	// TODO make sure everything is ready
-
-			// Create, load, and run the server in its own thread
-			this->serverThread = new boost::thread(
-					boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
-							_paused, _physics));
-
-			std::cout << "Waiting for world completion" << std::endl;
-			// Wait for the server to come up (20 second timeout)
-			int waitCount = 0, maxWaitCount = 200;
-			while ((!this->server || !this->server->GetInitialized()) && (++waitCount < maxWaitCount) )		// TODO error handling if timeout occurs
-				common::Time::MSleep(100);
-
-			std::cout << "Gazebo server loaded in "<<(double)waitCount*0.1<<" seconds (timeout after "<<(double)maxWaitCount*0.1<<" seconds)\n";
-
-			// Initialize Gazebo transport node (to get simulation time)
-			this->node = transport::NodePtr(new transport::Node());
-			this->node->Init();
-			this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
-			//std::cout << "Initialized Transport Node" << std::endl;
-			// TODO subscribe to ~/physics/contacts
-
-			// Make sure the ROS node for Gazebo has already been initialized
-			if (!ros::isInitialized())
-			{
-				std::cerr<<"Error: ROS has not been initialized! \n";
-				exit(1);
-			}
-
-			// Create ROS service client
-			ros_namespace_ = "skinsim";
-			this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
-			ros::ServiceClient ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
-			ros::ServiceClient ros_srv_p_ = this->ros_node_->serviceClient<skinsim_ros_msgs::GetPosition>("get_plunger_position");
-
-			// Set plunger force message
-			msg_srv_.request.type.selected = controlSpec.controller_type;
-			msg_srv_.request.fb.selected   = controlSpec.feedback_type;
-			msg_srv_.request.f_des = controlSpec.Fd;
-			msg_srv_.request.x_des = 0.0;
-			msg_srv_.request.v_des = -0.005;
-			msg_srv_.request.Kp    = controlSpec.Kp;
-			msg_srv_.request.Ki    = controlSpec.Ki;
-			msg_srv_.request.Kd    = controlSpec.Kd;
-			msg_srv_.request.Kv    = controlSpec.Kv;
-			msg_srv_.request.Ts    = controlSpec.Ts;
-			msg_srv_.request.Nf    = controlSpec.Nf;
-			msg_srv_.request.K_cali = K_cali;
-			std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
-
-			// Start simulation
-			std::cout<<"Starting simulation...\n";
-			this->SetPause(false);
-
-			// Save ROS topic data to file (plunger data)
-			std::string topic = modelSpec.spec.topic;
-			std::string cmd1 = "rostopic echo -p " + topic  + " > " + pathExp + "/" + exp_name + ".csv &";
-			std::cout<<"$ "<<cmd1.c_str()<<"\n";
-			system( cmd1.c_str() );
-
-			// Save ROS topic data to file (COP data)
-			std::string topic2 = "/skinsim/center_of_pressure";
-			std::string cmd2 = "rostopic echo -p " + topic2 + " > " + pathExp + "/COP_" + exp_name + ".csv &";
-			std::cout<<"$ "<<cmd2.c_str()<<"\n";
-			system( cmd2.c_str() );
-
-			// Send control message
-			bool message_sent = false;
-			while( !message_sent )
-			{
-				// Send control message to plunger
-				if(!message_sent)
-				{
-					if (ros_srv_.call(msg_srv_))
-					{
-						message_sent = true;
-						std::cout<<"Control message sent!\n";
-					}
-					//else
-					//	std::cerr<<"Failed to send control message, trying again ...\n";
-				}
-				common::Time::MSleep(10);
-			}
-			message_sent = false;
-			while( !message_sent )
-			{
-				// Send control message to plunger
-				if(!message_sent)
-				{
-					if (ros_srv_p_.call(msg_srv_pos_))
-					{
-						message_sent = true;
-						std::cout<<"Plunger position: (" << msg_srv_pos_.response.x <<"," << msg_srv_pos_.response.y<< ")\n";
-						out << YAML::Key << modelSpec.name << YAML::Value;
-						out << YAML::Flow<< YAML::BeginSeq << msg_srv_pos_.response.x << msg_srv_pos_.response.y << YAML::EndSeq;
-						// Temporary save results
-						YAML::Emitter out_tmp;
-						out_tmp << out.c_str() << YAML::EndMap;
-						std::ofstream fout_tmp(plungerPositionPathTemp.c_str());
-						fout_tmp << out_tmp.c_str();
-						fout_tmp.close();
-					}
-				}
-				common::Time::MSleep(10);
-			}
-
-			// Wait for simulation to end
-			waitCount = 0;
-			while( physics::worlds_running() )
-			{
-				common::Time::MSleep(100);
-				waitCount++;
-
-				// Print status
-				if(waitCount > 10)
-					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << std::flush;
-			}
-
-			// Simulation finished
-			std::cout << RESET;
-			std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";
-			std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
-
-			// Stop saving ROS topic data to file
-			std::string cmdA = "pkill -9 -f " + topic;
-			std::cout<<"$ "<<cmdA.c_str()<<"\n";
-			system( cmdA.c_str() );
-
-			std::string cmdB = "pkill -9 -f " + topic2;
-			std::cout<<"$ "<<cmdB.c_str()<<"\n";
-			system( cmdB.c_str() );
-
-			// Cleanup
-			Unload();
-			delete ros_node_;
-
-			index++;
-		}
+		std::cerr<<"Error: number of controllers and models do not match!\n";
+		return;
 	}
-
-	// Write to YAML file and close
-	std::cout<<"Saving: "<<plungerPositionPath<<"\n";
-	out << YAML::EndMap;
-	fout4 << out.c_str();
-	fout4.close();
-
-	delete this->server;
-
-}
-
-
-void runCalibration(std::string exp_name)
-{
-	// Parameters
-	std::string filename_model   = "mdlSpecs.yaml";
-	std::string filename_control = "ctrSpecs.yaml";
-
-	// Create paths
-	std::string pathSkinSim = getenv ("SKINSIM_PATH");
-	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
-	std::string mdlSpecPath = pathExp + "/" + filename_model;
-	std::string ctrSpecPath = pathExp + "/" + filename_control;
-	std::string calibration_file = pathExp + "/tactile_calibration.yaml";
-	std::string calibration_file_tmp = pathExp + "/tmp_tactile_calibration.yaml";
-
-	// Read YAML model file
-	std::ifstream fin(mdlSpecPath.c_str());
-	YAML::Node doc_model;
-	std::cout<<"Loading file: "<<mdlSpecPath<<"\n";
-	doc_model = YAML::LoadAll(fin);
-
-	// Read YAML control file
-	std::ifstream fin2(ctrSpecPath.c_str());
-	YAML::Node doc_control;
-	std::cout<<"Loading file: "<<ctrSpecPath<<"\n";
-	doc_control = YAML::LoadAll(fin2);
-
-	// For saving calibration constants
-	std::ofstream fout(calibration_file.c_str());
-	YAML::Emitter out;
-	out << YAML::BeginMap;
-
-	// Gazebo parameters
-	std::string _worldFilename("~");
-	bool _paused = true;
-	std::string _physics = "ode";
-
-	BuildModelSpec modelSpec;
-	ControllerSpec controlSpec;
-
-	int index = 1;
 	int N = doc_model[0].size();
 
-	// Loop over models
-	for(unsigned i=0;i<doc_model[0].size();i++)
+	// Load calibration values
+	if(!calibrate)
+		this->loadYAML(caliPath, doc_cali);
+
+	// Saving YAML files
+	YAML::Emitter out_cali_;
+	YAML::Emitter out_plunger_;
+	out_plunger_ << YAML::BeginMap;
+	out_cali_    << YAML::BeginMap;
+
+	// Loop over control settings and models
+	BuildModelSpec modelSpec;
+	ControllerSpec controlSpec;
+
+	for(int idx=0; idx<N; idx++)
 	{
-		doc_model[0][i] >> modelSpec;
+		doc_control[0][idx] >> controlSpec;
+		doc_model  [0][idx] >> modelSpec;
+
+		//print(controlSpec);
 		//print(modelSpec);
 
-		doc_control[0][i] >> controlSpec;
+		// Load calibration constant
+		double K_cali = 1.0;
+		if(!calibrate)
+		{
+			if( doc_cali[0][modelSpec.name])
+				K_cali=doc_cali[0][modelSpec.name].as<double>();
+		}
+
+		// Generate experiment name
+		std::string exp_name = getExpName(idx+1, modelSpec, controlSpec);
 
 		// Print info
 		std::cout << RED << "\n"<<std::string(70,'#')<<"\n" << RESET;
-		std::cout << "# Model: "<< modelSpec.name << " ("<< index << " out of " << N << ")\n";
+		std::cout << "# Experiment: "<< exp_name << " ("<< idx+1 << " out of " << N << ")\n";
 
 		// Point model world file location
 		_worldFilename = pathSkinSim + "/model/worlds/" + modelSpec.name + ".world";
@@ -561,15 +392,15 @@ void runCalibration(std::string exp_name)
 		// Compute number of iterations
 		iterations_max = modelSpec.spec.max_sim_time/modelSpec.spec.step_size;
 		m_gazeboParams["iterations"] =  boost::lexical_cast<std::string>( iterations_max );
+		//	for (std::map<std::string,std::string>::iterator it=m_gazeboParams.begin(); it!=m_gazeboParams.end(); ++it)
+		//	    std::cout << it->first << " => " << it->second << '\n';
 
-		// Create Gazebo world
-		std::cout << "Initializing World in 2 seconds ..." << std::endl;
-		sleep(2.0);	// TODO make sure everything is ready
+		std::cout << "Initializing World in 3 seconds ..." << std::endl;
+		sleep(3.0);	// TODO make sure everything is ready
 
 		// Create, load, and run the server in its own thread
 		this->serverThread = new boost::thread(
-				boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename,
-						_paused, _physics));
+				boost::bind(&SkinSimTestingFramework::RunServer, this, _worldFilename, _paused, _physics));
 
 		std::cout << "Waiting for world completion" << std::endl;
 		// Wait for the server to come up (20 second timeout)
@@ -583,35 +414,31 @@ void runCalibration(std::string exp_name)
 		this->node = transport::NodePtr(new transport::Node());
 		this->node->Init();
 		this->statsSub = this->node->Subscribe("~/world_stats", &SkinSimTestingFramework::OnStats, this);
-
-		// Calibration
-		buffer_size = 20;
-		buffer = new double[buffer_size];
-		for(int i=0;i<buffer_size;i++)
-			buffer[i]=1.0;
-		buffer_idx = 0;
-		K_sma = 1.0;
-		f_target = 2.0;
-		calibration_done = false;
-		calibration_counter=0;
+		//std::cout << "Initialized Transport Node" << std::endl;
+		// TODO subscribe to ~/physics/contacts
 
 		// Make sure the ROS node for Gazebo has already been initialized
 		if (!ros::isInitialized())
 		{
 			std::cerr<<"Error: ROS has not been initialized! \n";
-			exit(1);
+			return;
 		}
 
 		// Create ROS service client
 		ros_namespace_ = "skinsim";
 		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
-		ros::ServiceClient ros_srv_ = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+		ros::ServiceClient ros_srv_   = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+		ros::ServiceClient ros_srv_p_ = this->ros_node_->serviceClient<skinsim_ros_msgs::GetPosition>  ("get_plunger_position");
 
-		// Create ROS topic subscriber
-		std::string topic = "/skinsim/force_feedback";
-		ros::Subscriber ros_sub_ = this->ros_node_->subscribe(topic.c_str(), 1, &SkinSimTestingFramework::subscriberCB, this);
+		// Create ROS topic subscriber for calibration
+		ros::Subscriber ros_sub_;
+		if(calibrate)
+		{
+			std::string topic = "/skinsim/force_feedback";
+			ros_sub_ = this->ros_node_->subscribe(topic.c_str(), 1, &SkinSimTestingFramework::subscriberCB, this);
+		}
 
-		// Set plunger force message - TODO load from file
+		// Set plunger force message
 		msg_srv_.request.type.selected = controlSpec.controller_type;
 		msg_srv_.request.fb.selected   = controlSpec.feedback_type;
 		msg_srv_.request.f_des = controlSpec.Fd;
@@ -623,118 +450,180 @@ void runCalibration(std::string exp_name)
 		msg_srv_.request.Kv    = controlSpec.Kv;
 		msg_srv_.request.Ts    = controlSpec.Ts;
 		msg_srv_.request.Nf    = controlSpec.Nf;
-		msg_srv_.request.K_cali = 1.0;
-//		msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::DIGITAL_PID;
-//		msg_srv_.request.fb.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
-//		msg_srv_.request.f_des = f_target;
-//		msg_srv_.request.x_des = 0.0;
-//		msg_srv_.request.v_des = -0.005;
-//		msg_srv_.request.Kp = 2.0   ;
-//		msg_srv_.request.Ki = 20.0  ;
-//		msg_srv_.request.Kd = 0.0	  ;
-//		msg_srv_.request.Kv = 0.0   ;
-//		msg_srv_.request.Ts = 0.001;
-//		msg_srv_.request.Nf = 100;
-//		msg_srv_.request.K_cali = 1.0;
+		msg_srv_.request.K_cali = K_cali;
+		if(calibrate)
+		{
+			msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::DIRECT;
+			//msg_srv_.request.fb.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
+			msg_srv_.request.f_des = 1.0;
+		}
 		std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
+
+		// Calibration
+		if(calibrate)
+		{
+			buffer_size = 20;
+			buffer = new double[buffer_size];
+			for(int i=0;i<buffer_size;i++)
+				buffer[i]=1.0;
+			buffer_idx = 0;
+			K_sma = 1.0;
+			f_target = 2.0;
+			calibration_done = false;
+			calibration_counter=0;
+		}
 
 		// Start simulation
 		std::cout<<"Starting simulation...\n";
 		this->SetPause(false);
 
-		// Send control message
+		// Save ROS topic data to file (plunger data)
+		std::string topic = modelSpec.spec.topic;	// "/skinsim/plunger_data"
+		std::string cmd1 = "rostopic echo -p " + topic  + " > " + pathExp + "/" + exp_name + ".csv &";
+		std::cout<<"$ "<<cmd1.c_str()<<"\n";
+		system( cmd1.c_str() );
+
+		// Save ROS topic data to file (COP data)
+		std::string topic2 = "/skinsim/center_of_pressure";
+		std::string cmd2 = "rostopic echo -p " + topic2 + " > " + pathExp + "/COP_" + exp_name + ".csv &";
+		std::cout<<"$ "<<cmd2.c_str()<<"\n";
+		system( cmd2.c_str() );
+
+		// Send control message to plunger
 		bool message_sent = false;
 		while( !message_sent )
 		{
-			// Send control message to plunger
-			if(!message_sent)
+			if (ros_srv_.call(msg_srv_))
 			{
-				if (ros_srv_.call(msg_srv_))
-				{
-					message_sent = true;
-					std::cout<<"Control message sent!\n";
-				}
-				//else
-				//	std::cerr<<"Failed to send control message, trying again ...\n";
+				message_sent = true;
+				std::cout<<"Control message sent!\n";
+			}
+			//else
+			//	std::cerr<<"Failed to send control message, trying again ...\n";
+			common::Time::MSleep(10);
+		}
+
+		// Get plunger position
+		message_sent = false;
+		while( !message_sent )
+		{
+			if (ros_srv_p_.call(msg_srv_pos_))
+			{
+				message_sent = true;
+				std::cout<<"Plunger position: (" << msg_srv_pos_.response.x <<"," << msg_srv_pos_.response.y<< ")\n";
+				out_plunger_ << YAML::Key << modelSpec.name << YAML::Value;
+				out_plunger_ << YAML::Flow<< YAML::BeginSeq << msg_srv_pos_.response.x << msg_srv_pos_.response.y << YAML::EndSeq;
+				// Temporary save results
+				YAML::Emitter out_tmp;
+				out_tmp << out_plunger_.c_str() << YAML::EndMap;
+				saveYAML(plungerPositionPathTemp, out_tmp);
 			}
 			common::Time::MSleep(10);
 		}
 
 		// Wait for simulation to end
 		waitCount = 0;
-		int fastCount = 0;
-		std::ostringstream ss;
-		while( physics::worlds_running() && !calibration_done)
+		if(calibrate)
 		{
-			if(iterations < iterations_max*0.7)
+			int fastCount = 0;
+			std::ostringstream ss;
+			while( physics::worlds_running() && !calibration_done)
+			{
+				if(iterations < iterations_max*0.7)
+				{
+					common::Time::MSleep(100);
+					waitCount++;
+
+					// Get calibration data
+					ros::spinOnce();
+
+					// Print status
+					if(waitCount > 10)
+					{
+						ss.str(""); ss.clear();
+						ss << std::fixed << std::setprecision(6) << K_sma  ;
+						std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<", cc="<<calibration_counter<<"/10) "<< std::flush;
+					}
+				}
+				else
+				{
+					//common::Time::MSleep(1);
+					fastCount++;
+
+					// Get calibration data
+					ros::spinOnce();
+
+					// Print status
+					if((fastCount % 10000) == 0)
+					{
+						ss.str(""); ss.clear();
+						ss << std::fixed << std::setprecision(6) << K_sma;
+						std::cout << '\r' << YELLOW << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<", cc="<<calibration_counter<<"/10) "<< std::flush;
+					}
+				}
+			}
+		}
+		else
+		{
+			while( physics::worlds_running() )
 			{
 				common::Time::MSleep(100);
 				waitCount++;
 
-				// Get calibration data
-				ros::spinOnce();
-
 				// Print status
 				if(waitCount > 10)
-				{
-					ss.str(""); ss.clear();
-					ss << std::fixed << std::setprecision(6) << K_sma  ;
-					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<", cc="<<calibration_counter<<"/10) "<< std::flush;
-				}
-			}
-			else
-			{
-				//common::Time::MSleep(1);
-				fastCount++;
-
-				// Get calibration data
-				ros::spinOnce();
-
-				// Print status
-				if((fastCount % 10000) == 0)
-				{
-					ss.str(""); ss.clear();
-					ss << std::fixed << std::setprecision(6) << K_sma;
-					std::cout << '\r' << YELLOW << "Iterations: "<<iterations<<" / "<< iterations_max << "   (K = "<<ss.str()<<", cc="<<calibration_counter<<"/10) "<< std::flush;
-				}
+					std::cout << '\r' << GREEN << "Iterations: "<<iterations<<" / "<< iterations_max << std::flush;
 			}
 		}
+
+		// Make sure simulation is stopped
 		if(physics::worlds_running())
 			physics::stop_worlds();
 
-		// Compute calibration constant
-		out << YAML::Key << modelSpec.name << YAML::Value << K_sma;
+		// Save calibration constant
+		if(calibrate)
+		{
+			out_cali_ << YAML::Key << modelSpec.name << YAML::Value << K_sma;
 
-		// Temporary save results
-		YAML::Emitter out_tmp;
-		out_tmp << out.c_str() << YAML::EndMap;		// TODO how to set out_tmp = out?
-		std::ofstream fout_tmp(calibration_file_tmp.c_str());
-		fout_tmp << out_tmp.c_str();
-		fout_tmp.close();
+			YAML::Emitter out_tmp;
+			out_tmp << out_cali_.c_str() << YAML::EndMap;
+			saveYAML(calibration_file_tmp, out_tmp);
+		}
 
 		// Simulation finished
 		std::cout << RESET;
 		std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";	// FIXME use timer instead
 		std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
 
+		// Stop saving ROS topic data to file
+		std::string cmdA = "pkill -9 -f " + topic;
+		std::cout<<"$ "<<cmdA.c_str()<<"\n";
+		system( cmdA.c_str() );
+
+		std::string cmdB = "pkill -9 -f " + topic2;
+		std::cout<<"$ "<<cmdB.c_str()<<"\n";
+		system( cmdB.c_str() );
+
 		// Cleanup
 		Unload();
 		delete ros_node_;
-		delete[] buffer;
+		if(calibrate)
+			delete[] buffer;
+	}
 
-		index++;
+	// Save YAML files
+	out_plunger_ << YAML::EndMap;
+	saveYAML(plungerPositionPath, out_plunger_);
+
+	if(calibrate)
+	{
+		out_cali_ << YAML::EndMap;
+		saveYAML(calibration_file, out_cali_);
 	}
 
 	delete this->server;
 
-	// Write to YAML file and close
-	std::cout<<"Saving: "<<calibration_file<<"\n";
-	out << YAML::EndMap;
-	fout << out.c_str();	// TODO save before in case of crash
-	fout.close();
-
 }
-
 
 };
 

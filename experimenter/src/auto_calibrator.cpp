@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 
 	// Run simulation
 	SkinSimTestingFramework skinSimTestingFrameworkObject;
-	skinSimTestingFrameworkObject.runCalibration(exp_name);
+	skinSimTestingFrameworkObject.runTests(exp_name, true);
 
 	// Print time elapsed
 	boost::chrono::duration<double> sec = boost::chrono::steady_clock::now() - start;
