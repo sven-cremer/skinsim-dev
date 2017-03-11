@@ -345,7 +345,7 @@ void Plunger::UpdateJoints()
 	{
 		if(num_contacts_>0 || first_contact_)
 		{
-			first_contact_                        = true;
+			first_contact_ = true;
 			if( (cur_time - last_time_controller_).Double() >= Ts )// Update value
 			{
 				// Update variables
@@ -356,16 +356,23 @@ void Plunger::UpdateJoints()
 
 				// Compute new error
 				e_(0) = force_desired_ - force_current_;	// Reference minus measured force
+				//e_(0) = force_current_+force_desired_;
 
 				// Compute new control
 				u_(0) = -ku_(1)*u_(1) - ku_(2)*u_(2) + ke_(0)*e_(0) + ke_(1)*e_(1) + ke_(2)*e_(2);
 				// Apply limits
-				double umax =  45;	// TODO
-				double umin = -45;	// TODO
+				double umax =  100;	// TODO create a parameter
+				double umin = -100;
 				if (u_(0) > umax)
+				{
 					u_(0) = umax;
+					std::cout<<"\nWarning: PID control signal reached its maximum value (" << umin <<")!\n";
+				}
 				if (u_(0) < umin)
+				{
 					u_(0) = umin;
+					std::cout<<"\nWarning: PID control signal reached its minimum value (" << umin <<")!\n";
+				}
 
 				effort_ = u_(0);
 
