@@ -293,7 +293,7 @@ int main(int argc, char** argv)
 	tempModelSpec.spec.element_diameter     = 0.0016644;
 	tempModelSpec.spec.element_height       = 0.0096644;
 	tempModelSpec.spec.spread_scaling       = 1.0; //0.085;
-	tempModelSpec.spec.spread_sigma         = 0.00102;
+	tempModelSpec.spec.spread_sigma         = 0.1; //0.00102;
 	tempModelSpec.spec.plunger_radius       = 0.010;
 	tempModelSpec.spec.plunger_mass         = 1.0;
 	tempModelSpec.spec.plane_thickness      = 0.0005;
@@ -309,13 +309,13 @@ int main(int argc, char** argv)
 	//modelSpecs.push_back( tempModelSpec ) ;
 
 	int sepArray[] = {2,5,8};
-	for(int j  = 0; j < 1 ; j++ )	// Tactile separation
+	for(int j  = 0; j < 3 ; j++ )	// Tactile separation
 	{
 		//BuildModelSpec tempModelSpec = defaultModelSpec;
 
-		tempModelSpec.name = "skin_array_s_1_sep_" + boost::lexical_cast<std::string>( j );	//sepArray[j]
-		tempModelSpec.spec.tactile_separation_x = sepArray[0];
-		tempModelSpec.spec.tactile_separation_y = sepArray[0];
+		tempModelSpec.name = "skin_array_s_1_sep_" + boost::lexical_cast<std::string>( sepArray[j] );
+		tempModelSpec.spec.tactile_separation_x = sepArray[j];
+		tempModelSpec.spec.tactile_separation_y = sepArray[j];
 
 		// Test different offsets
 		//tempModelSpec.spec.plunger_offset_x = j*tempModelSpec.spec.element_diameter*0.25;
@@ -355,7 +355,7 @@ int main(int argc, char** argv)
 	double Kdata = 0.0002;
 	int numSensors[] = {8,4,3};
 	int freq[] = {4,16,36};
-	for(unsigned i  = 0; i < 1 ; i++ )
+	for(unsigned i  = 0; i < 3 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 

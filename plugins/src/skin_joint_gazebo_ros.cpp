@@ -547,7 +547,10 @@ void SkinJointGazeboRos::UpdateJoints()
 	}
 	*/
 
+	f_sen_ = -f_app_;
+
 	// Sensed Force: compute force distribution
+	/*
 	double force_dist = 0;
 	f_sen_.setZero();
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
@@ -571,6 +574,7 @@ void SkinJointGazeboRos::UpdateJoints()
 			}
 		}
 	}
+	*/
 
 	// Sensed Force: add noise
 	if(false)	// TODO add variable
@@ -604,7 +608,7 @@ void SkinJointGazeboRos::UpdateJoints()
 	}
 
 	// Filter sensed force
-	if(true)
+	if(false)
 	{
 		for (unsigned int i = 0; i < this->num_sensors_; ++i)
 		{
@@ -674,8 +678,8 @@ void SkinJointGazeboRos::UpdateJoints()
 		// Copy data into ROS message
 		for(int i=0;i<this->num_sensors_;i++)
 		{
-			//msg_tactile_.data[i] = sensors_[i].force_sensed;
-			msg_tactile_.data[i] = sensors_[i].force_applied;
+			msg_tactile_.data[i] = sensors_[i].force_sensed;
+			//msg_tactile_.data[i] = sensors_[i].force_applied;
 		}
 		this->ros_pub_tactile_.publish(this->msg_tactile_);
 		this->lock_.unlock();
