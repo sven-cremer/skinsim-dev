@@ -153,7 +153,7 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		this->ros_sub_fb_ = this->ros_node_->subscribe("/skinsim/force_feedback", 1, &Plunger::ForceFeedbackCB, this);
 
 		// ROS services
-		this->ros_srv_controller_ 	= 	this->ros_node_->advertiseService("set_controller", &Plunger::serviceSetController, this);
+		this->ros_srv_controller_ 	= 	this->ros_node_->advertiseService("set_plunger_controller", &Plunger::serviceSetController, this);
 		this->ros_srv_position_ 	= 	this->ros_node_->advertiseService("get_plunger_position", &Plunger::serviceGetPosition, this);
 
 		// Custom Callback Queue

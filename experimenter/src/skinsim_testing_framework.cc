@@ -353,7 +353,7 @@ std::string getExpName(int index, BuildModelSpec modelSpec, ControllerSpec contr
 	return exp_name;
 }
 
-void runTests(std::string exp_name, bool calibrate)
+void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 {
 	//std::cout << "TestingFramework::runTests()" << std::endl;
 
@@ -448,7 +448,7 @@ void runTests(std::string exp_name, bool calibrate)
 		// Create ROS service client
 		ros_namespace_ = "skinsim";
 		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
-		ros::ServiceClient ros_srv_   = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
+		ros::ServiceClient ros_srv_   = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_plunger_controller");
 		ros::ServiceClient ros_srv_plunger_ = this->ros_node_->serviceClient<skinsim_ros_msgs::GetPosition>  ("get_plunger_position");
 		//ros::ServiceClient ros_srv_layout_ = this->ros_node_->serviceClient<skinsim_ros_msgs::GetLayout>  ("publish_layout");
 
@@ -501,15 +501,29 @@ void runTests(std::string exp_name, bool calibrate)
 
 		// Save ROS topic data to file (plunger data)
 		std::string topic = modelSpec.spec.topic;	// "/skinsim/plunger_data"
-		std::string cmd1 = "rostopic echo -p " + topic  + " > " + pathExp + "/" + exp_name + ".csv &";
+		std::string cmd1 = "rostopic echo -p " + topic  + " > " + pathExp + "/plunger_" + exp_name + ".csv &";
 		std::cout<<"$ "<<cmd1.c_str()<<"\n";
 		system( cmd1.c_str() );
 
 		// Save ROS topic data to file (COP data)
 		std::string topic2 = "/skinsim/center_of_pressure";
-		std::string cmd2 = "rostopic echo -p " + topic2 + " > " + pathExp + "/COP_" + exp_name + ".csv &";
+		std::string cmd2 = "rostopic echo -p " + topic2 + " > " + pathExp + "/cop_" + exp_name + ".csv &";
 		std::cout<<"$ "<<cmd2.c_str()<<"\n";
 		system( cmd2.c_str() );
+
+		// Save joint and tactile data
+		std::string topic4 = "/skinsim/joint_data";
+		std::string topic5 = "/skinsim/tactile_data";
+		if(saveAllData)
+		{
+			std::string cmd4 = "rostopic echo -p " + topic4 + " > " + pathExp + "/joint_" + exp_name + ".csv &";
+			std::cout<<"$ "<<cmd4.c_str()<<"\n";
+			system( cmd4.c_str() );
+
+			std::string cmd5 = "rostopic echo -p " + topic5 + " > " + pathExp + "/tactile_" + exp_name + ".csv &";
+			std::cout<<"$ "<<cmd5.c_str()<<"\n";
+			system( cmd5.c_str() );
+		}
 
 		bool message_sent;
 
@@ -677,6 +691,17 @@ void runTests(std::string exp_name, bool calibrate)
 		std::string cmdC = "pkill -9 -f " + topic3;
 		std::cout<<"$ "<<cmdC.c_str()<<"\n";
 		system( cmdC.c_str() );
+
+		if(saveAllData)
+		{
+			std::string cmdD = "pkill -9 -f " + topic4;
+			std::cout<<"$ "<<cmdD.c_str()<<"\n";
+			system( cmdD.c_str() );
+
+			std::string cmdE = "pkill -9 -f " + topic5;
+			std::cout<<"$ "<<cmdE.c_str()<<"\n";
+			system( cmdE.c_str() );
+		}
 
 		// Cleanup
 		Unload();
