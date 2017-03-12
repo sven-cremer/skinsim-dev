@@ -153,9 +153,8 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		this->ros_sub_fb_ = this->ros_node_->subscribe("/skinsim/force_feedback", 1, &Plunger::ForceFeedbackCB, this);
 
 		// ROS services
-		this->ros_srv_ 			= 	this->ros_node_->advertiseService("set_controller", &Plunger::serviceCB, this);
-		this->ros_srv_gains_ 	= 	this->ros_node_->advertiseService("set_PIDGains", &Plunger::serviceSetPIDCB, this);
-		this->ros_srv_poition_ 	= 	this->ros_node_->advertiseService("get_plunger_position", &Plunger::serviceGetPosition, this);
+		this->ros_srv_controller_ 	= 	this->ros_node_->advertiseService("set_controller", &Plunger::serviceSetController, this);
+		this->ros_srv_position_ 	= 	this->ros_node_->advertiseService("get_plunger_position", &Plunger::serviceGetPosition, this);
 
 		// Custom Callback Queue
 		this->callback_ros_queue_thread_ = boost::thread( boost::bind( &Plunger::RosQueueThread,this ) );
@@ -437,7 +436,7 @@ void Plunger::UpdateJoints()
 
 //////////////////////////////////////////////////////////////////////////
 // Callback function when subscriber connects
-bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_ros_msgs::SetController::Response& res)
+bool Plunger::serviceSetController(skinsim_ros_msgs::SetController::Request& req, skinsim_ros_msgs::SetController::Response& res)
 {
 	// Store data
 	this->lock_.lock();
@@ -508,41 +507,6 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		res.success = false;
 		break;
 	}
-	this->lock_.unlock();
-	return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Callback function when subscriber connects
-bool Plunger::serviceSetPIDCB(skinsim_ros_msgs::SetPIDGains::Request& req, skinsim_ros_msgs::SetPIDGains::Response& res)
-{
-	// Store data
-	this->lock_.lock();
-
-	this->Kp_ = req.Kp;
-	this->Ki_ = req.Ki;
-	this->Kd_ = req.Kd;
-
-	if(controller_type_.selected == skinsim_ros_msgs::ControllerType::DIGITAL_PID)
-	{
-		N =100;			// TODO pass these values
-		Ts = 0.001;
-
-		a_(0) = (1+N*Ts);
-		a_(1) = -(2 + N*Ts);
-		a_(2) = 1;
-		b_(0) = Kp_*(1+N*Ts) + Ki_*Ts*(1+N*Ts) + Kd_*N;
-		b_(1) = -(Kp_*(2+N*Ts) + Ki_*Ts + 2*Kd_*N);
-		b_(2) = Kp_ + Kd_*N;
-		ku_(1) = a_(1)/a_(0);
-		ku_(2) = a_(2)/a_(0);
-		ke_(0) = b_(0)/a_(0);
-		ke_(1) = b_(1)/a_(0);
-		ke_(2) = b_(2)/a_(0);
-	}
-
-	res.success = true;
-
 	this->lock_.unlock();
 	return true;
 }
