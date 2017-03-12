@@ -53,6 +53,7 @@
 #include <skinsim_ros_msgs/SetController.h>
 #include <skinsim_ros_msgs/ForceFeedback.h>
 #include <skinsim_ros_msgs/GetPosition.h>
+#include <skinsim_ros_msgs/GetLayout.h>
 //#include <skinsim_ros_msgs/PlungerData.h>
 //#include <skinsim_ros_msgs/CenterOfPressure.h>
 
@@ -309,10 +310,30 @@ void loadYAML(std::string fname, YAML::Node& doc_)
 
 void saveYAML(std::string fname, YAML::Emitter& out_)
 {
-	std::cout<<"Saving file: "<<fname<<"\n";
+	std::cout<<"\nSaving file: "<<fname<<"\n";
 	std::ofstream fout(fname.c_str());
 	fout << out_.c_str();
 	fout.close();
+}
+
+void saveLayout(std::string exp_name, std::string topic, skinsim_ros_msgs::GetLayout msg_layout_)
+{
+	std::string cmd1, cmd2;
+	if(msg_layout_.request.selected == skinsim_ros_msgs::GetLayout::Request::ELEMENTS)
+	{
+		cmd1 = "rostopic echo -n 1 -p " + topic + " > " + pathExp + "/layout_elements_" + exp_name + ".csv & ";
+		cmd2 = "rosservice call /skinsim/publish_layout \"selected: 0\"";
+		std::cout<<"Saving element layout ...\n";
+	}
+	else
+	{
+		cmd1 = "rostopic echo -n 1 -p " + topic + " > " + pathExp + "/layout_sensors_" + exp_name + ".csv & ";
+		cmd2 = "rosservice call /skinsim/publish_layout \"selected: 1\"";
+		std::cout<<"Saving sensor layout ...\n";
+	}
+
+	system( cmd1.c_str() );
+	system( cmd2.c_str() );		// For some reason this doesn't work using a rosservice
 }
 
 std::string getExpName(int index, BuildModelSpec modelSpec, ControllerSpec controlSpec)
@@ -428,7 +449,8 @@ void runTests(std::string exp_name, bool calibrate)
 		ros_namespace_ = "skinsim";
 		this->ros_node_ = new ros::NodeHandle(this->ros_namespace_);
 		ros::ServiceClient ros_srv_   = this->ros_node_->serviceClient<skinsim_ros_msgs::SetController>("set_controller");
-		ros::ServiceClient ros_srv_p_ = this->ros_node_->serviceClient<skinsim_ros_msgs::GetPosition>  ("get_plunger_position");
+		ros::ServiceClient ros_srv_plunger_ = this->ros_node_->serviceClient<skinsim_ros_msgs::GetPosition>  ("get_plunger_position");
+		//ros::ServiceClient ros_srv_layout_ = this->ros_node_->serviceClient<skinsim_ros_msgs::GetLayout>  ("publish_layout");
 
 		// Create ROS topic subscriber for calibration
 		ros::Subscriber ros_sub_;
@@ -489,8 +511,10 @@ void runTests(std::string exp_name, bool calibrate)
 		std::cout<<"$ "<<cmd2.c_str()<<"\n";
 		system( cmd2.c_str() );
 
+		bool message_sent;
+
 		// Send control message to plunger
-		bool message_sent = false;
+		message_sent = false;
 		while( !message_sent )
 		{
 			if (ros_srv_.call(msg_srv_))
@@ -503,11 +527,57 @@ void runTests(std::string exp_name, bool calibrate)
 			common::Time::MSleep(10);
 		}
 
+		// Get layout
+/*
+		skinsim_ros_msgs::GetLayout msg_layout_;
+		std::string topic3 = "/skinsim/layout";
+		std::string cmd3 = "rostopic echo -p -n 1 " + topic3 + " > " + pathExp + "/layout_elements_" + exp_name + ".csv &";
+		std::string cmd4 = "rostopic echo -p -n 1 " + topic3 + " > " + pathExp + "/layout_sensors_" + exp_name + ".csv &";
+
+		msg_layout_.request.selected = skinsim_ros_msgs::GetLayout::Request::ELEMENTS;
+		std::cout<<"$ "<<cmd3.c_str()<<"\n";
+		system( cmd3.c_str() );
+		message_sent = false;
+		while( !message_sent )
+		{
+			if (ros_srv_layout_.call(msg_layout_))
+			{
+				message_sent = true;
+				std::cout<< std::boolalpha<<"-> Layout message sent!\n"<<"              "<<(bool)msg_layout_.response.success<<"\n---\n";
+			}
+			common::Time::MSleep(10);
+		}
+
+		msg_layout_.request.selected = skinsim_ros_msgs::GetLayout::Request::SENSORS;
+		std::cout<<"$ "<<cmd4.c_str()<<"\n";
+		system( cmd4.c_str() );
+		message_sent = false;
+		while( !message_sent )
+		{
+			if (ros_srv_layout_.call(msg_layout_))
+			{
+				message_sent = true;
+				std::cout<< std::boolalpha<<"-> Layout message sent!\n"<<"              "<<(int)msg_layout_.response.success<<"\n---\n";
+			}
+			common::Time::MSleep(10);
+		}
+*/
+		skinsim_ros_msgs::GetLayout msg_layout_elements_;
+		skinsim_ros_msgs::GetLayout msg_layout_sensors_;
+		msg_layout_elements_.request.selected = skinsim_ros_msgs::GetLayout::Request::ELEMENTS;
+		msg_layout_sensors_.request.selected = skinsim_ros_msgs::GetLayout::Request::SENSORS;
+		std::string topic3 = "/skinsim/layout";
+		bool layoutSave = false;
+
+		saveLayout(exp_name, topic3, msg_layout_elements_);
+		saveLayout(exp_name, topic3, msg_layout_sensors_);
+
+
 		// Get plunger position
 		message_sent = false;
 		while( !message_sent )
 		{
-			if (ros_srv_p_.call(msg_srv_pos_))
+			if (ros_srv_plunger_.call(msg_srv_pos_))
 			{
 				message_sent = true;
 				std::cout<<"Plunger position: (" << msg_srv_pos_.response.x <<"," << msg_srv_pos_.response.y<< ")\n";
@@ -603,6 +673,10 @@ void runTests(std::string exp_name, bool calibrate)
 		std::string cmdB = "pkill -9 -f " + topic2;
 		std::cout<<"$ "<<cmdB.c_str()<<"\n";
 		system( cmdB.c_str() );
+
+		std::string cmdC = "pkill -9 -f " + topic3;
+		std::cout<<"$ "<<cmdC.c_str()<<"\n";
+		system( cmdC.c_str() );
 
 		// Cleanup
 		Unload();
