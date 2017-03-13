@@ -269,6 +269,23 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	}
 	this->num_sensors_ = this->sensors_.size();
 
+	// Compute and save initial skin layout into ROS message
+	msg_layout_elements_.data.resize(this->num_joints_);
+	for( int i=0; i < this->num_joints_; i++ )
+	{
+		math::Pose p = this->joints_[i]->GetChild()->GetInitialRelativePose();
+
+		msg_layout_elements_.data[i].x = p.pos.x;
+		msg_layout_elements_.data[i].y = p.pos.y;
+		msg_layout_elements_.data[i].z = p.pos.z;
+	}
+	msg_layout_sensors_.data.resize(this->num_sensors_);
+	for( int i = 0; i < this->num_sensors_; ++i )
+	{
+		msg_layout_sensors_.data[i].x = sensors_[i].position.x;
+		msg_layout_sensors_.data[i].y = sensors_[i].position.y;
+		msg_layout_sensors_.data[i].z = sensors_[i].position.z;
+	}
 
 	/* Init filters
 	std::vector<digitalFilter> filters_;
@@ -287,12 +304,12 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	a_filt << 1.0, 0.2679;
 	b_filt << 0.634, 0.634;
 
-	std::cout<<"Loaded /a_filt: \n"<<a_filt<<"\n---\n";
-	std::cout<<"Loaded /b_filt: \n"<<b_filt<<"\n---\n";
+	//std::cout<<"Loaded /a_filt: \n"<<a_filt<<"\n---\n";
+	//std::cout<<"Loaded /b_filt: \n"<<b_filt<<"\n---\n";
 
 	num_coeff = a_filt.size();
 	int order = num_coeff-1;
-	std::cout<<"Filter order: "<<order<<"\n";
+	//std::cout<<"Filter order: "<<order<<"\n";
 
 	ice::digitalFilter tmp;
 	if(!tmp.init(order, true, b_filt, a_filt))
@@ -304,9 +321,6 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 
 		digitalFilters.push_back(tmp);
 	}
-
-
-
 
 	// Center of Pressure (COP)
 	this->cop_force_ .resize(this->num_sensors_);
@@ -533,14 +547,16 @@ void SkinJointGazeboRos::UpdateJoints()
 	}
 	*/
 
+	//f_sen_ = -f_app_;
+
 	// Sensed Force: compute force distribution
 	double force_dist = 0;
 	f_sen_.setZero();
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
 	{
 		// Force distribution model
-		if(collision_index_[i])
-		{
+		//if(collision_index_[i])
+		//{
 			for (int j = 0; j < this->num_joints_; ++j)	// First entry has 0 distance, i.e. i == layout[i].index[0]
 			{
 				// Apply force distribution model
@@ -548,14 +564,14 @@ void SkinJointGazeboRos::UpdateJoints()
 
 				f_sen_( layout[i].index[j] ) += force_dist;
 
-				if( fabs(force_dist)<0.00001 )	// Stop once force becomes negligible
+				if( fabs(force_dist)<0.00001 )	// Stop once force becomes negligible TODO add parameter
 					break;
 
 //				if( fabs(force_dist - this->joints_[ layout[i].index[j] ]->GetForce(0) ) > 0.00001 )
 //					std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Dist "<<i<<" ("<<j<<"): "<<force_dist<<" -> "<<this->joints_[ layout[i].index[j] ]->GetForce(0)<<"\n";
 
 			}
-		}
+		//}
 	}
 
 	// Sensed Force: add noise
@@ -590,7 +606,7 @@ void SkinJointGazeboRos::UpdateJoints()
 	}
 
 	// Filter sensed force
-	if(true)
+	if(false)
 	{
 		for (unsigned int i = 0; i < this->num_sensors_; ++i)
 		{
@@ -660,8 +676,8 @@ void SkinJointGazeboRos::UpdateJoints()
 		// Copy data into ROS message
 		for(int i=0;i<this->num_sensors_;i++)
 		{
-			//msg_tactile_.data[i] = sensors_[i].force_sensed;
-			msg_tactile_.data[i] = sensors_[i].force_applied;
+			msg_tactile_.data[i] = sensors_[i].force_sensed;
+			//msg_tactile_.data[i] = sensors_[i].force_applied;
 		}
 		this->ros_pub_tactile_.publish(this->msg_tactile_);
 		this->lock_.unlock();
@@ -802,7 +818,7 @@ void SkinJointGazeboRos::FindCOP()
 // Callback function when subscriber connects
 bool SkinJointGazeboRos::serviceCB(skinsim_ros_msgs::GetLayout::Request& req, skinsim_ros_msgs::GetLayout::Response& res)
 {
-	math::Pose p;
+	res.success = false;
 
 	this->lock_.lock();
 
@@ -811,23 +827,27 @@ bool SkinJointGazeboRos::serviceCB(skinsim_ros_msgs::GetLayout::Request& req, sk
 	// Get position of each skin element
 	case skinsim_ros_msgs::GetLayout::Request::ELEMENTS:
 	{
+		/*
 		// Copy position data into ROS message
 		msg_layout_.data.resize(this->num_joints_);
 
 		for( int i=0; i < this->num_joints_; i++ )
 		{
-			p = this->joints_[i]->GetChild()->GetInitialRelativePose();
+			math::Pose p = this->joints_[i]->GetChild()->GetInitialRelativePose();
 
 			msg_layout_.data[i].x = p.pos.x;
 			msg_layout_.data[i].y = p.pos.y;
 			msg_layout_.data[i].z = p.pos.z;
 		}
+		*/
+		this->ros_pub_layout_.publish(this->msg_layout_elements_);
 		res.success = true;
 		break;
 	}
 	// Get position of each tactile sensor
 	case skinsim_ros_msgs::GetLayout::Request::SENSORS:
 	{
+		/*
 		// Copy position data into ROS message
 		msg_layout_.data.resize(this->num_sensors_);
 
@@ -837,17 +857,17 @@ bool SkinJointGazeboRos::serviceCB(skinsim_ros_msgs::GetLayout::Request& req, sk
 			msg_layout_.data[i].y = sensors_[i].position.y;
 			msg_layout_.data[i].z = sensors_[i].position.z;
 		}
+		*/
+		this->ros_pub_layout_.publish(this->msg_layout_sensors_);
 		res.success = true;
 		break;
 	}
 	// Default
 	default:
 		std::cout<<"Layout not found.\n";
-		res.success = false;
 		break;
 	}
-
-	this->ros_pub_layout_.publish(this->msg_layout_);
+	//this->ros_pub_layout_.publish(this->msg_layout_);
 
 	this->lock_.unlock();
 

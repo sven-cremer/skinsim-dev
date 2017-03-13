@@ -205,7 +205,8 @@ class SkinJointGazeboRos : public ModelPlugin
   private: skinsim_ros_msgs::ForceFeedback msg_fb_;
 
   /// \brief A custom ROS message for the layout data
-  private: skinsim_ros_msgs::PointArray msg_layout_;
+  private: skinsim_ros_msgs::PointArray msg_layout_elements_;
+  private: skinsim_ros_msgs::PointArray msg_layout_sensors_;
 
   /// \brief A custom ROS message for the layout data
   private: visualization_msgs::MarkerArray msg_rviz_;

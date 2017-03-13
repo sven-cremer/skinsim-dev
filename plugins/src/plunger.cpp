@@ -153,9 +153,8 @@ void Plunger::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		this->ros_sub_fb_ = this->ros_node_->subscribe("/skinsim/force_feedback", 1, &Plunger::ForceFeedbackCB, this);
 
 		// ROS services
-		this->ros_srv_ 			= 	this->ros_node_->advertiseService("set_controller", &Plunger::serviceCB, this);
-		this->ros_srv_gains_ 	= 	this->ros_node_->advertiseService("set_PIDGains", &Plunger::serviceSetPIDCB, this);
-		this->ros_srv_poition_ 	= 	this->ros_node_->advertiseService("get_plunger_position", &Plunger::serviceGetPosition, this);
+		this->ros_srv_controller_ 	= 	this->ros_node_->advertiseService("set_plunger_controller", &Plunger::serviceSetController, this);
+		this->ros_srv_position_ 	= 	this->ros_node_->advertiseService("get_plunger_position", &Plunger::serviceGetPosition, this);
 
 		// Custom Callback Queue
 		this->callback_ros_queue_thread_ = boost::thread( boost::bind( &Plunger::RosQueueThread,this ) );
@@ -300,15 +299,28 @@ void Plunger::UpdateJoints()
 	// Set force directly in Gazebo
 	case skinsim_ros_msgs::ControllerType::DIRECT:
 	{
-		this->effort_ = this->force_desired_;
-		this->joint_->SetForce(0, -this->effort_);
+		if(num_contacts_>0  || first_contact_)
+		{
+			if(!first_contact_)
+			{
+				first_contact_ = true;
+				//this->joint_->SetVelocity (0, 0); <- never reaches surface
+			}
+			this->effort_ = this->force_desired_;
+			this->joint_->SetForce(0, -this->effort_);
+		}
+		else
+		{
+			this->joint_->SetVelocity (0, velocity_desired_);
+		}
 		break;
 	}
 	// Force-Based Explicit Force control
 	case skinsim_ros_msgs::ControllerType::FORCE_BASED_FORCE_CONTROL:
 	{
-		if(num_contacts_>0)
+		if(num_contacts_>0  || first_contact_)
 		{
+			first_contact_ = true;
 			this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kv_*velocity_current_;
 			//this->effort_ = force_desired_ + Kp_*(force_desired_ - force_current_) - Kd_*force_dot_;
 			this->joint_->SetForce(0, -this->effort_);
@@ -345,7 +357,7 @@ void Plunger::UpdateJoints()
 	{
 		if(num_contacts_>0 || first_contact_)
 		{
-			first_contact_                        = true;
+			first_contact_ = true;
 			if( (cur_time - last_time_controller_).Double() >= Ts )// Update value
 			{
 				// Update variables
@@ -356,16 +368,23 @@ void Plunger::UpdateJoints()
 
 				// Compute new error
 				e_(0) = force_desired_ - force_current_;	// Reference minus measured force
+				//e_(0) = force_current_+force_desired_;
 
 				// Compute new control
 				u_(0) = -ku_(1)*u_(1) - ku_(2)*u_(2) + ke_(0)*e_(0) + ke_(1)*e_(1) + ke_(2)*e_(2);
 				// Apply limits
-				double umax =  45;	// TODO
-				double umin = -45;	// TODO
+				double umax =  100;	// TODO create a parameter
+				double umin = -100;
 				if (u_(0) > umax)
+				{
 					u_(0) = umax;
+					std::cout<<"\nWarning: PID control signal reached its maximum value (" << umin <<")!\n";
+				}
 				if (u_(0) < umin)
+				{
 					u_(0) = umin;
+					std::cout<<"\nWarning: PID control signal reached its minimum value (" << umin <<")!\n";
+				}
 
 				effort_ = u_(0);
 
@@ -417,13 +436,16 @@ void Plunger::UpdateJoints()
 
 //////////////////////////////////////////////////////////////////////////
 // Callback function when subscriber connects
-bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_ros_msgs::SetController::Response& res)
+bool Plunger::serviceSetController(skinsim_ros_msgs::SetController::Request& req, skinsim_ros_msgs::SetController::Response& res)
 {
 	// Store data
 	this->lock_.lock();
 	this->controller_type_.selected = req.type.selected;
 	this->feedback_type_  .selected = req.fb.selected;
 	this->K_cali_ = req.K_cali;
+
+	first_contact_ = false;
+	num_contacts_  = 0;
 
 	switch(this->controller_type_.selected)
 	{
@@ -478,7 +500,6 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		ke_(2) = b_(2)/a_(0);
 
 		res.success = true;
-		first_contact_        = false;
 		break;
 	}
 	default:
@@ -486,41 +507,6 @@ bool Plunger::serviceCB(skinsim_ros_msgs::SetController::Request& req, skinsim_r
 		res.success = false;
 		break;
 	}
-	this->lock_.unlock();
-	return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Callback function when subscriber connects
-bool Plunger::serviceSetPIDCB(skinsim_ros_msgs::SetPIDGains::Request& req, skinsim_ros_msgs::SetPIDGains::Response& res)
-{
-	// Store data
-	this->lock_.lock();
-
-	this->Kp_ = req.Kp;
-	this->Ki_ = req.Ki;
-	this->Kd_ = req.Kd;
-
-	if(controller_type_.selected == skinsim_ros_msgs::ControllerType::DIGITAL_PID)
-	{
-		N =100;			// TODO pass these values
-		Ts = 0.001;
-
-		a_(0) = (1+N*Ts);
-		a_(1) = -(2 + N*Ts);
-		a_(2) = 1;
-		b_(0) = Kp_*(1+N*Ts) + Ki_*Ts*(1+N*Ts) + Kd_*N;
-		b_(1) = -(Kp_*(2+N*Ts) + Ki_*Ts + 2*Kd_*N);
-		b_(2) = Kp_ + Kd_*N;
-		ku_(1) = a_(1)/a_(0);
-		ku_(2) = a_(2)/a_(0);
-		ke_(0) = b_(0)/a_(0);
-		ke_(1) = b_(1)/a_(0);
-		ke_(2) = b_(2)/a_(0);
-	}
-
-	res.success = true;
-
 	this->lock_.unlock();
 	return true;
 }
