@@ -127,15 +127,15 @@ int main(int argc, char** argv)
 
 	defaultControlSpec.controller_type   = 4;    //DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
 	defaultControlSpec.feedback_type     = 2;    //PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
-	defaultControlSpec.Fd                = 2;
+	defaultControlSpec.Fd                = 1;
 
-	defaultControlSpec.Kp                = 0.2;  //0.001;
-	defaultControlSpec.Ki                = 0.0; //0.000008333;
-	defaultControlSpec.Kd                = 0.0; //0.0003;
+	defaultControlSpec.Kp                = 2.0; //420; //0.001;
+	defaultControlSpec.Ki                = 20.0; //5200; //0.000008333;
+	defaultControlSpec.Kd                = 0.1; //-3.05;//0.0003;
 	defaultControlSpec.Kv                = 0.0;
 
-	defaultControlSpec.Ts                = 0.001;
-	defaultControlSpec.Nf                = 100;
+	defaultControlSpec.Ts                = 0.005;
+	defaultControlSpec.Nf                = 10; //0.045;//10;
 
 	std::cout<<"DEFAULT CONTROL VALUES:\n";
 	print(defaultControlSpec);
@@ -293,7 +293,7 @@ int main(int argc, char** argv)
 	tempModelSpec.spec.element_diameter     = 0.0016644;
 	tempModelSpec.spec.element_height       = 0.0096644;
 	tempModelSpec.spec.spread_scaling       = 1.0; //0.085;
-	tempModelSpec.spec.spread_sigma         = 0.1; //0.00102;
+	tempModelSpec.spec.spread_sigma         = 0.00102;
 	tempModelSpec.spec.plunger_radius       = 0.010;
 	tempModelSpec.spec.plunger_mass         = 1.0;
 	tempModelSpec.spec.plane_thickness      = 0.0005;
@@ -307,7 +307,7 @@ int main(int argc, char** argv)
 	tempModelSpec.spec.step_size            = 0.001;
 
 	//modelSpecs.push_back( tempModelSpec ) ;
-
+	/*
 	int sepArray[] = {2,5,8};
 	for(int j  = 0; j < 3 ; j++ )	// Tactile separation
 	{
@@ -322,6 +322,22 @@ int main(int argc, char** argv)
 		//tempModelSpec.spec.plunger_offset_y = j*tempModelSpec.spec.element_diameter*0.25;
 
 		modelSpecs.push_back( tempModelSpec ) ;
+	}
+	*/
+
+	// PID tuning
+	double testValues[] = {0.05,0.1,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0};
+	for(int j  = 0; j < 10 ; j++ )
+	{
+		defaultControlSpec.name = "control_" + boost::lexical_cast<std::string>( j );
+		defaultControlSpec.Kp = testValues[j];
+		defaultControlSpec.Ki = 0.0;
+		defaultControlSpec.Kd = 0.0;
+		defaultControlSpec.Nf = 1.0;
+
+		modelSpecs.push_back( tempModelSpec ) ;
+		tempModelSpec.name = "skin_array_s_1_sep_2_" + boost::lexical_cast<std::string>( j );
+		ctrSpecs.push_back( defaultControlSpec ) ;
 	}
 
 	// Save to YAML
@@ -350,21 +366,21 @@ int main(int argc, char** argv)
 
 	//ctrSpecs.push_back( defaultControlSpec ) ;
 
-
+/*
 	// Test different Ts values
 	double Kdata = 0.0002;
 	int numSensors[] = {8,4,3};
-	int freq[] = {4,16,36};
+	double freq[] = {4,16,36};
 	for(unsigned i  = 0; i < 3 ; i++ )
 	{
 		ControllerSpec tempControlSpec = defaultControlSpec;
 
 		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
 //		tempControlSpec.Ts = Kdata*numSensors[i];
-		tempControlSpec.Ts = 1/freq[i];
+//		tempControlSpec.Ts = 1.0/freq[i];
 		ctrSpecs.push_back( tempControlSpec ) ;
 	}
-
+*/
 /*
 	// PID tuning
 	int num = 1;
