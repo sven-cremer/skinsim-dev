@@ -102,6 +102,7 @@ private: std::string ros_namespace_;
 private: skinsim_ros_msgs::SetController msg_srv_;
 private: skinsim_ros_msgs::GetPosition msg_srv_pos_;
 private: int iterations_max;
+private: double totalForce;
 
 // Gazebo parameters
 private: std::string _worldFilename;
@@ -162,6 +163,8 @@ void subscriberCB(const skinsim_ros_msgs::ForceFeedbackConstPtr& msg)
 {
 	if(msg->force_sensed == 0)
 		return;
+
+	this->totalForce += fabs(msg->force_applied);
 
 	double K = msg->force_applied / msg->force_sensed;
 	K_sma = K_sma + ( K - buffer[buffer_idx] )/(double)buffer_size;
@@ -310,7 +313,7 @@ void loadYAML(std::string fname, YAML::Node& doc_)
 
 void saveYAML(std::string fname, YAML::Emitter& out_)
 {
-	std::cout<<"\nSaving file: "<<fname<<"\n";
+	std::cout<<"Saving file: "<<fname<<"\n";
 	std::ofstream fout(fname.c_str());
 	fout << out_.c_str();
 	fout.close();
@@ -493,6 +496,7 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 			f_target = 2.0;
 			calibration_done = false;
 			calibration_counter=0;
+			this->totalForce = 0;
 		}
 
 		// Start simulation
@@ -664,20 +668,10 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 		if(physics::worlds_running())
 			physics::stop_worlds();
 
-		// Save calibration constant
-		if(calibrate)
-		{
-			out_cali_ << YAML::Key << modelSpec.name << YAML::Value << K_sma;
-
-			YAML::Emitter out_tmp;
-			out_tmp << out_cali_.c_str() << YAML::EndMap;
-			saveYAML(calibration_file_tmp, out_tmp);
-		}
-
 		// Simulation finished
 		std::cout << RESET;
 		std::cout << "\nSimulation completed in "<<(double)waitCount*0.1<<" seconds.\n";	// FIXME use timer instead
-		std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n";
+		std::cout << "Simulation run time was " << simTime.Double() << " seconds.\n\n";
 
 		// Stop saving ROS topic data to file
 		std::string cmdA = "pkill -9 -f " + topic;
@@ -703,11 +697,29 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 			system( cmdE.c_str() );
 		}
 
+		// Save temporary calibration constant
+		if(calibrate)
+		{
+			out_cali_ << YAML::Key << modelSpec.name << YAML::Value << K_sma;
+
+			YAML::Emitter out_tmp;
+			out_tmp << out_cali_.c_str() << YAML::EndMap;
+			saveYAML(calibration_file_tmp, out_tmp);
+
+
+			if(this->totalForce < 0.01) // Repeat if nothing was measured TODO
+			{
+				std::cout<<RED<<" Error: simulation failed ... repeating!\n" << RESET;
+				idx--;
+			}
+		}
+
 		// Cleanup
 		Unload();
 		delete ros_node_;
 		if(calibrate)
 			delete[] buffer;
+
 	}
 
 	// Save YAML files
