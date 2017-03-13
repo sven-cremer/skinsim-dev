@@ -304,12 +304,12 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 	a_filt << 1.0, 0.2679;
 	b_filt << 0.634, 0.634;
 
-	std::cout<<"Loaded /a_filt: \n"<<a_filt<<"\n---\n";
-	std::cout<<"Loaded /b_filt: \n"<<b_filt<<"\n---\n";
+	//std::cout<<"Loaded /a_filt: \n"<<a_filt<<"\n---\n";
+	//std::cout<<"Loaded /b_filt: \n"<<b_filt<<"\n---\n";
 
 	num_coeff = a_filt.size();
 	int order = num_coeff-1;
-	std::cout<<"Filter order: "<<order<<"\n";
+	//std::cout<<"Filter order: "<<order<<"\n";
 
 	ice::digitalFilter tmp;
 	if(!tmp.init(order, true, b_filt, a_filt))
@@ -547,17 +547,16 @@ void SkinJointGazeboRos::UpdateJoints()
 	}
 	*/
 
-	f_sen_ = -f_app_;
+	//f_sen_ = -f_app_;
 
 	// Sensed Force: compute force distribution
-	/*
 	double force_dist = 0;
 	f_sen_.setZero();
 	for (unsigned int i = 0; i < this->num_joints_; ++i)
 	{
 		// Force distribution model
-		if(collision_index_[i])
-		{
+		//if(collision_index_[i])
+		//{
 			for (int j = 0; j < this->num_joints_; ++j)	// First entry has 0 distance, i.e. i == layout[i].index[0]
 			{
 				// Apply force distribution model
@@ -565,16 +564,15 @@ void SkinJointGazeboRos::UpdateJoints()
 
 				f_sen_( layout[i].index[j] ) += force_dist;
 
-				if( fabs(force_dist)<0.00001 )	// Stop once force becomes negligible
+				if( fabs(force_dist)<0.00001 )	// Stop once force becomes negligible TODO add parameter
 					break;
 
 //				if( fabs(force_dist - this->joints_[ layout[i].index[j] ]->GetForce(0) ) > 0.00001 )
 //					std::cout<<"["<<(this->world_->GetSimTime()).Double()<<"] "<<"Dist "<<i<<" ("<<j<<"): "<<force_dist<<" -> "<<this->joints_[ layout[i].index[j] ]->GetForce(0)<<"\n";
 
 			}
-		}
+		//}
 	}
-	*/
 
 	// Sensed Force: add noise
 	if(false)	// TODO add variable
