@@ -169,7 +169,7 @@ public:
 		defaultModelSpec.spec.solver_iterations    = 750;
 		defaultModelSpec.spec.step_size            = 0.001;
 
-		std::cout<<"### DEFAULT MODEL SPECS ###\n";
+		std::cout<<"\n##### DEFAULT MODEL SPECS #####\n";
 		print(defaultModelSpec);
 	}
 
@@ -194,7 +194,7 @@ public:
 		defaultControlSpec.Ts                = 0.005;
 		defaultControlSpec.Nf                = 10; //0.045;//10;
 
-		std::cout<<"### DEFAULT CONTROL SPECS ###\n";
+		std::cout<<"\n##### DEFAULT CONTROL SPECS #####\n";
 		print(defaultControlSpec);
 	}
 

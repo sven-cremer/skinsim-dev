@@ -44,18 +44,11 @@
 #include <string>
 #include <vector>
 
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign;
-
-//#include <boost/filesystem.hpp>
-//#include <boost/lexical_cast.hpp>
-//
-//#include <SkinSim/ControlSpecYAML.hh>
-//#include <SkinSim/ModelSpecYAML.hh>
-//#include <SkinSim/model_builder.h>
-
 #include <experimenter/src/skinsim_experiment_generator.cc>
 
+#include <boost/assign/std/vector.hpp>
+
+using namespace boost::assign;
 using namespace SkinSim;
 
 int main(int argc, char** argv)
@@ -83,10 +76,11 @@ int main(int argc, char** argv)
 	}
 
 	std::cout<<"EXP NAME: "<<exp_name<<"\n";
-	std::cout<<"EXP TYPE: "<<(int)type<<"\n";
+	std::cout<<"EXP TYPE: "<<(int)type<<"\n\n";
 
 	SkinSimExperimentGenerator generatorObj(exp_name);
 
+	std::cout<<"\n->";
 
 	// ---------------------------------------------
 
@@ -122,7 +116,7 @@ int main(int argc, char** argv)
 	// ---------------------------------------------
 	case TactileLayout:
 	{
-		// Tactile layout
+		std::cout<<"Tactile layout";
 		std::vector<int> siz;
 		std::vector<int> sep;
 		siz += 1;
@@ -133,7 +127,7 @@ int main(int argc, char** argv)
 	}
 	case PlungerOffset:
 	{
-		// Plunger Offset value
+		std::cout<<"Plunger Offset";
 		std::vector<double> dx;
 		std::vector<double> dy;
 		for (int i  = 0; i < 13 ; i++ )
@@ -149,11 +143,12 @@ int main(int argc, char** argv)
 	{
 		// Tactile layout + max plunger offset
 		// TODO
+		std::cout<<"No";
 		break;
 	}
 	case ModelParam:
 	{
-		// Model parameters
+		std::cout<<"Model parameter";
 		std::vector<double> v;
 		for(unsigned i  = 0; i < 3 ; i++ )
 		{
@@ -168,7 +163,7 @@ int main(int argc, char** argv)
 	// ---------------------------------------------
 	case PIDtuning:
 	{
-		// PID tuning
+		std::cout<<"PID tuning";
 		std::vector<double> g;
 		g += 0.05,0.1,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0;
 		//for(int i  = 0; i < 4; i++ )
@@ -179,7 +174,7 @@ int main(int argc, char** argv)
 	}
 	case TimeStep:
 	{
-		// Test different Ts values
+		std::cout<<"Different controller time step (Ts)";
 		double Kdata = 0.0002;
 		double numSensors[] = {8,4,3};
 		double freq[]       = {4,16,36};
@@ -196,9 +191,10 @@ int main(int argc, char** argv)
 		break;
 	}
 	default:
-		std::cout<<"No experiment selected\n";
+		std::cout<<"No";
 		break;
 	}
+	std::cout<<" experiment selected!\n\n";
 
 /*
 	// Compute Ts from N
