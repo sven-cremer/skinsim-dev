@@ -63,19 +63,30 @@ int main(int argc, char** argv)
 
 	std::string exp_name = "exp01";
 
+	enum Exp { None, TactileLayout, PlungerOffset, LayoutAndOffset, ModelParam, PIDtuning, TimeStep};
+	Exp type = None;
+
 	// Check the number of command-line parameters
 	if (argc == 2)
 	{
-		// Set model file name
 		exp_name = argv[1];
+	}
+	else if (argc == 3)
+	{
+		exp_name = argv[1];
+		type     = (Exp)atoi(argv[2]);
 	}
 	else
 	{
-		// Use default file name
-		std::cout<<"\n\tUsage: "<<argv[0]<<" [EXPERIMENT NAME]\n\n";
+		// Use default
+		std::cout<<"\n\tUsage: "<<argv[0]<<" [EXP NAME] [EXP TYPE]\n\n";
 	}
 
+	std::cout<<"EXP NAME: "<<exp_name<<"\n";
+	std::cout<<"EXP TYPE: "<<(int)type<<"\n";
+
 	SkinSimExperimentGenerator generatorObj(exp_name);
+
 
 	// ---------------------------------------------
 
@@ -103,65 +114,91 @@ int main(int argc, char** argv)
 	//defaultModelSpec.spec.element_damping      = 0.1;   // TODO compute this automatically from plunger diameter
 
 	// ---------------------------------------------
+
+	switch(type)
+	{
+	// ---------------------------------------------
 	// Experiments with different models
-
-	// Tactile layout
-	std::vector<int> siz;
-	std::vector<int> sep;
-	siz += 1;
-	sep += 2, 5, 8;
-	generatorObj.setTactileLayout(siz, sep);
-	generatorObj.duplicateControlSpecs();
-
-	// Tactile layout + max plunger offset
-	// TODO
-
-	// Plunger Offset value
-	std::vector<double> dx;
-	std::vector<double> dy;
-	for (int i  = 0; i < 13 ; i++ )
+	// ---------------------------------------------
+	case TactileLayout:
 	{
-		dx.push_back(i*0.0025);
-		dy.push_back(i*0.0025);
+		// Tactile layout
+		std::vector<int> siz;
+		std::vector<int> sep;
+		siz += 1;
+		sep += 2, 5, 8;
+		generatorObj.setTactileLayout(siz, sep);
+		generatorObj.duplicateControlSpecs();
+		break;
 	}
-	generatorObj.setPlungerOffset(dx, dy);
-	generatorObj.duplicateControlSpecs();
-
-	// Model parameters
-	std::vector<double> v;
-	for(unsigned i  = 0; i < 3 ; i++ )
+	case PlungerOffset:
 	{
-		v.push_back( 0.0001*pow(10,i+1) );
+		// Plunger Offset value
+		std::vector<double> dx;
+		std::vector<double> dy;
+		for (int i  = 0; i < 13 ; i++ )
+		{
+			dx.push_back(i*0.0025);
+			dy.push_back(i*0.0025);
+		}
+		generatorObj.setPlungerOffset(dx, dy);
+		generatorObj.duplicateControlSpecs();
+		break;
 	}
-	generatorObj.setModelParameter(v, SkinSimExperimentGenerator::Mass);
-	generatorObj.duplicateControlSpecs();
-
+	case LayoutAndOffset:
+	{
+		// Tactile layout + max plunger offset
+		// TODO
+		break;
+	}
+	case ModelParam:
+	{
+		// Model parameters
+		std::vector<double> v;
+		for(unsigned i  = 0; i < 3 ; i++ )
+		{
+			v.push_back( 0.0001*pow(10,i+1) );
+		}
+		generatorObj.setModelParameter(v, SkinSimExperimentGenerator::Mass);
+		generatorObj.duplicateControlSpecs();
+		break;
+	}
 	// ---------------------------------------------
 	// Experiments with different controllers
-
-	// PID tuning
-	std::vector<double> g;
-	g += 0.05,0.1,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0;
-	//for(int i  = 0; i < 4; i++ )
-	//	g.push_back( 0.01 * pow(10, i) );
-	generatorObj.setPIDgains(g, SkinSimExperimentGenerator::P);
-	generatorObj.duplicateModelSpecs();
-
-
-	// Test different Ts values
-	double Kdata = 0.0002;
-	double numSensors[] = {8,4,3};
-	double freq[]       = {4,16,36};
-
-	std::vector<double> Ts;
-	for(unsigned i  = 0; i < 3 ; i++ )
+	// ---------------------------------------------
+	case PIDtuning:
 	{
-		//Ts.push_back( 0.0001 * pow(10, i) ) ;
-		//Ts.push_back( Kdata*numSensors[i] ) ;
-		Ts.push_back( 1.0/freq[i] ) ;
+		// PID tuning
+		std::vector<double> g;
+		g += 0.05,0.1,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0;
+		//for(int i  = 0; i < 4; i++ )
+		//	g.push_back( 0.01 * pow(10, i) );
+		generatorObj.setPIDgains(g, SkinSimExperimentGenerator::P);
+		generatorObj.duplicateModelSpecs();
+		break;
 	}
-	generatorObj.setTimeStep(Ts);
-	generatorObj.duplicateModelSpecs();
+	case TimeStep:
+	{
+		// Test different Ts values
+		double Kdata = 0.0002;
+		double numSensors[] = {8,4,3};
+		double freq[]       = {4,16,36};
+
+		std::vector<double> Ts;
+		for(unsigned i  = 0; i < 3 ; i++ )
+		{
+			//Ts.push_back( 0.0001 * pow(10, i) ) ;
+			//Ts.push_back( Kdata*numSensors[i] ) ;
+			Ts.push_back( 1.0/freq[i] ) ;
+		}
+		generatorObj.setTimeStep(Ts);
+		generatorObj.duplicateModelSpecs();
+		break;
+	}
+	default:
+		std::cout<<"No experiment selected\n";
+		break;
+	}
 
 /*
 	// Compute Ts from N
@@ -222,7 +259,6 @@ int main(int argc, char** argv)
 	// ---------------------------------------------
 	// Generate and save files
 	generatorObj.saveFiles();
-
 
 	return 0;
 
