@@ -76,6 +76,8 @@ private:
 	//std::vector<BuildModelSpec> modelSpecs;
 	//std::vector<ControllerSpec> ctrSpecs;
 
+	enum Gain { P, I, D };
+
 public:
 	//	std::vector<BuildModelSpec> setTactileLayout();
 	//	std::vector<BuildModelSpec> setPlungerOffset(BuildModelSpec defaultModelSpec, std::vector<BuildModelSpec>  modelSpecs);
@@ -241,5 +243,84 @@ public:
 
 	}
 
+	// Test different Ts values
+	void setTimeStep(std::vector<double> Ts, std::vector<ControllerSpec> &result)
+	{
+		for(unsigned i  = 0; i < Ts.size() ; i++ )
+		{
+			ControllerSpec tempControlSpec = defaultControlSpec;
+
+			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
+			tempControlSpec.Ts = Ts[i];
+			result.push_back( tempControlSpec ) ;
+		}
+	}
+
+	// PID tuning
+	void setPIDgains(std::vector<double> values, SkinSimExperimentGenerator::Gain g, std::vector<ControllerSpec> &result)
+	{
+		for(int i  = 0; i < values.size(); i++ )
+		{
+			ControllerSpec tempControlSpec = defaultControlSpec;
+
+			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
+
+			switch(g)
+			{
+			case SkinSimExperimentGenerator::P:
+				tempControlSpec.Kp = values[i];
+				break;
+			case SkinSimExperimentGenerator::I:
+				tempControlSpec.Ki = values[i];
+				break;
+			case SkinSimExperimentGenerator::D:
+				tempControlSpec.Kd = values[i];
+				break;
+			}
+			result.push_back( tempControlSpec ) ;
+		}
+	}
+
+	void duplicateModelSpecs(int N, std::vector<BuildModelSpec>  &result)
+	{
+		for(int i  = 0; i < N; i++ )
+		{
+			result.push_back( defaultModelSpec ) ;
+		}
+	}
+
+	void duplicateControlSpecs(int N, std::vector<ControllerSpec>  &result)
+	{
+		for(int i  = 0; i < N; i++ )
+		{
+			result.push_back( defaultControlSpec ) ;
+		}
+	}
+
+	void saveFiles(std::vector<BuildModelSpec> modelSpecs, std::vector<ControllerSpec> ctrSpecs )
+	{
+		// Save to YAML
+		YAML::Emitter mdlYAMLEmitter;
+		mdlYAMLEmitter << modelSpecs;
+
+		// Write to YAML file
+		std::ofstream mdlOut(mdlSpecPath.c_str());
+		std::cout<<"Saving model specs to file: "<<mdlSpecPath<<"\n";
+		mdlOut << mdlYAMLEmitter.c_str();;
+		mdlOut.close();
+
+		// Save to YAML
+		YAML::Emitter ctrYAMLEmitter;
+		ctrYAMLEmitter << ctrSpecs;
+
+		// Write to YAML file
+		std::ofstream ctrOut(ctrSpecPath.c_str());
+		std::cout<<"Saving control specs to file: "<<ctrSpecPath<<"\n";
+		ctrOut << ctrYAMLEmitter.c_str();;
+		ctrOut.close();
+
+		std::cout<<"\nNumber of models generated:      "<<modelSpecs.size();
+		std::cout<<"\nNumber of controllers generated: "<<ctrSpecs.size();
+	}
 
 };
