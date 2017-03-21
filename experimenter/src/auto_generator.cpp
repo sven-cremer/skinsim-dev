@@ -44,12 +44,17 @@
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign;
 
-#include <SkinSim/ControlSpecYAML.hh>
-#include <SkinSim/ModelSpecYAML.hh>
-#include <SkinSim/model_builder.h>
+//#include <boost/filesystem.hpp>
+//#include <boost/lexical_cast.hpp>
+//
+//#include <SkinSim/ControlSpecYAML.hh>
+//#include <SkinSim/ModelSpecYAML.hh>
+//#include <SkinSim/model_builder.h>
+
+#include <experimenter/src/skinsim_experiment_generator.cc>
 
 using namespace SkinSim;
 
@@ -70,78 +75,9 @@ int main(int argc, char** argv)
 		std::cout<<"\n\tUsage: "<<argv[0]<<" [EXPERIMENT NAME]\n\n";
 	}
 
-	std::string pathSkinSim = getenv ("SKINSIM_PATH");
-	std::string pathExp     = pathSkinSim + "/data/" + exp_name;
-
-	// Create experiment directory
-	boost::filesystem::path dir(pathExp);
-	if(!boost::filesystem::create_directory(dir))
-	{
-		if( boost::filesystem::exists(dir) )
-		{
-			std::cout << "Warning: Experiment folder already exists ... will replace files!" << "\n";
-		}
-		else
-		{
-			std::cerr << "Failed to create experiment directory!" << "\n";
-			return 1;
-		}
-	}
-
-	// Parameters
-	std::string filename_model   = "mdlSpecs.yaml";;
-	std::string filename_control = "ctrSpecs.yaml";
-
-	std::string mdlSpecPath = pathExp + "/" + filename_model;
-	std::string ctrSpecPath = pathExp + "/" + filename_control;
-
-	std::string defaultModelSpecPath = pathSkinSim + "/generator/config/model_params.yaml";
+	SkinSimExperimentGenerator generatorObj(exp_name);
 
 	// ---------------------------------------------
-	// Set default Model values
-
-	std::vector<BuildModelSpec>  modelSpecs;
-	BuildModelSpec defaultModelSpec;
-
-	// Read default YAML model file
-	std::ifstream fin(defaultModelSpecPath.c_str());
-	YAML::Node doc_model;
-	std::cout<<"Loading file: "<<defaultModelSpecPath<<"\n";
-	doc_model = YAML::LoadAll(fin);
-	doc_model[0][0] >> defaultModelSpec;
-	std::cout<<"DEFAULT MODEL VALUES:\n";
-	print(defaultModelSpec);
-
-	// ---------------------------------------------
-	// Set default Controller values
-
-	std::vector<ControllerSpec> ctrSpecs;
-	ControllerSpec defaultControlSpec;
-
-	// Set default values
-	defaultControlSpec.name         	 = "efc_00_00_00" ;
-	defaultControlSpec.impCtr_Xnom  	 = 0;
-	defaultControlSpec.impCtr_M     	 = 0;
-	defaultControlSpec.impCtr_D     	 = 0;
-	defaultControlSpec.impCtr_K     	 = 0;
-
-	defaultControlSpec.controller_type   = 4;    //DIRECT=0, FORCE_BASED_FORCE_CONTROL=1, POSITION_BASED_FORCE_CONTROL=2, IMPEDANCE_CONTROL=3, DIGITAL_PID=4
-	defaultControlSpec.feedback_type     = 2;    //PLUNGER_LOAD_CELL=0, TACTILE_APPLIED=1, TACTILE_SENSED=2
-	defaultControlSpec.Fd                = 1;
-
-	defaultControlSpec.Kp                = 2.0; //420; //0.001;
-	defaultControlSpec.Ki                = 20.0; //5200; //0.000008333;
-	defaultControlSpec.Kd                = 0.1; //-3.05;//0.0003;
-	defaultControlSpec.Kv                = 0.0;
-
-	defaultControlSpec.Ts                = 0.005;
-	defaultControlSpec.Nf                = 10; //0.045;//10;
-
-	std::cout<<"DEFAULT CONTROL VALUES:\n";
-	print(defaultControlSpec);
-
-	// ---------------------------------------------
-	// Generate model specifications
 
 	/* Shook, "Experimental testbed for robotic skin characterization and interaction control", 2014.
 	 * Table 4-6: Parameters for 4mm Frubber skin
@@ -163,64 +99,70 @@ int main(int argc, char** argv)
 	 * b_element =  485.6 * (0.16/0.99) * (1/201) = 0.390 [N/m]
 	 *
 	 */
-
 	//defaultModelSpec.spec.element_spring       = 10.0;  // TODO compute this automatically from plunger diameter
 	//defaultModelSpec.spec.element_damping      = 0.1;   // TODO compute this automatically from plunger diameter
 
-	//modelSpecs.push_back( defaultModelSpec ) ;
+	// ---------------------------------------------
+	// Experiments with different models
 
-/*
 	// Tactile layout
-	for(unsigned i  = 1; i < 5 ; i++ )		// Tactile size
-	{
-		for(unsigned j  = 1; j < 5 ; j++ )	// Tactile separation
-		{
-			BuildModelSpec tempModelSpec = defaultModelSpec;
+	std::vector<int> siz;
+	std::vector<int> sep;
+	siz += 1;
+	sep += 2, 5, 8;
+	generatorObj.setTactileLayout(siz, sep);
+	generatorObj.duplicateControlSpecs();
 
-			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( i ) + "_sep_" + boost::lexical_cast<std::string>( j );
-			tempModelSpec.spec.tactile_elements_x   = i;
-			tempModelSpec.spec.tactile_elements_y   = i;
-			tempModelSpec.spec.tactile_separation_x = j;
-			tempModelSpec.spec.tactile_separation_y = j;
+	// Tactile layout + max plunger offset
+	// TODO
 
-			//tempModelSpec.spec.plunger_offset_x = j*tempModelSpec.spec.element_diameter*0.5;	// Assume this gives max COP error
-			//tempModelSpec.spec.plunger_offset_y = j*tempModelSpec.spec.element_diameter*0.5;
-
-			modelSpecs.push_back( tempModelSpec ) ;
-		}
-	}
-*/
-/*
 	// Plunger Offset value
+	std::vector<double> dx;
+	std::vector<double> dy;
 	for (int i  = 0; i < 13 ; i++ )
 	{
-		BuildModelSpec tempModelSpec = defaultModelSpec;
-
-		tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 3 ) + "_sep_" + boost::lexical_cast<std::string>( 3 ) + "_offset_" + boost::lexical_cast<std::string>( i );
-		tempModelSpec.spec.tactile_elements_x   = 3;
-		tempModelSpec.spec.tactile_elements_y   = 3;
-		tempModelSpec.spec.tactile_separation_x = 3;
-		tempModelSpec.spec.tactile_separation_y = 3;
-
-		tempModelSpec.spec.plunger_offset_x = i*0.0025;
-		tempModelSpec.spec.plunger_offset_y = i*0.0025;
-
-		modelSpecs.push_back( tempModelSpec ) ;
+		dx.push_back(i*0.0025);
+		dy.push_back(i*0.0025);
 	}
-*/
-/*
+	generatorObj.setPlungerOffset(dx, dy);
+	generatorObj.duplicateControlSpecs();
+
 	// Model parameters
+	std::vector<double> v;
 	for(unsigned i  = 0; i < 3 ; i++ )
 	{
-		BuildModelSpec tempModelSpec = defaultModelSpec;
-
-		tempModelSpec.name = "skin_array_" + boost::lexical_cast<std::string>( i );
-		tempModelSpec.spec.element_spring       = 10.0;
-		tempModelSpec.spec.element_damping      = 0.10;
-		defaultModelSpec.spec.element_mass      = 0.0001*pow(10,i+1);
-		modelSpecs.push_back( tempModelSpec ) ;
+		v.push_back( 0.0001*pow(10,i+1) );
 	}
-*/
+	generatorObj.setModelParameter(v, SkinSimExperimentGenerator::Mass);
+	generatorObj.duplicateControlSpecs();
+
+	// ---------------------------------------------
+	// Experiments with different controllers
+
+	// PID tuning
+	std::vector<double> g;
+	g += 0.05,0.1,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0;
+	//for(int i  = 0; i < 4; i++ )
+	//	g.push_back( 0.01 * pow(10, i) );
+	generatorObj.setPIDgains(g, SkinSimExperimentGenerator::P);
+	generatorObj.duplicateModelSpecs();
+
+
+	// Test different Ts values
+	double Kdata = 0.0002;
+	double numSensors[] = {8,4,3};
+	double freq[]       = {4,16,36};
+
+	std::vector<double> Ts;
+	for(unsigned i  = 0; i < 3 ; i++ )
+	{
+		//Ts.push_back( 0.0001 * pow(10, i) ) ;
+		//Ts.push_back( Kdata*numSensors[i] ) ;
+		Ts.push_back( 1.0/freq[i] ) ;
+	}
+	generatorObj.setTimeStep(Ts);
+	generatorObj.duplicateModelSpecs();
+
 /*
 	// Compute Ts from N
 	int idx = 0;
@@ -246,9 +188,7 @@ int main(int argc, char** argv)
 			tempModelSpec.spec.tactile_elements_y   = i;
 			tempModelSpec.spec.solver_iterations    = 750;
 
-
 			modelSpecs.push_back( tempModelSpec ) ;
-
 
 			// Compute number of sensors N
 			int total_elements_x = tempModelSpec.spec.num_elements_x*tempModelSpec.spec.num_patches_x;
@@ -278,141 +218,11 @@ int main(int argc, char** argv)
 		}
 	//}
 */
-	double contacts = 120;
-
-	//Build one model
-	BuildModelSpec tempModelSpec = defaultModelSpec;
-	tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 1 ) + "_sep_" + boost::lexical_cast<std::string>( 2 );
-	tempModelSpec.spec.tactile_separation_x = 2;
-	tempModelSpec.spec.tactile_separation_y = 2;
-	tempModelSpec.spec.tactile_elements_x   = 1;
-	tempModelSpec.spec.tactile_elements_y   = 1;
-	tempModelSpec.spec.element_mass         = 0.01;
-	tempModelSpec.spec.element_damping      = 242.6/(contacts*6); //2.02;		Si: 248.6/contacts    Frubber: 242.6
-	tempModelSpec.spec.element_spring       = 1523 /(contacts*6); //12.69;		Si: 4338/contacts     Frubber: 1523
-	tempModelSpec.spec.element_diameter     = 0.0016644;
-	tempModelSpec.spec.element_height       = 0.0096644;
-	tempModelSpec.spec.spread_scaling       = 1.0; //0.085;
-	tempModelSpec.spec.spread_sigma         = 0.00102;
-	tempModelSpec.spec.plunger_radius       = 0.010;
-	tempModelSpec.spec.plunger_mass         = 1.0;
-	tempModelSpec.spec.plane_thickness      = 0.0005;
-	tempModelSpec.spec.plunger_length       = 0.03;
-
-	tempModelSpec.spec.noiseAmplitude       = 0.0;
-	tempModelSpec.spec.noiseSigma           = 0.0;
-
-	tempModelSpec.spec.max_sim_time         = 1.0;
-	tempModelSpec.spec.solver_iterations    = 750;
-	tempModelSpec.spec.step_size            = 0.001;
-
-	//modelSpecs.push_back( tempModelSpec ) ;
-	/*
-	int sepArray[] = {2,5,8};
-	for(int j  = 0; j < 3 ; j++ )	// Tactile separation
-	{
-		//BuildModelSpec tempModelSpec = defaultModelSpec;
-
-		tempModelSpec.name = "skin_array_s_1_sep_" + boost::lexical_cast<std::string>( sepArray[j] );
-		tempModelSpec.spec.tactile_separation_x = sepArray[j];
-		tempModelSpec.spec.tactile_separation_y = sepArray[j];
-
-		// Test different offsets
-		//tempModelSpec.spec.plunger_offset_x = j*tempModelSpec.spec.element_diameter*0.25;
-		//tempModelSpec.spec.plunger_offset_y = j*tempModelSpec.spec.element_diameter*0.25;
-
-		modelSpecs.push_back( tempModelSpec ) ;
-	}
-	*/
-
-	// PID tuning
-	double testValues[] = {0.05,0.1,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0};
-	for(int j  = 0; j < 10 ; j++ )
-	{
-		defaultControlSpec.name = "control_" + boost::lexical_cast<std::string>( j );
-		defaultControlSpec.Kp = testValues[j];
-		defaultControlSpec.Ki = 0.0;
-		defaultControlSpec.Kd = 0.0;
-		defaultControlSpec.Nf = 1.0;
-
-		modelSpecs.push_back( tempModelSpec ) ;
-		tempModelSpec.name = "skin_array_s_1_sep_2_" + boost::lexical_cast<std::string>( j );
-		ctrSpecs.push_back( defaultControlSpec ) ;
-	}
-
-	// Save to YAML
-	YAML::Emitter mdlYAMLEmitter;
-	mdlYAMLEmitter << modelSpecs;
-
-	// Write to YAML file
-	std::ofstream mdlOut(mdlSpecPath.c_str());
-	std::cout<<"Saving model specs to file: "<<mdlSpecPath<<"\n";
-	mdlOut << mdlYAMLEmitter.c_str();;
-	mdlOut.close();
-
 
 	// ---------------------------------------------
-	// Generate and save SDF models
+	// Generate and save files
+	generatorObj.saveFiles();
 
-	for(unsigned i = 0; i < modelSpecs.size() ;i++)
-	{
-		ModelBuilder skinSimModelBuilderObject( modelSpecs[i] );	// TODO store in exp directory and update Gazebo model path
-	}
-
-
-	// ---------------------------------------------
-	// Generate control specifications
-
-
-	//ctrSpecs.push_back( defaultControlSpec ) ;
-
-/*
-	// Test different Ts values
-	double Kdata = 0.0002;
-	int numSensors[] = {8,4,3};
-	double freq[] = {4,16,36};
-	for(unsigned i  = 0; i < 3 ; i++ )
-	{
-		ControllerSpec tempControlSpec = defaultControlSpec;
-
-		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
-//		tempControlSpec.Ts = Kdata*numSensors[i];
-//		tempControlSpec.Ts = 1.0/freq[i];
-		ctrSpecs.push_back( tempControlSpec ) ;
-	}
-*/
-/*
-	// PID tuning
-	int num = 1;
-	for(int i  = 0; i < 4; i++ )
-	{
-		ControllerSpec tempControlSpec = defaultControlSpec;
-
-		tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( num );
-		//tempControlSpec.Ts = 0.0001 * pow(10, i);
-		//tempControlSpec.controller_type = j;
-
-		tempControlSpec.Kp = 0.01 * pow(10, i);
-		ctrSpecs.push_back( tempControlSpec ) ;
-		num++;
-	}
-*/
-
-	// Save to YAML
-	YAML::Emitter ctrYAMLEmitter;
-	ctrYAMLEmitter << ctrSpecs;
-
-	// Write to YAML file
-	std::ofstream ctrOut(ctrSpecPath.c_str());
-	std::cout<<"Saving control specs to file: "<<ctrSpecPath<<"\n";
-	ctrOut << ctrYAMLEmitter.c_str();;
-	ctrOut.close();
-
-	// ---------------------------------------------
-
-	std::cout<<"\nNumber of models generated:      "<<modelSpecs.size();
-	std::cout<<"\nNumber of controllers generated: "<<ctrSpecs.size();
-	std::cout<<"\nTotal configurations: "<<modelSpecs.size()*ctrSpecs.size()<<"\n";
 
 	return 0;
 
