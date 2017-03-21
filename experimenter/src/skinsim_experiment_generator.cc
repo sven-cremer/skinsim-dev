@@ -73,20 +73,29 @@ private:
 	BuildModelSpec defaultModelSpec;
 	ControllerSpec defaultControlSpec;
 
-	//std::vector<BuildModelSpec> modelSpecs;
-	//std::vector<ControllerSpec> ctrSpecs;
+	std::vector<BuildModelSpec> list_mdlSpecs;
+	std::vector<ControllerSpec> list_ctrSpecs;
 
-	enum Gain { P, I, D };
+
 
 public:
-	//	std::vector<BuildModelSpec> setTactileLayout();
-	//	std::vector<BuildModelSpec> setPlungerOffset(BuildModelSpec defaultModelSpec, std::vector<BuildModelSpec>  modelSpecs);
-	//	std::vector<BuildModelSpec> addNoise(int tactileSize, int tactileSeparation, BuildModelSpec defaultModelSpec, std::vector<BuildModelSpec>  modelSpecs);
-	//	std::vector<ControllerSpec> setPIDTuningParameters(ControllerSpec defaultControlSpec, std::vector<ControllerSpec> ctrSpecs);
-	//	std::vector<ControllerSpec> setTsValue(ControllerSpec defaultControlSpec, std::vector<ControllerSpec> ctrSpecs);
 
+	enum Gain { P, I, D };
+	enum Model { Mass, Spring, Damper };
 
 	SkinSimExperimentGenerator(std::string exp_name_)
+	{
+		setPaths(exp_name_);
+		setDefaultModelValues();
+		setDefaultControlValues();
+	}
+
+	~SkinSimExperimentGenerator()
+	{
+
+	}
+
+	void setPaths(std::string exp_name_)
 	{
 		exp_name = exp_name_;
 
@@ -108,7 +117,6 @@ public:
 			}
 		}
 
-		// Parameters
 		filename_model   = "mdlSpecs.yaml";;
 		filename_control = "ctrSpecs.yaml";
 
@@ -116,14 +124,14 @@ public:
 		ctrSpecPath = pathExp + "/" + filename_control;
 
 		defaultModelSpecPath = pathSkinSim + "/generator/config/model_params.yaml";
-
-		setDefaultModelValues();
-		setDefaultControlValues();
 	}
 
-	~SkinSimExperimentGenerator()
+	void resetSpecs()
 	{
-
+		list_mdlSpecs.clear();
+		list_mdlSpecs.clear();
+		setDefaultModelValues();
+		setDefaultControlValues();
 	}
 
 	void setDefaultModelValues()
@@ -190,8 +198,33 @@ public:
 		print(defaultControlSpec);
 	}
 
+	// Change element model parameter
+	void setModelParameter(std::vector<double> values, SkinSimExperimentGenerator::Model m)
+	{
+		for(int i  = 0; i < values.size(); i++ )
+		{
+			BuildModelSpec tempModelSpec = defaultModelSpec;
+
+			tempModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( tempModelSpec.spec.tactile_elements_x ) + "_sep_" + boost::lexical_cast<std::string>( tempModelSpec.spec.tactile_separation_x ) + "_" + boost::lexical_cast<std::string>( i );
+
+			switch(m)
+			{
+			case SkinSimExperimentGenerator::Mass:
+				tempModelSpec.spec.element_mass = values[i];
+				break;
+			case SkinSimExperimentGenerator::Spring:
+				tempModelSpec.spec.element_spring = values[i];
+				break;
+			case SkinSimExperimentGenerator::Damper:
+				tempModelSpec.spec.element_damping = values[i];
+				break;
+			}
+			list_mdlSpecs.push_back( tempModelSpec ) ;
+		}
+	}
+
 	// Tactile layout
-	void setTactileLayout(std::vector<int> tactileSizes, std::vector<int> tactileSeparations, std::vector<BuildModelSpec>  &result)
+	void setTactileLayout(std::vector<int> tactileSizes, std::vector<int> tactileSeparations)
 	{
 		int N = tactileSizes.size();
 		int M = tactileSeparations.size();
@@ -210,13 +243,13 @@ public:
 				tempModelSpec.spec.tactile_separation_x = sep;
 				tempModelSpec.spec.tactile_separation_y = sep;
 
-				result.push_back( tempModelSpec ) ;
+				list_mdlSpecs.push_back( tempModelSpec ) ;
 			}
 		}
 	}
 
 	// Plunger Offset value
-	void setPlungerOffset(std::vector<double> dx, std::vector<double> dy, std::vector<BuildModelSpec>  &result)
+	void setPlungerOffset(std::vector<double> dx, std::vector<double> dy)
 	{
 		if( dx.size() != dy.size() )
 		{
@@ -233,18 +266,18 @@ public:
 			tempModelSpec.spec.plunger_offset_x = dx[i];
 			tempModelSpec.spec.plunger_offset_y = dy[i];
 
-			result.push_back( tempModelSpec ) ;
+			list_mdlSpecs.push_back( tempModelSpec ) ;
 		}
 	}
 
 	// Noise
-	void addNoise(std::vector<double> amplitude, std::vector<double> sigma, std::vector<BuildModelSpec>  &result)
+	void addNoise(std::vector<double> amplitude, std::vector<double> sigma)
 	{
 
 	}
 
 	// Test different Ts values
-	void setTimeStep(std::vector<double> Ts, std::vector<ControllerSpec> &result)
+	void setTimeStep(std::vector<double> Ts)
 	{
 		for(unsigned i  = 0; i < Ts.size() ; i++ )
 		{
@@ -252,12 +285,12 @@ public:
 
 			tempControlSpec.name = "control_" + boost::lexical_cast<std::string>( i );
 			tempControlSpec.Ts = Ts[i];
-			result.push_back( tempControlSpec ) ;
+			list_ctrSpecs.push_back( tempControlSpec ) ;
 		}
 	}
 
 	// PID tuning
-	void setPIDgains(std::vector<double> values, SkinSimExperimentGenerator::Gain g, std::vector<ControllerSpec> &result)
+	void setPIDgains(std::vector<double> values, SkinSimExperimentGenerator::Gain g)
 	{
 		for(int i  = 0; i < values.size(); i++ )
 		{
@@ -277,31 +310,57 @@ public:
 				tempControlSpec.Kd = values[i];
 				break;
 			}
-			result.push_back( tempControlSpec ) ;
+			list_ctrSpecs.push_back( tempControlSpec ) ;
 		}
 	}
 
-	void duplicateModelSpecs(int N, std::vector<BuildModelSpec>  &result)
+	void duplicateModelSpecs()
+	{
+		duplicateModelSpecs(list_ctrSpecs.size());
+	}
+
+	void duplicateControlSpecs()
+	{
+		duplicateControlSpecs(list_mdlSpecs.size());
+	}
+
+	void duplicateModelSpecs(int N)
 	{
 		for(int i  = 0; i < N; i++ )
 		{
-			result.push_back( defaultModelSpec ) ;
+			list_mdlSpecs.push_back( defaultModelSpec ) ;
 		}
 	}
 
-	void duplicateControlSpecs(int N, std::vector<ControllerSpec>  &result)
+	void duplicateControlSpecs(int N)
 	{
 		for(int i  = 0; i < N; i++ )
 		{
-			result.push_back( defaultControlSpec ) ;
+			list_ctrSpecs.push_back( defaultControlSpec ) ;
 		}
 	}
 
-	void saveFiles(std::vector<BuildModelSpec> modelSpecs, std::vector<ControllerSpec> ctrSpecs )
+	void saveFiles()
 	{
+		if( list_mdlSpecs.size() != list_ctrSpecs.size() )
+		{
+			std::cerr<<"saveFiles: number of model and control specs do not agree!\n";
+			return;
+		}
+
+		// ---------------------------------------------
+		// Generate and save SDF models
+		for(unsigned i = 0; i < list_mdlSpecs.size() ;i++)
+		{
+			ModelBuilder skinSimModelBuilderObject( list_mdlSpecs[i] );	// TODO store in exp directory and update Gazebo model path
+		}
+
+		// ---------------------------------------------
+		// Generate model specifications
+
 		// Save to YAML
 		YAML::Emitter mdlYAMLEmitter;
-		mdlYAMLEmitter << modelSpecs;
+		mdlYAMLEmitter << list_mdlSpecs;
 
 		// Write to YAML file
 		std::ofstream mdlOut(mdlSpecPath.c_str());
@@ -309,9 +368,12 @@ public:
 		mdlOut << mdlYAMLEmitter.c_str();;
 		mdlOut.close();
 
+		// ---------------------------------------------
+		// Generate control specifications
+
 		// Save to YAML
 		YAML::Emitter ctrYAMLEmitter;
-		ctrYAMLEmitter << ctrSpecs;
+		ctrYAMLEmitter << list_ctrSpecs;
 
 		// Write to YAML file
 		std::ofstream ctrOut(ctrSpecPath.c_str());
@@ -319,8 +381,10 @@ public:
 		ctrOut << ctrYAMLEmitter.c_str();;
 		ctrOut.close();
 
-		std::cout<<"\nNumber of models generated:      "<<modelSpecs.size();
-		std::cout<<"\nNumber of controllers generated: "<<ctrSpecs.size();
+		// ---------------------------------------------
+		// Print result
+		std::cout<<"\nNumber of models generated:      "<<list_mdlSpecs.size();
+		std::cout<<"\nNumber of controllers generated: "<<list_ctrSpecs.size();
 	}
 
 };

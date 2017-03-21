@@ -54,7 +54,7 @@ add_library(SkinSimTestingFramework SHARED src/skinsim_testing_framework.cc)
 target_link_libraries(SkinSimTestingFramework ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES} ${Boost_LIBRARIES} yaml-cpp msgs)
 
 add_library(SkinSimExperimentGenerator SHARED src/skinsim_experiment_generator.cc)
-target_link_libraries(SkinSimExperimentGenerator ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES} ${Boost_LIBRARIES} yaml-cpp msgs)
+target_link_libraries(SkinSimExperimentGenerator ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES} ${Boost_LIBRARIES} yaml-cpp msgs model_builder)
 
 # Build
 add_executable( generate_experiment_specification src/generate_experiment_specification.cc )
