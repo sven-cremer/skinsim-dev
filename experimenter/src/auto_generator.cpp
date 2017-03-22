@@ -130,10 +130,17 @@ int main(int argc, char** argv)
 		std::cout<<"Plunger Offset";
 		std::vector<double> dx;
 		std::vector<double> dy;
-		for (int i  = 0; i < 13 ; i++ )
+		double r = 0.5*0.0016644;
+		for (int ix  = 0; ix < 8 ; ix++ )
 		{
-			dx.push_back(i*0.0025);
-			dy.push_back(i*0.0025);
+			for (int iy  = 0; iy < 8 ; iy++ )
+			{
+				if(iy <= ix)
+				{
+					dx.push_back(ix*r);
+					dy.push_back(iy*r);
+				}
+			}
 		}
 		generatorObj.setPlungerOffset(dx, dy);
 		generatorObj.duplicateControlSpecs();

@@ -146,8 +146,8 @@ public:
 		// Set other values
 		double contacts = 120;
 		defaultModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 1 ) + "_sep_" + boost::lexical_cast<std::string>( 2 );
-		defaultModelSpec.spec.tactile_separation_x = 2;
-		defaultModelSpec.spec.tactile_separation_y = 2;
+		defaultModelSpec.spec.tactile_separation_x = 5;
+		defaultModelSpec.spec.tactile_separation_y = 5;
 		defaultModelSpec.spec.tactile_elements_x   = 1;
 		defaultModelSpec.spec.tactile_elements_y   = 1;
 		defaultModelSpec.spec.element_mass         = 0.01;
@@ -191,7 +191,7 @@ public:
 		defaultControlSpec.Kd                = 0.1; //-3.05;//0.0003;
 		defaultControlSpec.Kv                = 0.0;
 
-		defaultControlSpec.Ts                = 0.005;
+		defaultControlSpec.Ts                = 0.01;
 		defaultControlSpec.Nf                = 10; //0.045;//10;
 
 		std::cout<<"\n##### DEFAULT CONTROL SPECS #####\n";
