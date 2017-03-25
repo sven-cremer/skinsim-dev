@@ -123,6 +123,7 @@ Go to [Import]->[General]->[Existing Projects Into Workspace] and select the *~/
 ```
 and then select ```[CDT GCC Build Output Parser]``` and ```[CDT GCC Built-in Compiler Settings[shared]]```. Finally, rebuild the index, i.e. right click on the *Project-Debug@build* folder and go to [Index]->[Rebuild].
 
+If the indexer still has trouble locating some header files, try adding the include paths manually. For example, you could add "/usr/include/gazebo-5.4/" by going to ```[Project]->[Properties]->[C/C++ include paths and symbols]``` and clicking on "Add External Include Path..."
 ### Executables
 For detailed usage, see the demo descriptions below.
 
