@@ -307,6 +307,21 @@ void setPaths(std::string exp_name, bool calibrationRun)
 		this->pathExpData = pathExp + "/calibration";
 	else
 		this->pathExpData = pathExp + "/experiment";
+
+	// Create experiment data directory
+	boost::filesystem::path dir(pathExpData);
+	if(!boost::filesystem::create_directory(dir))
+	{
+		if( boost::filesystem::exists(dir) )
+		{
+			std::cout << "Warning: Experiment folder already exists ... will replace files!" << "\n";
+		}
+		else
+		{
+			std::cerr << "Failed to create experiment directory!" << "\n";
+			//return 1;
+		}
+	}
 }
 
 void loadYAML(std::string fname, YAML::Node& doc_)
