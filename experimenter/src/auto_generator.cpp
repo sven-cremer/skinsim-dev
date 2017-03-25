@@ -131,11 +131,11 @@ int main(int argc, char** argv)
 		std::vector<double> dx;
 		std::vector<double> dy;
 		double r = 0.5*0.0016644;
-		for (int ix  = 0; ix < 8 ; ix++ )
+		for (int ix  = -9; ix < 10 ; ix++ )
 		{
-			for (int iy  = 0; iy < 8 ; iy++ )
+			for (int iy  = -9; iy < 10 ; iy++ )
 			{
-				if(iy <= ix)
+				//if(iy <= ix)
 				{
 					dx.push_back(ix*r);
 					dy.push_back(iy*r);
