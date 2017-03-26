@@ -352,8 +352,9 @@ void Plunger::UpdateJoints()
 //		this->joint_->SetForce(0, -this->effort_);
 		break;
 	}
-	// Digital PID control
+	// Digital PID control (with filtered derivative term)
 	case skinsim_ros_msgs::ControllerType::DIGITAL_PID:
+	case skinsim_ros_msgs::ControllerType::DIGITAL_PIDF:
 	{
 		if(num_contacts_>0 || first_contact_)
 		{
@@ -477,6 +478,31 @@ bool Plunger::serviceSetController(skinsim_ros_msgs::SetController::Request& req
 		break;
 	}
 	case skinsim_ros_msgs::ControllerType::DIGITAL_PID:
+	{
+		this->force_desired_    = req.f_des;
+		this->position_desired_ = req.x_des;
+		this->velocity_desired_	= req.v_des;
+		this->Kp_               = req.Kp;
+		this->Ki_               = req.Ki;
+		this->Kd_               = req.Kd;
+		this->Ts                = req.Ts;
+
+		a_(0) = 1;
+		a_(1) = 0;
+		a_(2) = -1;
+		b_(0) =  Kp_ + Ki_*Ts/2 + 2*Kd_/Ts;
+		b_(1) =  Ki_*Ts - 4*Kd_/Ts;
+		b_(2) = -Kp_ + Ki_*Ts/2 + 2*Kd_/Ts;
+		ku_(1) = a_(1)/a_(0);
+		ku_(2) = a_(2)/a_(0);
+		ke_(0) = b_(0)/a_(0);
+		ke_(1) = b_(1)/a_(0);
+		ke_(2) = b_(2)/a_(0);
+
+		res.success = true;
+		break;
+	}
+	case skinsim_ros_msgs::ControllerType::DIGITAL_PIDF:
 	{
 		this->force_desired_    = req.f_des;
 		this->position_desired_ = req.x_des;

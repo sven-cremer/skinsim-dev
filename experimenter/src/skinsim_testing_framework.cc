@@ -112,6 +112,7 @@ private: std::string _physics;
 // Path and file names
 private: std::string pathSkinSim;
 private: std::string pathExp    ;
+private: std::string pathExpData;
 private: std::string mdlSpecPath;
 private: std::string ctrSpecPath;
 private: std::string caliPath   ;
@@ -285,7 +286,7 @@ void saveData( std::string exp_name )
 	// TODO
 }
 
-void setPaths(std::string exp_name)
+void setPaths(std::string exp_name, bool calibrationRun)
 {
 	this->filename_model   = "mdlSpecs.yaml";
 	this->filename_control = "ctrSpecs.yaml";
@@ -301,6 +302,26 @@ void setPaths(std::string exp_name)
 
 	this->calibration_file        = pathExp + "/tactile_calibration.yaml";
 	this->calibration_file_tmp    = pathExp + "/tmp_tactile_calibration.yaml";
+
+	if(calibrationRun)
+		this->pathExpData = pathExp + "/calibration";
+	else
+		this->pathExpData = pathExp + "/experiment";
+
+	// Create experiment data directory
+	boost::filesystem::path dir(pathExpData);
+	if(!boost::filesystem::create_directory(dir))
+	{
+		if( boost::filesystem::exists(dir) )
+		{
+			std::cout << "Warning: Experiment folder already exists ... will replace files!" << "\n";
+		}
+		else
+		{
+			std::cerr << "Failed to create experiment directory!" << "\n";
+			//return 1;
+		}
+	}
 }
 
 void loadYAML(std::string fname, YAML::Node& doc_)
@@ -324,13 +345,13 @@ void saveLayout(std::string exp_name, std::string topic, skinsim_ros_msgs::GetLa
 	std::string cmd1, cmd2;
 	if(msg_layout_.request.selected == skinsim_ros_msgs::GetLayout::Request::ELEMENTS)
 	{
-		cmd1 = "rostopic echo -n 1 -p " + topic + " > " + pathExp + "/layout_elements_" + exp_name + ".csv & ";
+		cmd1 = "rostopic echo -n 1 -p " + topic + " > " + pathExpData + "/layout_elements_" + exp_name + ".csv & ";
 		cmd2 = "rosservice call /skinsim/publish_layout \"selected: 0\"";
 		std::cout<<"Saving element layout ...\n";
 	}
 	else
 	{
-		cmd1 = "rostopic echo -n 1 -p " + topic + " > " + pathExp + "/layout_sensors_" + exp_name + ".csv & ";
+		cmd1 = "rostopic echo -n 1 -p " + topic + " > " + pathExpData + "/layout_sensors_" + exp_name + ".csv & ";
 		cmd2 = "rosservice call /skinsim/publish_layout \"selected: 1\"";
 		std::cout<<"Saving sensor layout ...\n";
 	}
@@ -356,11 +377,11 @@ std::string getExpName(int index, BuildModelSpec modelSpec, ControllerSpec contr
 	return exp_name;
 }
 
-void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
+void runTests(std::string exp_name, bool calibrationRun, bool saveAllData = false)
 {
 	//std::cout << "TestingFramework::runTests()" << std::endl;
 
-	this->setPaths(exp_name);
+	this->setPaths(exp_name, calibrationRun);
 
 	// Load YAML files
 	this->loadYAML(mdlSpecPath, doc_model);
@@ -374,7 +395,7 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 	int N = doc_model[0].size();
 
 	// Load calibration values
-	if(!calibrate)
+	if(!calibrationRun)
 		this->loadYAML(caliPath, doc_cali);
 
 	// Saving YAML files
@@ -397,7 +418,7 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 
 		// Load calibration constant
 		double K_cali = 1.0;
-		if(!calibrate)
+		if(!calibrationRun)
 		{
 			if( doc_cali[0][modelSpec.name])
 				K_cali=doc_cali[0][modelSpec.name].as<double>();
@@ -457,7 +478,7 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 
 		// Create ROS topic subscriber for calibration
 		ros::Subscriber ros_sub_;
-		if(calibrate)
+		if(calibrationRun)
 		{
 			std::string topic = "/skinsim/force_feedback";
 			ros_sub_ = this->ros_node_->subscribe(topic.c_str(), 1, &SkinSimTestingFramework::subscriberCB, this);
@@ -476,7 +497,7 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 		msg_srv_.request.Ts    = controlSpec.Ts;
 		msg_srv_.request.Nf    = controlSpec.Nf;
 		msg_srv_.request.K_cali = K_cali;
-		if(calibrate)
+		if(calibrationRun)
 		{
 			msg_srv_.request.type.selected = skinsim_ros_msgs::ControllerType::DIRECT;
 			//msg_srv_.request.fb.selected   = skinsim_ros_msgs::FeedbackType::TACTILE_APPLIED;
@@ -485,7 +506,7 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 		std::cout<<YELLOW<<"Control message:\n"<<msg_srv_.request<<RESET;
 
 		// Calibration
-		if(calibrate)
+		if(calibrationRun)
 		{
 			buffer_size = 20;
 			buffer = new double[buffer_size];
@@ -505,13 +526,13 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 
 		// Save ROS topic data to file (plunger data)
 		std::string topic = modelSpec.spec.topic;	// "/skinsim/plunger_data"
-		std::string cmd1 = "rostopic echo -p " + topic  + " > " + pathExp + "/plunger_" + exp_name + ".csv &";
+		std::string cmd1 = "rostopic echo -p " + topic  + " > " + pathExpData + "/plunger_" + exp_name + ".csv &";
 		std::cout<<"$ "<<cmd1.c_str()<<"\n";
 		system( cmd1.c_str() );
 
 		// Save ROS topic data to file (COP data)
 		std::string topic2 = "/skinsim/center_of_pressure";
-		std::string cmd2 = "rostopic echo -p " + topic2 + " > " + pathExp + "/cop_" + exp_name + ".csv &";
+		std::string cmd2 = "rostopic echo -p " + topic2 + " > " + pathExpData + "/cop_" + exp_name + ".csv &";
 		std::cout<<"$ "<<cmd2.c_str()<<"\n";
 		system( cmd2.c_str() );
 
@@ -520,11 +541,11 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 		std::string topic5 = "/skinsim/tactile_data";
 		if(saveAllData)
 		{
-			std::string cmd4 = "rostopic echo -p " + topic4 + " > " + pathExp + "/joint_" + exp_name + ".csv &";
+			std::string cmd4 = "rostopic echo -p " + topic4 + " > " + pathExpData + "/joint_" + exp_name + ".csv &";
 			std::cout<<"$ "<<cmd4.c_str()<<"\n";
 			system( cmd4.c_str() );
 
-			std::string cmd5 = "rostopic echo -p " + topic5 + " > " + pathExp + "/tactile_" + exp_name + ".csv &";
+			std::string cmd5 = "rostopic echo -p " + topic5 + " > " + pathExpData + "/tactile_" + exp_name + ".csv &";
 			std::cout<<"$ "<<cmd5.c_str()<<"\n";
 			system( cmd5.c_str() );
 		}
@@ -611,7 +632,7 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 
 		// Wait for simulation to end
 		waitCount = 0;
-		if(calibrate)
+		if(calibrationRun)
 		{
 			int fastCount = 0;
 			std::ostringstream ss;
@@ -698,7 +719,7 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 		}
 
 		// Save temporary calibration constant
-		if(calibrate)
+		if(calibrationRun)
 		{
 			out_cali_ << YAML::Key << modelSpec.name << YAML::Value << K_sma;
 
@@ -717,7 +738,7 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 		// Cleanup
 		Unload();
 		delete ros_node_;
-		if(calibrate)
+		if(calibrationRun)
 			delete[] buffer;
 
 	}
@@ -726,7 +747,7 @@ void runTests(std::string exp_name, bool calibrate, bool saveAllData = false)
 	out_plunger_ << YAML::EndMap;
 	saveYAML(plungerPositionPath, out_plunger_);
 
-	if(calibrate)
+	if(calibrationRun)
 	{
 		out_cali_ << YAML::EndMap;
 		saveYAML(calibration_file, out_cali_);
