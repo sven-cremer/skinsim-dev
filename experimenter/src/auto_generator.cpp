@@ -57,6 +57,8 @@ int main(int argc, char** argv)
 	std::string exp_name = "exp01";
 
 	enum Exp { None, TactileLayout, PlungerOffset, LayoutAndOffset, ModelParam, PIDtuning, TimeStep};
+	static const char * EnumStrings[] = { "None", "TactileLayout", "PlungerOffset", "LayoutAndOffset", "ModelParam", "PIDtuning", "TimeStep"};
+
 	Exp type = None;
 
 	// Check the number of command-line parameters
@@ -177,7 +179,8 @@ int main(int argc, char** argv)
 		std::vector<double> g;
 		//g += 0.05,0.1,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0;		// P
 		//g += 1.0,5.0,10.0,20.0;								// I
-		g += 0.0,0.0001,0.005,0.001;							// D
+		g += 0.0001,0.0005,0.001, 0.01;							// D
+		//g += 0.1,0.5,1.0,1.5,2.0;
 		//for(int i  = 0; i < 4; i++ )
 		//	g.push_back( 0.01 * pow(10, i) );
 		generatorObj.setPIDgains(g, SkinSimExperimentGenerator::D);
@@ -187,16 +190,16 @@ int main(int argc, char** argv)
 	case TimeStep:
 	{
 		std::cout<<"Different controller time step (Ts)";
-		double Kdata = 0.0015;
+		double Kdata = 0.005;//0.0015;
 		double numSensors2[] = {64,16,9};
 		double numSensors[]  = {8,4,3};
-		double freq[]        = {4,16,36};
+		double freq[]        = {30,120,360};
 		std::vector<double> Ts;
 		for(unsigned i  = 0; i < 3 ; i++ )
 		{
 			//Ts.push_back( 0.0001 * pow(10, i) ) ;
-			Ts.push_back( Kdata*numSensors[i] );
-			//Ts.push_back( 1.0/freq[i] ) ;
+			//Ts.push_back( Kdata*numSensors2[i] );
+			Ts.push_back( 1.0/freq[i] ) ;
 		}
 		generatorObj.setTimeStep(Ts);
 		//generatorObj.duplicateModelSpecs();

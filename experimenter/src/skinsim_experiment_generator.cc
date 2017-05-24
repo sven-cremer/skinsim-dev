@@ -146,7 +146,7 @@ public:
 		// Set other values
 		double s = 1;
 		double contacts = 120;
-		int sep = 8;
+		int sep = 5;
 		defaultModelSpec.name = "skin_array_s_" + boost::lexical_cast<std::string>( 1 ) + "_sep_" + boost::lexical_cast<std::string>( sep );
 		defaultModelSpec.spec.tactile_separation_x = sep;
 		defaultModelSpec.spec.tactile_separation_y = sep;
@@ -159,8 +159,8 @@ public:
 		defaultModelSpec.spec.num_patches_y        = 3;
 
 		defaultModelSpec.spec.element_mass         = 0.01;
-		defaultModelSpec.spec.element_damping      = 242.6/(contacts*6); //2.02;		Si: 248.6/contacts    Frubber: 242.6
-		defaultModelSpec.spec.element_spring       = 1523 /(contacts*6); //12.69;		Si: 4338/contacts     Frubber: 1523
+		defaultModelSpec.spec.element_damping      = 242.6/(contacts*100); //2.02;		Si: 248.6/contacts    Frubber: 242.6
+		defaultModelSpec.spec.element_spring       = 1523 /(contacts*10); //12.69;		Si: 4338/contacts     Frubber: 1523
 		defaultModelSpec.spec.element_diameter     = 0.0016644/s;
 		defaultModelSpec.spec.element_height       = 0.0096644;
 		defaultModelSpec.spec.spread_scaling       = 1.0; //0.085;
@@ -173,9 +173,9 @@ public:
 		defaultModelSpec.spec.noiseAmplitude       = 0.0;
 		defaultModelSpec.spec.noiseSigma           = 0.0;
 
-		defaultModelSpec.spec.max_sim_time         = 1.0;
+		defaultModelSpec.spec.max_sim_time         = 4.0;
 		defaultModelSpec.spec.solver_iterations    = 750;
-		defaultModelSpec.spec.step_size            = 0.001;
+		defaultModelSpec.spec.step_size            = 0.004;
 
 		std::cout<<"\n##### DEFAULT MODEL SPECS #####\n";
 		print(defaultModelSpec);
@@ -195,11 +195,11 @@ public:
 		defaultControlSpec.Fd                = 1;
 
 		defaultControlSpec.Kp                = 2.0; //420; //0.001;
-		defaultControlSpec.Ki                = 20.0; //5200; //0.000008333;
+		defaultControlSpec.Ki                = 0.2; //5200; //0.000008333;
 		defaultControlSpec.Kd                = 0.0; //-3.05;//0.0003;
 		defaultControlSpec.Kv                = 0.0;
 
-		defaultControlSpec.Ts                = 0.0045; // 0.012, 0.006, 0.0045
+		defaultControlSpec.Ts                = 1.0/120.0; // 0.012, 0.006, 0.0045
 		defaultControlSpec.Nf                = 0; //0.045;//10;
 
 		std::cout<<"\n##### DEFAULT CONTROL SPECS #####\n";
@@ -320,7 +320,7 @@ public:
 				break;
 			case SkinSimExperimentGenerator::D:
 				tempControlSpec.Kp = 2.0;
-				tempControlSpec.Ki = 10.0;
+				tempControlSpec.Ki = 5.0;
 				tempControlSpec.Kd = values[i];
 				break;
 			}
