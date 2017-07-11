@@ -56,7 +56,12 @@ Edit your bashrc to source the workspace in every new shell or simply execute
 
     source ~/.bashrc
 
-6\) Build SkinSim
+6\) Build ROS dependencies
+
+    cd ~/skin_ws
+    catkin_make
+
+7\) Build SkinSim
 
     cd ~/skin_ws/src/skinsim
     mkdir build
@@ -64,7 +69,7 @@ Edit your bashrc to source the workspace in every new shell or simply execute
     cmake ..
     make
 
-7\) Add the build folder to the path environment variable
+8\) Add the build folder to the path environment variable
 
     echo "export PATH=$SKINSIM_PATH/build:$PATH" >> ~/.bashrc
 
