@@ -57,6 +57,8 @@ int main(int argc, char** argv)
 	std::string exp_name = "exp01";
 
 	enum Exp { None, TactileLayout, PlungerOffset, LayoutAndOffset, ModelParam, PIDtuning, TimeStep};
+	static const char * EnumStrings[] = { "None", "TactileLayout", "PlungerOffset", "LayoutAndOffset", "ModelParam", "PIDtuning", "TimeStep"};
+
 	Exp type = None;
 
 	// Check the number of command-line parameters
@@ -121,6 +123,8 @@ int main(int argc, char** argv)
 		std::vector<int> sep;
 		siz += 1;
 		sep += 2, 5, 8;
+		//siz += 3;
+		//sep += 5;
 		generatorObj.setTactileLayout(siz, sep);
 		generatorObj.duplicateControlSpecs();
 		break;
@@ -131,13 +135,14 @@ int main(int argc, char** argv)
 		std::vector<double> dx;
 		std::vector<double> dy;
 		double r = 0.5*0.0016644;
-		for (int ix  = -9; ix < 10 ; ix++ )
+		double d = 0.0016644;
+		for (int ix  = 0; ix < 20; ix++ )
 		{
-			for (int iy  = -9; iy < 10 ; iy++ )
+			for (int iy  = 0; iy < 1; iy++ )
 			{
 				//if(iy <= ix)
 				{
-					dx.push_back(ix*r);
+					dx.push_back(ix*d*0.25);	// 0.125,0.25,0.5
 					dy.push_back(iy*r);
 				}
 			}
@@ -172,29 +177,38 @@ int main(int argc, char** argv)
 	{
 		std::cout<<"PID tuning";
 		std::vector<double> g;
-		g += 0.05,0.1,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0;
+		//g += 0.05,0.1,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0;		// P
+		//g += 1.0,5.0,10.0,20.0;								// I
+		g += 0.0001,0.0005,0.001, 0.01;							// D
+		//g += 0.1,0.5,1.0,1.5,2.0;
 		//for(int i  = 0; i < 4; i++ )
 		//	g.push_back( 0.01 * pow(10, i) );
-		generatorObj.setPIDgains(g, SkinSimExperimentGenerator::P);
+		generatorObj.setPIDgains(g, SkinSimExperimentGenerator::D);
 		generatorObj.duplicateModelSpecs();
 		break;
 	}
 	case TimeStep:
 	{
 		std::cout<<"Different controller time step (Ts)";
-		double Kdata = 0.0002;
-		double numSensors[] = {8,4,3};
-		double freq[]       = {4,16,36};
-
+		double Kdata = 0.005;//0.0015;
+		double numSensors2[] = {64,16,9};
+		double numSensors[]  = {8,4,3};
+		double freq[]        = {30,120,360};
 		std::vector<double> Ts;
 		for(unsigned i  = 0; i < 3 ; i++ )
 		{
 			//Ts.push_back( 0.0001 * pow(10, i) ) ;
-			//Ts.push_back( Kdata*numSensors[i] ) ;
+			//Ts.push_back( Kdata*numSensors2[i] );
 			Ts.push_back( 1.0/freq[i] ) ;
 		}
 		generatorObj.setTimeStep(Ts);
-		generatorObj.duplicateModelSpecs();
+		//generatorObj.duplicateModelSpecs();
+
+		std::vector<int> siz;
+		std::vector<int> sep;
+		siz += 1;
+		sep += 2, 5, 8;
+		generatorObj.setTactileLayout(siz, sep);
 		break;
 	}
 	default:
