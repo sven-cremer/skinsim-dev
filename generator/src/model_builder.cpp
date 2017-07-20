@@ -60,7 +60,7 @@ ModelBuilder::ModelBuilder( BuildModelSpec modelSpecs )
 	createModelFiles( modelSpecs );
 
 	//Create Plunger Model
-	if(!checkModelDirectory(plunger_name))	// Only generate plunger once	FIXME but create at least one plunger
+	//if(!checkModelDirectory(plunger_name))	// Only generate plunger once	FIXME but create at least one plunger
 	{
 		std::cout<<"Generating plunger ...\n";
 		createPlungerModelFiles(plunger_name);
@@ -603,11 +603,11 @@ void ModelBuilder::saveWorldFile( std::string & model_name )
 {
 	std::ostringstream modelConfig;
 
-	// Place plunger 0.05 cm above skin
+	// Place plunger above skin
 	double plunger_length = m_.spec.plunger_length;
-	double plunger_height = 0.0;
+	double plunger_height = m_.spec.plunger_offset_z;	// Height above skin elements
 	plunger_z  =  m_.spec.element_height + m_.spec.element_diameter
-			      +(plunger_height+0.5*plunger_length) + 0.0005;
+			      +(plunger_height+0.5*plunger_length);
 
 	// Move plunger to center of tactile patches
 	plunger_x = (total_sensors_x*unit_size_x - total_elements_x - m_.spec.tactile_separation_x)*m_.spec.element_diameter*0.5;

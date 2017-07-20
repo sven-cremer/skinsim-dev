@@ -108,7 +108,7 @@ sudo apt-get remove gazebo2
 ```
 and then try installing *libgazebo5-dev* again.
 
-### Eclipse IDE
+### Eclipse IDE (optional)
 Download https://eclipse.org/cdt/ and extract it into your home folder. Open Eclipse from terminal, e.g.
 ```
 ~/eclipse/eclipse
@@ -157,17 +157,20 @@ or
 
     roslaunch gazebo_ros empty_world.launch
 
-Insert the *skin_array* model from the menu. Testing can be done by inserting the *simple_sphere* or *simple_cylinder* and dropping them on the skin array. Do not forget to unpause the simulation!
+Before unpausing the simulation, click on Physics under the World tab. Set the `max step size` to 0.001 or lower and increase the `solver iterations` to at least 500. This will prevent the simulation from "blowing up". 
+
+Insert the *skin_array_test* model under the Insert tab. Testing can be done by inserting the *simple_sphere* or *simple_cylinder*, scaling them appropriately, and dropping them on the skin array.
+
 To apply virtual forces using ROS:
 ```
-rosservice call /gazebo/apply_body_wrench "body_name: 'skin_array::patch_0_spring_24'
+rosservice call /gazebo/apply_body_wrench "body_name: 'skin_array_test::patch_0_spring_7'
 reference_frame: 'world'
 reference_point: {x: 0.0, y: 0.0, z: 0.0}
 wrench:
-  force: {x: 0.0, y: 0.0, z: -0.3}
+  force: {x: 0.0, y: 0.0, z: -0.05}
   torque: {x: 0.0, y: 0.0, z: 0.0}
 start_time: {secs: 0, nsecs: 0}
-duration: {secs: 2, nsecs: 0}" 
+duration: {secs: 1, nsecs: 0}" 
 ```
 RVIZ can be used for visualization:
 
@@ -183,32 +186,24 @@ This is a bug that needs to be fixed in the skin plugin. Gazebo does not recogni
 ### Demo 2 - Plunger experiment
 The *skin_model_generator* also creates a world file with a plunger. To open the world, simply add its path to the Gazebo command:
 
-    gazebo -s `catkin_find --first-only libgazebo_ros_paths_plugin.so` -s `catkin_find --first-only libgazebo_ros_api_plugin.so` --verbose --pause ~/skin_ws/src/skinsim-dev/model/worlds/skin_array.world
+    gazebo -s `catkin_find --first-only libgazebo_ros_paths_plugin.so` -s `catkin_find --first-only libgazebo_ros_api_plugin.so` --verbose --pause "$SKINSIM_PATH"/model/worlds/skin_array_test.world
+
+In contrast to Demo 1, there is no need to change any physics engine parameters since these are loaded directly from the world file.
 
 To move the plunger, unpause the simulation and send a control service request. For example:
 ```
-rosservice call /skinsim/set_controller "type: {selected: 1}
-fb: {selected: 1}
-f_des: -2.0
-x_des: 0.0
-v_des: -0.005
-Kp: 0.0
-Ki: 0.0
-Kd: 0.0"
-```
-```
-rosservice call /skinsim/set_controller "type: {selected: 4}
+rosservice call /skinsim/set_plunger_controller "type: {selected: 4}
 fb: {selected: 2}
-f_des: 2.0
+f_des: 1.0
 x_des: 0.0
-v_des: -0.005
+v_des: -0.001
 Kp: 2.0
 Ki: 20.0
 Kd: 0.0
 Kv: 0.0
 Ts: 0.001
-Nf: 100
-K_cali: 1"
+Nf: 100.0
+K_cali: 1.0"
 ```
 
 The controller and feedback types are defined in
