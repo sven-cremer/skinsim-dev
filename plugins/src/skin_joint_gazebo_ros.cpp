@@ -404,8 +404,8 @@ void SkinJointGazeboRos::Load( physics::ModelPtr _model, sdf::ElementPtr _sdf )
 		m_vizMarker.pose.orientation.y = 0.70711;
 		m_vizMarker.pose.orientation.z = 0;
 
-		m_vizMarker.scale.y = 0.01;
-		m_vizMarker.scale.z = 0.01;
+		m_vizMarker.scale.y = 0.001;
+		m_vizMarker.scale.z = 0.001;
 
 		m_vizMarker.color.a = 1.0;
 		m_vizMarker.color.b = 0.0;

@@ -1,27 +1,27 @@
 <?xml version="1.0" ?>
 <sdf version='1.4'>
     <model name='simple_cylinder'>
-      <pose frame=''>0 0 0.08 0 -0 0</pose>
+      <pose frame=''>0 0 0.06 0 -0 0</pose>
       <link name='link'>
         <inertial>
-          <mass>1.0</mass>
+          <mass>0.1</mass>
           <inertia>
-            <ixx>0.145833</ixx>
+            <ixx>0.000008725</ixx>
             <ixy>0</ixy>
             <ixz>0</ixz>
-            <iyy>0.145833</iyy>
+            <iyy>0.000008725</iyy>
             <iyz>0</iyz>
-            <izz>0.125</izz>
+            <izz>0.00000245</izz>
           </inertia>
         </inertial>
         <collision name='simple_cylinder_collision'>
           <geometry>
             <cylinder>
-              <radius>0.02</radius>
+              <radius>0.007</radius>
               <length>0.03</length>
             </cylinder>
           </geometry>
-          <max_contacts>50</max_contacts>
+          <max_contacts>200</max_contacts>
           <surface>
             <contact>
               <ode/>
@@ -35,7 +35,7 @@
         <visual name='simple_cylinder_visual'>
           <geometry>
             <cylinder>
-              <radius>0.02</radius>
+              <radius>0.007</radius>
               <length>0.03</length>
             </cylinder>
           </geometry>
