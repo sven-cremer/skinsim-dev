@@ -13,13 +13,13 @@
       num_patches_y                : 3                  # Number of skin patches in y-direction
       # Skin element properties
       element_diameter             : 0.001              # Diameter of each skin element [meters]
-      element_height               : 0.005              # The height of the skin element from the ground [meters]
+      element_height               : 0.005              # The height of the skin element above the ground [meters]
       element_mass                 : 0.001              # Mass of skin element [kg]  (note: doesn't matter since model gravity is turned off but has to >0)
       element_spring               : 16.37              # Spring constant of skin element [N/m] (note: also used by plugin)
       element_damping              : 0.130              # Damping of skin element (note: also used by plugin)
       # Skin plane properties
       plane_thickness              : 0.0005             # Thickness of the skin plane [meters]
-      plane_height                 : 0.0025             # The height of the plane from the ground [meters]
+      plane_height                 : 0.0025             # The height of the plane above the ground [meters]
       # Skin array placement
       init_x                       : 0.0                # Initial x position [meters]
       init_y                       : 0.0                # Initial y position [meters]
@@ -42,8 +42,9 @@
       plunger_spring               : 0.0                # Stiffness [N/m] (note: also used by plugin)
       plunger_damping              : 0.0                # Damping (note: also used by plugin)
       plunger_gravity              : false              # Turn on gravity for plunger
-      plunger_offset_x             : 0                  # Plunger Location offset X
+      plunger_offset_x             : 0                  # Plunger Location offset X (with respect to center of skin patch)
       plunger_offset_y             : 0                  # Plunger Location offset Y
+      plunger_offset_z             : 0.0001             # Plunger Location offset Z (height above skin patch)
       #############################
       # PLUGIN                    #
       #############################
