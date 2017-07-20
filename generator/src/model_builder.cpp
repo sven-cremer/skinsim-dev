@@ -60,7 +60,7 @@ ModelBuilder::ModelBuilder( BuildModelSpec modelSpecs )
 	createModelFiles( modelSpecs );
 
 	//Create Plunger Model
-	if(!checkModelDirectory(plunger_name))	// Only generate plunger once	FIXME but create at least one plunger
+	//if(!checkModelDirectory(plunger_name))	// Only generate plunger once	FIXME but create at least one plunger
 	{
 		std::cout<<"Generating plunger ...\n";
 		createPlungerModelFiles(plunger_name);
